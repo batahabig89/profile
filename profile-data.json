@@ -1,0 +1,213 @@
+{
+  "personalInfo": {
+    "name": "Batbayar Altankhuyag",
+    "title": "Software Engineer | Hardware engineer | Robot engineer",
+    "email": "batahabig@gmail.com",
+    "phone": "+976 85245464",
+    "location": ["Sukhbaatar", "Ulaanbaatar", "Mongolia"],
+        "vehicleLicense": true,
+        "birthdate": "1989-02-22",
+        "profileImage": "https://scontent.fuln2-2.fna.fbcdn.net/v/t39.30808-6/534578045_3994013884246639_5360597488153546510_n.jpg?stp=cp6_dst-jpg_tt6&_nc_cat=103&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=n09_O_KuOVAQ7kNvwEuVRo2&_nc_oc=Adk3kwy-hDrnp09VCPCcmTVQg_0OLOdspM2gVzhNahuAj6U4H50NAV9zFou8w3TYCOs&_nc_zt=23&_nc_ht=scontent.fuln2-2.fna&_nc_gid=8B7LiaWeBztpVegbwh1yDg&oh=00_Afe9ksynHe2PaSxl2y5VcspQ9J5c8nkGaxZPNkowAdYf3w&oe=68EAE67A"
+  },
+  "summary": {
+    "lines": [
+      "in Software Development, Web & Mobile & Robot",
+      "IOT hardware development",
+      "Humanoid robot development",
+      "digital products."
+    ]
+  },
+  "platforms": {
+    "primary": ["IOS", "Windows", "Linux", "Android"],
+    "secondary": ["Web platform", "Mobile platform", "Desktop platform", "IOT platform", "ROSA"]
+  },
+  "programmingLanguages": [
+    "C#, C++",
+    "Java, GO, Python, ",
+    "JavaScript, Typescript, React, Vue, Kotlin"
+  ],
+  "workSkills": {
+    "frontend": ["React", "Vue.js", "Angular", "HTML5", "CSS3", "JavaScript", "TypeScript"],
+    "backend": ["Java", "Go", "Python", "C#" ],
+    "database": ["Oracle", "Oracle REST API", "MySQL", "PostgreSQL", "MongoDB", "Redis", "SQLite"],
+    "cloud": [ "Docker", "Kubernetes","Azure"],
+    "mobile": [ "Android"],
+    "devops": ["Git", "CI/CD", "Azure DevOps", "Docker", "Kubernetes", "Linux"]
+  },
+  "tools": [
+    "ReactJS, NodeJS",
+    "NextJS, Unity3D",
+    "VisualStudio",
+    "GitHub, Docker",
+    "Figma, Cursor, VSCode, Cursor", 
+    "IntelliJ, Android Studio"
+  ],
+  "spokenLanguages": {
+    "English": "Basic",
+    "Mongolia": "Native"
+  },
+  "profileTraits": ["LEADER", "CREATIVE", "AMBITIOUS"],
+  "education": [
+    {
+      "level": "Bachelor's Degree",
+      "field": "Hardware engineer",
+      "date": "Graduated 2010",
+      "institution": "Mongolian University of Science and Technology - Computer Science and Technology",
+      "GPA": "2.89"
+    },
+    {
+      "level": "Bachelor's Degree",
+      "field": "Software engineer",
+      "date": "Graduated 2011",
+      "institution": "Mongolian University of Science and Technology - Computer Science and Technology",
+      "GPA": "3"
+    }
+  ],
+  "experience": [
+    {
+      "company": "Nomin Holding LLC",
+      "duration": {
+        "start": "2025",
+        "end": "Present"
+      },
+      "role": "Staff developer",
+      "type": "corporate",
+      "description": [
+        "solutions company. Providing Web Development"
+      ]
+    },
+    {
+      "company": "Egune LLC",
+      "duration": {
+        "start": "2025-2",
+        "end": "20225-9"
+      },
+      "role": "Robot engineer",
+      "type": "Full-time",
+      "description": [
+        "Developed humanoind robot development"
+      ]
+    },
+    {
+        "company": "Simple Fintech",
+        "duration": {
+          "start": "2022-7",
+          "end": "2024-11"
+        },
+        "role": "Backend developer",
+        "type": "Full-time",
+        "description": [
+          "Developed spring boot microservices"
+        ]
+    },
+    {
+        "company": "ITC GOV",
+        "duration": {
+          "start": "2020-2",
+          "end": "2022-7"
+        },
+        "role": "Fullstack developer",
+        "type": "Full-time",
+        "description": [
+          "Developed spring boot microservices and angular frontend"
+        ]
+    },
+    {
+        "company": "CEO",
+        "duration": {
+          "start": "2017-9",
+          "end": "2020-2"
+        },
+        "role": "Project manager",
+        "type": "Full-time",
+        "description": [
+          "Development and management of the company"
+        ]
+    },
+    {
+        "company": "ITZONE LLC",
+        "duration": {
+          "start": "2014-9",
+          "end": "2027-9"
+        },
+        "role": "Software engineer",
+        "type": "Full-time",
+        "description": [
+          "software automation, hardware automation"
+        ]
+    },
+    {
+        "company": "Mongolian university science and technology",
+        "duration": {
+          "start": "2011-9",
+          "end": "2014-9"
+        },
+        "role": "Robot engineer, teacher",
+        "type": "Full-time",
+        "description": [
+          "Mechatronics engineering"
+        ]
+    },
+    {
+        "company": "Micromagic LLC",
+        "duration": {
+          "start": "2010-9",
+          "end": "2011-9"
+        },
+        "role": "Automation engineer",
+        "type": "Full-time",
+        "description": [
+          "Hardware automation"
+        ]
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Java",
+      "issuer": "basic",
+      "date": "2010"
+    },
+    {
+      "name": "Microsoft Azure Developer Associate",
+      "issuer": "Microsoft",
+      "date": "2022"
+    }
+  ],
+  "projects": [
+    {
+      "name": "ITAX.MTA.GOV.MN",
+      "description": "Full-stack Angular frontend and java spring boot microservicesbackend",
+      "technologies": ["React", "Typescript", "Oracle", "rest API"],
+      "url": "https://itax.mta.gov.mn",
+      "icon": "🏛️"
+    },
+    {
+      "name": "ETAX.MTA.GOV.MN",
+      "description": "Full-stack React frontend and java microservices backend",
+      "technologies": ["React js", "Firebase", "java spring boot"],
+      "url": "https://etax.mta.gov.mn",
+      "icon": "🏛️"
+    },
+    {
+        "name": "burtgel.gov.mn",
+        "description": "Full-stack javascript bootstrap frontend and java monolit backend",
+        "technologies": ["javacript jquery", "java spring boot"],
+        "url": "https://burtgel.gov.mn",
+        "icon": "📋"
+    },
+    {
+        "name": "ehalamj.mn",
+        "description": "Full-stack javascript bootstrap frontend and  tapestry java monolit backend",
+        "technologies": ["javacript jquery", "java spring boot"],
+        "url": "https://ehalamj.mn/",
+        "icon": "📋"
+    },
+    {
+        "name": "simple.app",
+        "description": "Fintech, backend only java spring boot microservices",
+        "technologies": ["flutter mobile", "java spring boot", "react web"],
+        "url": "https://simple.mn",
+        "icon": "💰"
+    }
+  ]
+}
