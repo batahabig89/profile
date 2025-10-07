@@ -513,7 +513,6 @@ function initRocketEffect() {
         
         // Make robot smile and turn 180 degrees
         const robotFace = document.querySelector('.robot-face');
-        const robotContainer = document.getElementById('robotContainer');
         if (robotFace) {
             robotFace.classList.add('robot-smile');
         }
