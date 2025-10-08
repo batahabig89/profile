@@ -34,6 +34,16 @@ async function loadProfile() {
 function renderProfile(data) {
     renderLeftPanel(data);
     renderRightPanel(data);
+    updatePageTitle(data);
+}
+
+function updatePageTitle(data) {
+    // Update page title
+    document.getElementById('pageTitle').textContent = `${data.personalInfo.name} - ${data.personalInfo.title}`;
+    
+    // Update footer name and title
+    document.getElementById('profileName').textContent = data.personalInfo.name;
+    document.getElementById('profileTitle').textContent = data.personalInfo.title;
 }
 
 function renderLeftPanel(data) {
