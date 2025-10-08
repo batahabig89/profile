@@ -397,23 +397,30 @@ function renderRightPanel(data) {
 
     // Experience section
     const experienceHTML = `
-        <div class="experience-container">
-            <div class="experience-title">Work Experience</div>
-            <div class="experience-grid">
-                ${data.experience.map(exp => `
-                    <div class="experience-card">
-                        <div class="experience-card-header">
-                            <h3 class="experience-company">${exp.company}</h3>
-                            <div class="experience-duration">${exp.duration.start} - ${exp.duration.end}</div>
-                            <div class="experience-role">${exp.role}</div>
-                        </div>
-                        <div class="experience-card-body">
-                            <div class="experience-type">${exp.type}</div>
-                            <p class="experience-description">${exp.description.join(' ')}</p>
-                        </div>
-                    </div>
-                `).join('')}
+        <div class="code-section">
+            <div class="code-line">
+                <span class="keyword">public static class</span> <span class="class-name">EXPERIENCE</span>
             </div>
+            ${data.experience.map((exp, index) => `
+                <div class="code-line indent-1">
+                    <span class="keyword">private void</span> <span class="method">Experience${index + 1}</span>()
+                </div>
+                <div class="code-line indent-2">
+                    <span class="variable">var</span> <span class="variable">Company</span> = <span class="string">"${exp.company}"</span>,
+                </div>
+                <div class="code-line indent-2">
+                    <span class="variable">var</span> <span class="variable">Role</span> = <span class="string">"${exp.role}"</span>,
+                </div>
+                <div class="code-line indent-2">
+                    <span class="variable">var</span> <span class="variable">Duration</span> = <span class="string">"${exp.duration.start} - ${exp.duration.end}"</span>,
+                </div>
+                <div class="code-line indent-2">
+                    <span class="variable">var</span> <span class="variable">Type</span> = <span class="string">"${exp.type}"</span>,
+                </div>
+                <div class="code-line indent-2">
+                    <span class="variable">var</span> <span class="variable">Description</span> = <span class="string">"${exp.description.join(' ')}"</span>
+                </div>
+            `).join('')}
         </div>
     `;
 
@@ -456,29 +463,27 @@ function renderRightPanel(data) {
     };
 
     const projectsHTML = data.projects ? `
-        <div class="projects-container">
-            <div class="projects-title">PROJECTS</div>
-            <div class="projects-grid">
-                ${data.projects.map(project => `
-                    <div class="project-card" onclick="window.open('${project.url}', '_blank')">
-                        <div class="project-card-header">
-                            <h3 class="project-name">
-                                <span class="project-emoji">${getProjectIcon(project)}</span>
-                                ${project.name}
-                            </h3>
-                            <a href="${project.url}" target="_blank" class="project-url">🔗 Visit Project</a>
-                        </div>
-                        <div class="project-card-body">
-                            <p class="project-description">${project.description}</p>
-                            <div class="project-technologies">
-                                ${project.technologies.map(tech => `
-                                    <span class="tech-tag">${tech}</span>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}
+        <div class="code-section">
+            <div class="code-line">
+                <span class="keyword">public static class</span> <span class="class-name">PROJECTS</span>
             </div>
+            ${data.projects.map((project, index) => `
+                <div class="code-line indent-1">
+                    <span class="keyword">private void</span> <span class="method">Project${index + 1}</span>()
+                </div>
+                <div class="code-line indent-2">
+                    <span class="variable">var</span> <span class="variable">Name</span> = <span class="string">"${project.name}"</span>,
+                </div>
+                <div class="code-line indent-2">
+                    <span class="variable">var</span> <span class="variable">Description</span> = <span class="string">"${project.description}"</span>,
+                </div>
+                <div class="code-line indent-2">
+                    <span class="variable">var</span> <span class="variable">Technologies</span> = <span class="operator">[</span><span class="string">'${project.technologies.join("', '")}'</span><span class="operator">]</span>,
+                </div>
+                <div class="code-line indent-2">
+                    <span class="variable">var</span> <span class="variable">URL</span> = <span class="string">"${project.url}"</span>
+                </div>
+            `).join('')}
         </div>
     ` : '';
 
