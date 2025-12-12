@@ -66,9 +66,9 @@ const profileData = {
     ],
     "experience": [
       {
-        "company": "Nomin Holding LLC",
+        "company": "Binary systems LLC",
         "duration": {
-          "start": "2025",
+          "start": "2025-10",
           "end": "Present"
         },
         "role": "Staff developer",
