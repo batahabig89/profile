@@ -65,15 +65,15 @@
   ],
   "experience": [
     {
-      "company": "Nomin Holding LLC",
+      "company": "Binary Systems LLC",
       "duration": {
-        "start": "2025",
+        "start": "2025-10",
         "end": "Present"
       },
-      "role": "Staff developer",
-      "type": "corporate",
+      "role": "Senior developer",
+      "type": "Full-time",
       "description": [
-        "solutions company. Providing Web Development"
+        "IOT company"
       ]
     },
     {

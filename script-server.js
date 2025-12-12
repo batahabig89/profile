@@ -515,25 +515,9 @@ function initRocketEffect() {
         trail.style.left = (robotX - 2) + 'px';
         trail.style.top = (robotY + 20) + 'px';
         
-        // Create fire effect
-        const fire = document.createElement('div');
-        fire.className = 'rocket-fire';
-        fire.style.left = (robotX - 8) + 'px';
-        fire.style.top = (robotY + 30) + 'px';
-        
         // Add to container
         rocketContainer.appendChild(rocket);
         rocketContainer.appendChild(trail);
-        rocketContainer.appendChild(fire);
-        
-        // Make robot smile and turn 180 degrees
-        const robotFace = document.querySelector('.robot-face');
-        if (robotFace) {
-            robotFace.classList.add('robot-smile');
-        }
-        if (robotContainer) {
-            robotContainer.classList.add('robot-turned');
-        }
         
         // Calculate rocket path
         const deltaX = targetX - robotX;
@@ -563,30 +547,14 @@ function initRocketEffect() {
             rocket.style.top = currentY + 'px';
             trail.style.left = (currentX - 2) + 'px';
             trail.style.top = (currentY + 20) + 'px';
-            fire.style.left = (currentX - 8) + 'px';
-            fire.style.top = (currentY + 30) + 'px';
             
             if (progress < 1) {
                 requestAnimationFrame(animateRocket);
             } else {
-                // Create explosion effect
-                createExplosion(targetX, targetY);
-                
-                // Reset robot smile and turn back
-                const robotFace = document.querySelector('.robot-face');
-                const robotContainer = document.getElementById('robotContainer');
-                if (robotFace) {
-                    robotFace.classList.remove('robot-smile');
-                }
-                if (robotContainer) {
-                    robotContainer.classList.remove('robot-turned');
-                }
-                
-                // Remove rocket, trail, and fire
+                // Remove rocket and trail (no explosion)
                 setTimeout(() => {
                     if (rocket.parentNode) rocket.parentNode.removeChild(rocket);
                     if (trail.parentNode) trail.parentNode.removeChild(trail);
-                    if (fire.parentNode) fire.parentNode.removeChild(fire);
                 }, 100);
             }
         }
