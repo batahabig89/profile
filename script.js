@@ -1,5 +1,5 @@
-// Profile data embedded directly in JavaScript
-const profileData = {
+// Default embedded profile data (used as fallback if JSON load fails)
+const defaultProfileData = {
     "personalInfo": {
       "name": "Batbayar Altankhuyag",
       "title": "Software Engineer | Hardware engineer | Robot engineer",
@@ -222,21 +222,31 @@ function calculateAge(birthdate) {
     return age;
 }
 
-// Load profile data
-function loadProfile() {
+// Load profile data (prefers JSON from repo so GitHub Pages shows latest changes)
+async function loadProfile() {
     try {
-        const data = profileData;
-        
+        const response = await fetch('profile-data.json', { cache: 'no-store' });
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
         // Calculate age if birthdate exists
         if (data.personalInfo.birthdate) {
             data.personalInfo.age = calculateAge(data.personalInfo.birthdate);
         }
-        
+
         renderProfile(data);
     } catch (error) {
-        console.error('Error loading profile data:', error);
-        document.getElementById('leftPanel').innerHTML = '<div class="loading">Error loading profile data</div>';
-        document.getElementById('rightPanel').innerHTML = '<div class="loading">Error loading profile data</div>';
+        console.warn('Falling back to embedded profile data:', error);
+        const data = JSON.parse(JSON.stringify(defaultProfileData));
+
+        if (data.personalInfo.birthdate) {
+            data.personalInfo.age = calculateAge(data.personalInfo.birthdate);
+        }
+
+        renderProfile(data);
     }
 }
 
