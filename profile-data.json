@@ -7,7 +7,7 @@
     "location": ["Sukhbaatar", "Ulaanbaatar", "Mongolia"],
         "vehicleLicense": true,
         "birthdate": "1989-02-22",
-        "profileImage": "https://scontent.fuln2-2.fna.fbcdn.net/v/t39.30808-6/534578045_3994013884246639_5360597488153546510_n.jpg?stp=cp6_dst-jpg_tt6&_nc_cat=103&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=n09_O_KuOVAQ7kNvwEuVRo2&_nc_oc=Adk3kwy-hDrnp09VCPCcmTVQg_0OLOdspM2gVzhNahuAj6U4H50NAV9zFou8w3TYCOs&_nc_zt=23&_nc_ht=scontent.fuln2-2.fna&_nc_gid=8B7LiaWeBztpVegbwh1yDg&oh=00_Afe9ksynHe2PaSxl2y5VcspQ9J5c8nkGaxZPNkowAdYf3w&oe=68EAE67A"
+        "profileImage": "assets/profile-photo.png"
   },
   "summary": {
     "lines": [
@@ -65,15 +65,15 @@
   ],
   "experience": [
     {
-      "company": "Binary Systems LLC",
+      "company": "Free lance software engineer",
       "duration": {
         "start": "2025-10",
         "end": "Present"
       },
-      "role": "Senior developer",
+      "role": "Developer",
       "type": "Full-time",
       "description": [
-        "IOT company"
+        "IOT company - Public transport system - UBCARD"
       ]
     },
     {
@@ -85,7 +85,7 @@
       "role": "Robot engineer",
       "type": "Full-time",
       "description": [
-        "Developed humanoind robot development"
+        "Developed humanoid robot development"
       ]
     },
     {

@@ -479,107 +479,85 @@ function initRobotEyeTracking() {
     }, 500);
 }
 
-// Rocket effect functionality
-function initRocketEffect() {
-    const rocketContainer = document.getElementById('rocketContainer');
-    
-    if (!rocketContainer) return;
-    
-    // Click event listener for rocket launch
-    document.addEventListener('click', (e) => {
-        // Don't launch rocket if clicking on robot
-        if (e.target.closest('.robot-container')) return;
-        
-        launchRocket(e.clientX, e.clientY);
+function initRobotDraggable() {
+    const robotContainer = document.getElementById('robotContainer');
+    if (!robotContainer) return;
+
+    let dragging = false;
+    let dragPointerId = null;
+    let startClientX = 0;
+    let startClientY = 0;
+    let startLeft = 0;
+    let startTop = 0;
+
+    function clampPosition(left, top) {
+        const margin = 8;
+        const w = robotContainer.offsetWidth;
+        const h = robotContainer.offsetHeight;
+        const maxL = Math.max(margin, window.innerWidth - w - margin);
+        const maxT = Math.max(margin, window.innerHeight - h - margin);
+        return {
+            left: Math.min(Math.max(margin, left), maxL),
+            top: Math.min(Math.max(margin, top), maxT)
+        };
+    }
+
+    function applyPosition(left, top) {
+        const c = clampPosition(left, top);
+        robotContainer.style.right = 'auto';
+        robotContainer.style.left = `${c.left}px`;
+        robotContainer.style.top = `${c.top}px`;
+    }
+
+    robotContainer.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        dragging = true;
+        dragPointerId = e.pointerId;
+        robotContainer.classList.add('robot-dragging');
+        const rect = robotContainer.getBoundingClientRect();
+        startClientX = e.clientX;
+        startClientY = e.clientY;
+        startLeft = rect.left;
+        startTop = rect.top;
+        applyPosition(startLeft, startTop);
+        robotContainer.setPointerCapture(e.pointerId);
+        e.preventDefault();
     });
-    
-    function launchRocket(targetX, targetY) {
-        const robotContainer = document.getElementById('robotContainer');
-        if (!robotContainer) return;
-        
-        // Get robot position
-        const robotRect = robotContainer.getBoundingClientRect();
-        const robotX = robotRect.left + robotRect.width / 2;
-        const robotY = robotRect.top + robotRect.height / 2;
-        
-        // Create rocket element with emoji
-        const rocket = document.createElement('div');
-        rocket.className = 'rocket';
-        rocket.innerHTML = '🚀';
-        rocket.style.left = robotX + 'px';
-        rocket.style.top = robotY + 'px';
-        
-        // Create enhanced smoke trail
-        const trail = document.createElement('div');
-        trail.className = 'rocket-trail';
-        trail.style.left = (robotX - 2) + 'px';
-        trail.style.top = (robotY + 20) + 'px';
-        
-        // Add to container
-        rocketContainer.appendChild(rocket);
-        rocketContainer.appendChild(trail);
-        
-        // Calculate rocket path
-        const deltaX = targetX - robotX;
-        const deltaY = targetY - robotY;
-        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-        
-        // Set rocket rotation
-        rocket.style.transform = `rotate(${angle}deg)`;
-        trail.style.transform = `rotate(${angle}deg)`;
-        
-        // Animate rocket movement
-        const animationDuration = 1000; // 1 second
-        const startTime = Date.now();
-        
-        function animateRocket() {
-            const elapsed = Date.now() - startTime;
-            const progress = Math.min(elapsed / animationDuration, 1);
-            
-            // Easing function for smooth movement
-            const easeOut = 1 - Math.pow(1 - progress, 3);
-            
-            const currentX = robotX + (deltaX * easeOut);
-            const currentY = robotY + (deltaY * easeOut);
-            
-            rocket.style.left = currentX + 'px';
-            rocket.style.top = currentY + 'px';
-            trail.style.left = (currentX - 2) + 'px';
-            trail.style.top = (currentY + 20) + 'px';
-            
-            if (progress < 1) {
-                requestAnimationFrame(animateRocket);
-            } else {
-                // Remove rocket and trail (no explosion)
-                setTimeout(() => {
-                    if (rocket.parentNode) rocket.parentNode.removeChild(rocket);
-                    if (trail.parentNode) trail.parentNode.removeChild(trail);
-                }, 100);
+
+    robotContainer.addEventListener('pointermove', (e) => {
+        if (!dragging || e.pointerId !== dragPointerId) return;
+        const dx = e.clientX - startClientX;
+        const dy = e.clientY - startClientY;
+        applyPosition(startLeft + dx, startTop + dy);
+    });
+
+    function endDrag(e) {
+        if (!dragging || (e && e.pointerId !== dragPointerId)) return;
+        dragging = false;
+        dragPointerId = null;
+        robotContainer.classList.remove('robot-dragging');
+        if (e) {
+            try {
+                robotContainer.releasePointerCapture(e.pointerId);
+            } catch (_) {
+                /* already released */
             }
         }
-        
-        requestAnimationFrame(animateRocket);
     }
-    
-    function createExplosion(x, y) {
-        const explosion = document.createElement('div');
-        explosion.className = 'rocket-explosion';
-        explosion.style.left = x + 'px';
-        explosion.style.top = y + 'px';
-        
-        rocketContainer.appendChild(explosion);
-        
-        // Remove explosion after animation
-        setTimeout(() => {
-            if (explosion.parentNode) explosion.parentNode.removeChild(explosion);
-        }, 600);
-    }
+
+    robotContainer.addEventListener('pointerup', endDrag);
+    robotContainer.addEventListener('pointercancel', endDrag);
+
+    window.addEventListener('resize', () => {
+        if (dragging) return;
+        const rect = robotContainer.getBoundingClientRect();
+        applyPosition(rect.left, rect.top);
+    });
 }
 
 // Load profile when page loads
 document.addEventListener('DOMContentLoaded', () => {
     loadProfile();
     initRobotEyeTracking();
-    initRocketEffect();
+    initRobotDraggable();
 });

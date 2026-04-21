@@ -1,213 +1,3 @@
-// Default embedded profile data (used as fallback if JSON load fails)
-const defaultProfileData = {
-    "personalInfo": {
-      "name": "Batbayar Altankhuyag",
-      "title": "Software Engineer | Hardware engineer | Robot engineer",
-      "email": "batahabig@gmail.com",
-      "phone": "+976 85245464",
-      "location": ["Sukhbaatar", "Ulaanbaatar", "Mongolia"],
-      "vehicleLicense": true,
-      "age": 36,
-      "profileImage": "https://scontent.fuln2-2.fna.fbcdn.net/v/t39.30808-6/534578045_3994013884246639_5360597488153546510_n.jpg?stp=cp6_dst-jpg_tt6&_nc_cat=103&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=n09_O_KuOVAQ7kNvwEuVRo2&_nc_oc=Adk3kwy-hDrnp09VCPCcmTVQg_0OLOdspM2gVzhNahuAj6U4H50NAV9zFou8w3TYCOs&_nc_zt=23&_nc_ht=scontent.fuln2-2.fna&_nc_gid=8B7LiaWeBztpVegbwh1yDg&oh=00_Afe9ksynHe2PaSxl2y5VcspQ9J5c8nkGaxZPNkowAdYf3w&oe=68EAE67A"
-    },
-    "summary": {
-      "lines": [
-        "in Software Development, Web & Mobile & Robot",
-        "IOT hardware development",
-        "Humanoid robot development",
-        "digital products."
-      ]
-    },
-    "platforms": {
-      "primary": ["IOS", "Windows", "Linux", "Android"],
-      "secondary": ["Web platform", "Mobile platform", "Desktop platform", "IOT platform", "ROSA"]
-    },
-    "programmingLanguages": [
-      "C#, C++",
-      "Java, GO, Python, ",
-      "JavaScript, Typescript, React, Vue, Kotlin"
-    ],
-    "workSkills": {
-      "frontend": ["React", "Vue.js", "Angular", "HTML5", "CSS3", "JavaScript", "TypeScript"],
-      "backend": ["Java", "Go", "Python", "C#" ],
-      "database": ["Oracle", "Oracle REST API", "MySQL", "PostgreSQL", "MongoDB", "Redis", "SQLite"],
-      "cloud": [ "Docker", "Kubernetes","Azure"],
-      "mobile": [ "Android"],
-      "devops": ["Git", "CI/CD", "Azure DevOps", "Docker", "Kubernetes", "Linux"]
-    },
-    "tools": [
-      "ReactJS, NodeJS",
-      "NextJS, Unity3D",
-      "VisualStudio",
-      "GitHub, Docker",
-      "Figma, Cursor, VSCode, Cursor", 
-      "IntelliJ, Android Studio"
-    ],
-    "spokenLanguages": {
-      "English": "Basic",
-      "Mongolia": "Native"
-    },
-    "profileTraits": ["LEADER", "CREATIVE", "AMBITIOUS"],
-    "education": [
-      {
-        "level": "Bachelor's Degree",
-        "field": "Hardware engineer",
-        "date": "Graduated 2010",
-        "institution": "Mongolian University of Science and Technology - Computer Science and Technology",
-        "GPA": "2.89"
-      },
-      {
-        "level": "Bachelor's Degree",
-        "field": "Software engineer",
-        "date": "Graduated 2011",
-        "institution": "Mongolian University of Science and Technology - Computer Science and Technology",
-        "GPA": "3"
-      }
-    ],
-    "experience": [
-      {
-        "company": "Binary systems LLC",
-        "duration": {
-          "start": "2025-10",
-          "end": "Present"
-        },
-        "role": "Staff developer",
-        "type": "corporate",
-        "description": [
-          "solutions company. Providing Web Development"
-        ]
-      },
-      {
-        "company": "Egune LLC",
-        "duration": {
-          "start": "2025-2",
-          "end": "20225-9"
-        },
-        "role": "Robot engineer",
-        "type": "Full-time",
-        "description": [
-          "Developed humanoind robot development"
-        ]
-      },
-      {
-          "company": "Simple Fintech",
-          "duration": {
-            "start": "2022-7",
-            "end": "2024-11"
-          },
-          "role": "Backend developer",
-          "type": "Full-time",
-          "description": [
-            "Developed spring boot microservices"
-          ]
-      },
-      {
-          "company": "ITC GOV",
-          "duration": {
-            "start": "2020-2",
-            "end": "2022-7"
-          },
-          "role": "Fullstack developer",
-          "type": "Full-time",
-          "description": [
-            "Developed spring boot microservices and angular frontend"
-          ]
-      },
-      {
-          "company": "CEO",
-          "duration": {
-            "start": "2017-9",
-            "end": "2020-2"
-          },
-          "role": "Project manager",
-          "type": "Full-time",
-          "description": [
-            "Development and management of the company"
-          ]
-      },
-      {
-          "company": "ITZONE LLC",
-          "duration": {
-            "start": "2014-9",
-            "end": "2027-9"
-          },
-          "role": "Software engineer",
-          "type": "Full-time",
-          "description": [
-            "software automation, hardware automation"
-          ]
-      },
-      {
-          "company": "Mongolian university science and technology",
-          "duration": {
-            "start": "2011-9",
-            "end": "2014-9"
-          },
-          "role": "Robot engineer, teacher",
-          "type": "Full-time",
-          "description": [
-            "Mechatronics engineering"
-          ]
-      },
-      {
-          "company": "Micromagic LLC",
-          "duration": {
-            "start": "2010-9",
-            "end": "2011-9"
-          },
-          "role": "Automation engineer",
-          "type": "Full-time",
-          "description": [
-            "Hardware automation"
-          ]
-      }
-    ],
-    "certifications": [
-      {
-        "name": "Java",
-        "issuer": "basic",
-        "date": "2010"
-      },
-      {
-        "name": "Microsoft Azure Developer Associate",
-        "issuer": "Microsoft",
-        "date": "2022"
-      }
-    ],
-    "projects": [
-      {
-        "name": "ITAX.MTA.GOV.MN",
-        "description": "Full-stack Angular frontend and java spring boot microservicesbackend",
-        "technologies": ["React", "Typescript", "Oracle", "rest API"],
-        "url": "https://itax.mta.gov.mn"
-      },
-      {
-        "name": "ETAX.MTA.GOV.MN",
-        "description": "Full-stack React frontend and java microservices backend",
-        "technologies": ["React js", "Firebase", "java spring boot"],
-        "url": "https://etax.mta.gov.mn"
-      },
-      {
-          "name": "burtgel.gov.mn",
-          "description": "Full-stack javascript bootstrap frontend and java monolit backend",
-          "technologies": ["javacript jquery", "java spring boot"],
-          "url": "https://burtgel.gov.mn"
-      },
-      {
-          "name": "ehalamj.mn",
-          "description": "Full-stack javascript bootstrap frontend and  tapestry java monolit backend",
-          "technologies": ["javacript jquery", "java spring boot"],
-          "url": "https://ehalamj.mn"
-      },
-      {
-          "name": "simple.app",
-          "description": "Fintech, backend only java spring boot microservices",
-          "technologies": ["flutter mobile", "java spring boot", "react web"],
-          "url": "https://simple.mn"
-      }
-    ]
-  };
-
 // Calculate age from birthdate
 function calculateAge(birthdate) {
     const today = new Date();
@@ -222,7 +12,7 @@ function calculateAge(birthdate) {
     return age;
 }
 
-// Load profile data (prefers JSON from repo so GitHub Pages shows latest changes)
+// Load profile data from profile-data.json (single source of truth)
 async function loadProfile() {
     try {
         const response = await fetch('profile-data.json', { cache: 'no-store' });
@@ -232,21 +22,20 @@ async function loadProfile() {
 
         const data = await response.json();
 
-        // Calculate age if birthdate exists
         if (data.personalInfo.birthdate) {
             data.personalInfo.age = calculateAge(data.personalInfo.birthdate);
         }
 
         renderProfile(data);
     } catch (error) {
-        console.warn('Falling back to embedded profile data:', error);
-        const data = JSON.parse(JSON.stringify(defaultProfileData));
-
-        if (data.personalInfo.birthdate) {
-            data.personalInfo.age = calculateAge(data.personalInfo.birthdate);
-        }
-
-        renderProfile(data);
+        console.error('Could not load profile-data.json:', error);
+        const message =
+            'Could not load profile-data.json. Serve this folder over HTTP (e.g. npx serve) or open from GitHub Pages.';
+        document.getElementById('leftPanel').innerHTML = `<div class="loading">${message}</div>`;
+        document.getElementById('rightPanel').innerHTML = `<div class="loading">${message}</div>`;
+        document.getElementById('pageTitle').textContent = 'Profile — load error';
+        document.getElementById('profileName').textContent = 'Profile';
+        document.getElementById('profileTitle').textContent = 'Load error';
     }
 }
 
@@ -698,118 +487,85 @@ function initRobotEyeTracking() {
     }, 500);
 }
 
-// Rocket effect functionality
-function initRocketEffect() {
-    const rocketContainer = document.getElementById('rocketContainer');
-    
-    if (!rocketContainer) return;
-    
-    // Click event listener for rocket launch
-    document.addEventListener('click', (e) => {
-        // Don't launch rocket if clicking on robot
-        if (e.target.closest('.robot-container')) return;
-        
-        launchRocket(e.clientX, e.clientY);
+function initRobotDraggable() {
+    const robotContainer = document.getElementById('robotContainer');
+    if (!robotContainer) return;
+
+    let dragging = false;
+    let dragPointerId = null;
+    let startClientX = 0;
+    let startClientY = 0;
+    let startLeft = 0;
+    let startTop = 0;
+
+    function clampPosition(left, top) {
+        const margin = 8;
+        const w = robotContainer.offsetWidth;
+        const h = robotContainer.offsetHeight;
+        const maxL = Math.max(margin, window.innerWidth - w - margin);
+        const maxT = Math.max(margin, window.innerHeight - h - margin);
+        return {
+            left: Math.min(Math.max(margin, left), maxL),
+            top: Math.min(Math.max(margin, top), maxT)
+        };
+    }
+
+    function applyPosition(left, top) {
+        const c = clampPosition(left, top);
+        robotContainer.style.right = 'auto';
+        robotContainer.style.left = `${c.left}px`;
+        robotContainer.style.top = `${c.top}px`;
+    }
+
+    robotContainer.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        dragging = true;
+        dragPointerId = e.pointerId;
+        robotContainer.classList.add('robot-dragging');
+        const rect = robotContainer.getBoundingClientRect();
+        startClientX = e.clientX;
+        startClientY = e.clientY;
+        startLeft = rect.left;
+        startTop = rect.top;
+        applyPosition(startLeft, startTop);
+        robotContainer.setPointerCapture(e.pointerId);
+        e.preventDefault();
     });
-    
-    function launchRocket(targetX, targetY) {
-        const robotContainer = document.getElementById('robotContainer');
-        if (!robotContainer) return;
-        
-        // Get robot position
-        const robotRect = robotContainer.getBoundingClientRect();
-        const robotX = robotRect.left + robotRect.width / 2;
-        const robotY = robotRect.top + robotRect.height / 2;
-        
-        // Create rocket element with emoji
-        const rocket = document.createElement('div');
-        rocket.className = 'rocket';
-        rocket.innerHTML = '🚀';
-        rocket.style.left = robotX + 'px';
-        rocket.style.top = robotY + 'px';
-        
-        // Create enhanced smoke trail
-        const trail = document.createElement('div');
-        trail.className = 'rocket-trail';
-        trail.style.left = (robotX - 2) + 'px';
-        trail.style.top = (robotY + 20) + 'px';
-        
-        // Add to container
-        rocketContainer.appendChild(rocket);
-        rocketContainer.appendChild(trail);
-        
-        
-        // Calculate rocket path (always point downward, mirrored left)
-        const deltaX = targetX - robotX;
-        const deltaY = targetY - robotY;
-        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        const angle = 90; // Always point downward (bottom side)
-        
-        // Set rocket rotation
-        rocket.style.transform = `rotate(${angle}deg)`;
-        trail.style.transform = `rotate(${angle}deg)`;
-        
-        // Animate rocket movement
-        const animationDuration = 1000; // 1 second
-        const startTime = Date.now();
-        
-        function animateRocket() {
-            const elapsed = Date.now() - startTime;
-            const progress = Math.min(elapsed / animationDuration, 1);
-            
-            // Easing function for smooth movement
-            const easeOut = 1 - Math.pow(1 - progress, 3);
-            
-            const currentX = robotX + (deltaX * easeOut);
-            const currentY = robotY + (deltaY * easeOut);
-            
-            // Calculate stable flight pointing downward with 180 degree rotation
-            const downwardAngle = 90; // Always point downward (bottom side)
-            const rotation180 = 180; // Additional 180 degree rotation
-            const wobbleX = Math.sin(progress * Math.PI * 4) * 2; // Reduced wobble
-            const wobbleY = Math.cos(progress * Math.PI * 3) * 1;
-            
-            // Apply transformations with 180 degree rotation
-            rocket.style.left = (currentX + wobbleX) + 'px';
-            rocket.style.top = (currentY + wobbleY) + 'px';
-            rocket.style.transform = `rotate(${downwardAngle + rotation180}deg)`;
-            
-            trail.style.left = (currentX + 30 + wobbleX) + 'px';
-            trail.style.top = (currentY + 25 + wobbleY) + 'px';
-            trail.style.transform = `rotate(${downwardAngle + rotation180}deg)`;
-            
-            if (progress < 1) {
-                requestAnimationFrame(animateRocket);
-            } else {
-                // Remove rocket and trail (no explosion)
-                setTimeout(() => {
-                    if (rocket.parentNode) rocket.parentNode.removeChild(rocket);
-                    if (trail.parentNode) trail.parentNode.removeChild(trail);
-                }, 100);
+
+    robotContainer.addEventListener('pointermove', (e) => {
+        if (!dragging || e.pointerId !== dragPointerId) return;
+        const dx = e.clientX - startClientX;
+        const dy = e.clientY - startClientY;
+        applyPosition(startLeft + dx, startTop + dy);
+    });
+
+    function endDrag(e) {
+        if (!dragging || (e && e.pointerId !== dragPointerId)) return;
+        dragging = false;
+        dragPointerId = null;
+        robotContainer.classList.remove('robot-dragging');
+        if (e) {
+            try {
+                robotContainer.releasePointerCapture(e.pointerId);
+            } catch (_) {
+                /* already released */
             }
         }
-        
-        requestAnimationFrame(animateRocket);
     }
-    
-    function createExplosion(x, y) {
-        const explosion = document.createElement('div');
-        explosion.className = 'rocket-explosion';
-        explosion.style.left = x + 'px';
-        explosion.style.top = y + 'px';
-        
-        rocketContainer.appendChild(explosion);
-        
-        // Remove explosion after animation
-        setTimeout(() => {
-            if (explosion.parentNode) explosion.parentNode.removeChild(explosion);
-        }, 600);
-    }
+
+    robotContainer.addEventListener('pointerup', endDrag);
+    robotContainer.addEventListener('pointercancel', endDrag);
+
+    window.addEventListener('resize', () => {
+        if (dragging) return;
+        const rect = robotContainer.getBoundingClientRect();
+        applyPosition(rect.left, rect.top);
+    });
 }
 
 // Load profile when page loads
 document.addEventListener('DOMContentLoaded', () => {
     loadProfile();
     initRobotEyeTracking();
-    initRocketEffect();
+    initRobotDraggable();
 });
