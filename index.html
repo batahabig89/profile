@@ -2,56 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- GitHub Pages project URLs: /repo vs /repo/ breaks relative assets; base fixes CSS/JSON fetch -->
+    <script>
+    (function () {
+        if (location.protocol === 'file:') return;
+        var p = location.pathname.replace(/\/index\.html?$/i, '');
+        if (p !== '/' && p.slice(-1) !== '/') p += '/';
+        var b = document.createElement('base');
+        b.href = p;
+        document.head.appendChild(b);
+    })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="pageTitle">Loading...</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Ursa Minor: seven stars of the Little Dipper (Polaris = α UMi at handle tip) -->
-    <svg
-        class="constellation-ursa-minor"
-        viewBox="0 0 100 132"
-        xmlns="http://www.w3.org/2000/svg"
-        role="img"
-        aria-labelledby="ursaMinorTitle"
-    >
-        <title id="ursaMinorTitle">Ursa Minor — seven stars of the Little Dipper</title>
-        <defs>
-            <filter id="ursaStarHalo" x="-60%" y="-60%" width="220%" height="220%">
-                <feGaussianBlur in="SourceAlpha" stdDeviation="0.65" result="blur" />
-                <feFlood flood-color="rgb(200, 230, 255)" flood-opacity="0.55" result="glow" />
-                <feComposite in="glow" in2="blur" operator="in" result="soft" />
-                <feMerge>
-                    <feMergeNode in="soft" />
-                    <feMergeNode in="SourceGraphic" />
-                </feMerge>
-            </filter>
-            <filter id="ursaPolarisHalo" x="-80%" y="-80%" width="260%" height="260%">
-                <feGaussianBlur in="SourceAlpha" stdDeviation="1.1" result="blur" />
-                <feFlood flood-color="rgb(120, 220, 200)" flood-opacity="0.5" result="glow" />
-                <feComposite in="glow" in2="blur" operator="in" result="soft" />
-                <feMerge>
-                    <feMergeNode in="soft" />
-                    <feMergeNode in="SourceGraphic" />
-                </feMerge>
-            </filter>
-        </defs>
-        <polyline
-            class="constellation-ursa-minor__lines"
-            points="51,6 48.5,24 46,41 43,58 29,70 71,74 19.5,92 43,58"
-            fill="none"
-        />
-        <circle class="constellation-ursa-minor__star constellation-ursa-minor__star--polaris" cx="51" cy="6" r="3.4" filter="url(#ursaPolarisHalo)" />
-        <circle class="constellation-ursa-minor__star" cx="48.5" cy="24" r="2" filter="url(#ursaStarHalo)" />
-        <circle class="constellation-ursa-minor__star" cx="46" cy="41" r="1.9" filter="url(#ursaStarHalo)" />
-        <circle class="constellation-ursa-minor__star" cx="43" cy="58" r="2.1" filter="url(#ursaStarHalo)" />
-        <circle class="constellation-ursa-minor__star" cx="29" cy="70" r="1.9" filter="url(#ursaStarHalo)" />
-        <circle class="constellation-ursa-minor__star" cx="71" cy="74" r="2" filter="url(#ursaStarHalo)" />
-        <circle class="constellation-ursa-minor__star" cx="19.5" cy="92" r="2.1" filter="url(#ursaStarHalo)" />
-        <text class="constellation-ursa-minor__label" x="50" y="112" text-anchor="middle">Ursa Minor</text>
-        <text class="constellation-ursa-minor__sublabel" x="50" y="124" text-anchor="middle">Seven stars · Little Dipper</text>
-    </svg>
-
     <div class="container">
         <div class="left-panel" id="leftPanel">
             <div class="loading">Loading profile...</div>
