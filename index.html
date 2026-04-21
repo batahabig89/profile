@@ -2,20 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- GitHub Pages project URLs: /repo vs /repo/ breaks relative assets; base fixes CSS/JSON fetch -->
+    <!-- Bump ASSET_VER everywhere below (and in script.js fetch) when CSS/JS/JSON change — avoids stale GitHub CDN + browser cache -->
     <script>
     (function () {
         if (location.protocol === 'file:') return;
         var p = location.pathname.replace(/\/index\.html?$/i, '');
         if (p !== '/' && p.slice(-1) !== '/') p += '/';
-        var b = document.createElement('base');
-        b.href = p;
-        document.head.appendChild(b);
+        document.write('<base href="' + encodeURI(p) + '">');
     })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
     <title id="pageTitle">Loading...</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body>
     <div class="container">
@@ -87,6 +86,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=6"></script>
 </body>
 </html>

@@ -1,3 +1,6 @@
+/* Keep ?v= in sync with index.html (cache-bust on GitHub Pages) */
+var ASSET_VER = '6';
+
 // Calculate age from birthdate
 function calculateAge(birthdate) {
     const today = new Date();
@@ -15,7 +18,7 @@ function calculateAge(birthdate) {
 // Load profile data from profile-data.json (single source of truth)
 async function loadProfile() {
     try {
-        const response = await fetch('profile-data.json', { cache: 'no-store' });
+        const response = await fetch('profile-data.json?v=' + ASSET_VER, { cache: 'no-store' });
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
@@ -54,11 +57,17 @@ function updatePageTitle(data) {
     document.getElementById('profileTitle').textContent = data.personalInfo.title;
 }
 
+function profileImageSrc(url) {
+    if (!url || /^https?:\/\//i.test(url)) return url;
+    const sep = url.indexOf('?') >= 0 ? '&' : '?';
+    return url + sep + 'v=' + ASSET_VER;
+}
+
 function renderLeftPanel(data) {
     const leftPanel = document.getElementById('leftPanel');
     leftPanel.innerHTML = `
         <div class="profile-section">
-            <img src="${data.personalInfo.profileImage}" alt="Profile Photo" class="profile-img">
+            <img src="${profileImageSrc(data.personalInfo.profileImage)}" alt="Profile Photo" class="profile-img">
             <div class="username">
                 <span class="keyword">public</span> ${data.personalInfo.name}
             </div>
