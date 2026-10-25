@@ -1,5 +1,5 @@
 /* Halloween template — renders profile-data.json with a playable spider web,
-   flying bats, and a dancing zombie / pumpkin / dracula crew. */
+   flying bats, a haunted-house graveyard scene and a dancing zombie / pumpkin / dracula crew. */
 (function () {
     'use strict';
 
@@ -18,6 +18,9 @@
     var STRAND_COOLDOWN_MS = 110;
     var DANCE_STEP_MS = 700;
     var DANCE_HOLD_MS = 2600;
+    // Notes within this window decide the mood: fewer than DANCE_RATE → a single hop, otherwise a full party
+    var RATE_WINDOW_MS = 1000;
+    var DANCE_RATE = 3;
 
     // One ring per solfège note, innermost = Do
     var NOTES = [
@@ -87,13 +90,13 @@
         '<defs><radialGradient id="hwPumpkinGlow" cx="50%" cy="55%" r="50%">' +
         '<stop offset="0%" stop-color="#fff3a0"/><stop offset="60%" stop-color="#ffc233"/><stop offset="100%" stop-color="#ff8a00"/>' +
         '</radialGradient></defs>' +
-        '<path d="M96 40 C94 24 100 12 112 6 L118 14 C108 18 104 28 106 40 Z" fill="#4a7c2a"/>' +
-        '<path d="M106 22 C122 14 136 20 140 30 C128 26 118 28 110 32 Z" fill="#5f9a35"/>' +
-        '<ellipse cx="62" cy="112" rx="52" ry="68" fill="#d9590b"/>' +
-        '<ellipse cx="138" cy="112" rx="52" ry="68" fill="#d9590b"/>' +
-        '<ellipse cx="80" cy="112" rx="42" ry="72" fill="#f06d12"/>' +
-        '<ellipse cx="120" cy="112" rx="42" ry="72" fill="#f06d12"/>' +
-        '<ellipse cx="100" cy="112" rx="34" ry="74" fill="#ff8424"/>' +
+        '<path d="M96 40 C94 24 100 12 112 6 L118 14 C108 18 104 28 106 40 Z" fill="#1a1030"/>' +
+        '<path d="M106 22 C122 14 136 20 140 30 C128 26 118 28 110 32 Z" fill="#241640"/>' +
+        '<ellipse cx="62" cy="112" rx="52" ry="68" fill="#1c1130"/>' +
+        '<ellipse cx="138" cy="112" rx="52" ry="68" fill="#1c1130"/>' +
+        '<ellipse cx="80" cy="112" rx="42" ry="72" fill="#241640"/>' +
+        '<ellipse cx="120" cy="112" rx="42" ry="72" fill="#241640"/>' +
+        '<ellipse cx="100" cy="112" rx="34" ry="74" fill="#2c1b4d"/>' +
         '<g class="hw-pumpkin-face" fill="url(#hwPumpkinGlow)">' +
         '<path d="M52 92 L80 84 L72 112 Z"/>' +
         '<path d="M148 92 L120 84 L128 112 Z"/>' +
@@ -102,41 +105,147 @@
         '</g>' +
         '</svg>';
 
-    var ZOMBIE_HEAD =
+    // Graveyard gang: four zombie characters drawn on the same 220×300 canvas with arms reaching
+    // to the left (CSS mirrors them so they face into the page). Arms sit in .hw-zombie-arms.
+    // Invisible pin marking where a marionette string attaches (strings are drawn by stepPuppets)
+    function pin(name, x, y) {
+        return '<circle class="hw-pin" data-pin="' + name + '" cx="' + x + '" cy="' + y + '" r="0.5"/>';
+    }
+
+    // Puppeteer's shadowy hand holding a T-shaped wooden controller; local origin = centre of the main bar
+    var CONTROLLER_SVG =
+        '<rect class="hw-ctrl-wood" x="-46" y="0" width="92" height="8" rx="4"/>' +
+        '<rect class="hw-ctrl-wood" x="-4" y="4" width="8" height="30" rx="3"/>' +
+        '<rect class="hw-ctrl-wood" x="-28" y="30" width="56" height="7" rx="3.5"/>' +
+        '<g class="hw-ctrl-hand">' +
+        '<ellipse cx="2" cy="-10" rx="15" ry="11"/>' +
+        '<path d="M-13 -12 C-22 -6 -20 2 -14 4 L-9 -4 Z"/>' +
+        '<rect x="-11" y="-6" width="6" height="16" rx="3"/><rect x="-4" y="-6" width="6" height="17" rx="3"/>' +
+        '<rect x="3" y="-6" width="6" height="17" rx="3"/><rect x="10" y="-6" width="6" height="14" rx="3"/>' +
+        '</g>';
+    var CONTROLLER_ENDS = { hands: [[-42, 4], [42, 4]], knees: [[-24, 34], [24, 34]], head: [0, 34] };
+
+    function zombieArms(sleeve, sleeveShade, skin, skinShade, extra) {
+        return (
+            '<g class="hw-zombie-arms">' +
+            '<g class="hw-arm hw-arm-a">' +
+            '<path d="M82 126 L24 132 L24 148 L84 146 Z" fill="' + sleeve + '"/>' +
+            '<path d="M24 132 L6 130 L2 136 L8 140 L2 144 L8 148 L24 148 Z" fill="' + skin + '"/>' +
+            pin('handA', 8, 134) +
+            '</g>' +
+            '<g class="hw-arm hw-arm-b">' +
+            '<path d="M86 150 L30 162 L32 176 L88 168 Z" fill="' + sleeveShade + '"/>' +
+            '<path d="M30 162 L12 162 L8 168 L14 172 L8 176 L14 180 L32 176 Z" fill="' + skinShade + '"/>' +
+            (extra || '') +
+            pin('handB', 14, 166) +
+            '</g>' +
+            '</g>'
+        );
+    }
+
+    function zombieLegs(left, right, kneeL, kneeR) {
+        return (
+            '<g class="hw-leg hw-leg-l">' + left + pin('kneeL', kneeL[0], kneeL[1]) + '</g>' +
+            '<g class="hw-leg hw-leg-r">' + right + pin('kneeR', kneeR[0], kneeR[1]) + '</g>'
+        );
+    }
+
+    var ZOMBIES = [
+        // Classic green zombie
+        '<svg viewBox="0 0 220 300" aria-hidden="true">' +
+        zombieLegs(
+            '<path d="M86 196 L80 280 L104 280 L108 214 Z" fill="#2f3d6b"/>' +
+            '<path d="M80 270 L104 270 L104 282 L82 286 Z" fill="#7bb04a"/><path d="M72 282 L106 282 L106 292 L68 292 Z" fill="#3b2a1e"/>',
+            '<path d="M120 196 L126 280 L150 280 L138 204 Z" fill="#2a365f"/>' +
+            '<path d="M126 272 L150 272 L156 288 L126 284 Z" fill="#7bb04a"/><path d="M124 284 L160 284 L162 294 L124 294 Z" fill="#3b2a1e"/>',
+            [92, 240], [134, 240]) +
+        '<path d="M78 116 L146 116 L150 204 L138 196 L128 208 L116 196 L104 208 L94 196 L80 206 Z" fill="#5b7f8a"/>' +
+        '<path d="M100 116 L112 140 L124 116 Z" fill="#8ec25a"/>' +
+        '<path d="M86 150 L96 160 M132 170 L122 178" stroke="#3c5560" stroke-width="3"/>' +
+        zombieArms('#5b7f8a', '#4f727c', '#8ec25a', '#7bb04a') +
         '<rect x="74" y="34" width="76" height="84" rx="22" fill="#8ec25a"/>' +
         '<path d="M70 50 L78 22 L88 38 L96 16 L106 34 L118 14 L124 34 L138 18 L140 38 L154 30 L150 54 L74 54 Z" fill="#2b2b2b"/>' +
-        '<circle cx="96" cy="74" r="12" fill="#f4f1d0"/><circle class="hw-zombie-pupil" cx="92" cy="76" r="4.5" fill="#c1121f"/>' +
+        '<circle cx="96" cy="74" r="12" fill="#f4f1d0"/><circle cx="92" cy="76" r="4.5" fill="#c1121f"/>' +
         '<ellipse cx="128" cy="78" rx="8" ry="6" fill="#f4f1d0"/><circle cx="126" cy="80" r="3" fill="#2b2b2b"/>' +
         '<path d="M118 66 L138 70" stroke="#2b2b2b" stroke-width="3"/>' +
         '<path d="M88 100 C100 108 118 108 134 98" stroke="#2b2b2b" stroke-width="3" fill="none"/>' +
         '<path d="M96 98 L94 106 M106 101 L105 109 M116 101 L117 109 M126 99 L128 106" stroke="#2b2b2b" stroke-width="2"/>' +
-        '<path d="M140 50 L146 84 M136 58 L146 56 M138 68 L148 66 M140 78 L150 76" stroke="#3a5a24" stroke-width="2"/>';
+        '<path d="M140 50 L146 84 M136 58 L146 56 M138 68 L148 66 M140 78 L150 76" stroke="#3a5a24" stroke-width="2"/>' +
+        pin('head', 112, 18) +
+        '</svg>',
 
-    var ZOMBIE_SVG =
+        // Zombie bride: torn wedding dress, wild red hair, veil
         '<svg viewBox="0 0 220 300" aria-hidden="true">' +
-        // legs
-        '<path class="hw-z-pants" d="M86 196 L80 280 L104 280 L108 214 Z" fill="#2f3d6b"/>' +
-        '<path class="hw-z-pants" d="M120 196 L126 280 L150 280 L138 204 Z" fill="#2a365f"/>' +
-        '<path d="M80 270 L104 270 L104 282 L82 286 Z M126 272 L150 272 L156 288 L126 284 Z" fill="#7bb04a"/>' +
-        '<path d="M72 282 L106 282 L106 292 L68 292 Z M124 284 L160 284 L162 294 L124 294 Z" fill="#3b2a1e"/>' +
-        // torso
-        '<path class="hw-z-shirt" d="M78 116 L146 116 L150 204 L138 196 L128 208 L116 196 L104 208 L94 196 L80 206 Z" fill="#5b7f8a"/>' +
-        '<path d="M100 116 L112 140 L124 116 Z" fill="#8ec25a"/>' +
-        '<path d="M86 150 L96 160 M132 170 L122 178" stroke="#3c5560" stroke-width="3"/>' +
-        // arms reaching to the left
-        '<g class="hw-zombie-arms">' +
-        '<path class="hw-z-shirt" d="M82 126 L24 132 L24 148 L84 146 Z" fill="#5b7f8a"/>' +
-        '<path d="M24 132 L6 130 L2 136 L8 140 L2 144 L8 148 L24 148 Z" fill="#8ec25a"/>' +
-        '<path class="hw-z-shirt hw-z-shade" d="M86 150 L30 162 L32 176 L88 168 Z" fill="#4f727c"/>' +
-        '<path d="M30 162 L12 162 L8 168 L14 172 L8 176 L14 180 L32 176 Z" fill="#7bb04a"/>' +
-        '</g>' +
-        ZOMBIE_HEAD +
-        '<g class="hw-party-hat" transform="rotate(14 118 30)">' +
-        '<path class="hw-party-hat-cone" d="M98 34 L118 -26 L138 34 Z"/>' +
-        '<path d="M109 6 L127 6 M103 22 L133 22" stroke="#ffe066" stroke-width="4"/>' +
-        '<circle cx="118" cy="-28" r="7" fill="#ffe066"/>' +
-        '</g>' +
-        '</svg>';
+        '<path d="M100 30 C132 20 170 44 186 120 C190 162 180 204 194 246 L162 214 C150 152 146 92 128 40 Z" fill="rgba(255,255,255,0.45)"/>' +
+        '<path d="M72 60 C60 100 66 150 56 192 L74 178 L80 202 L94 150 L98 54 Z M150 56 C166 100 160 150 172 188 L154 178 L148 198 L136 150 Z" fill="#b8312f"/>' +
+        zombieLegs('<path d="M96 262 L94 290 L106 290 L106 262 Z" fill="#b6a6c8"/>',
+            '<path d="M122 262 L122 290 L134 290 L132 262 Z" fill="#b6a6c8"/>', [100, 262], [128, 262]) +
+        '<path d="M84 116 L140 116 L170 282 L156 272 L146 286 L132 274 L118 288 L104 274 L90 286 L78 272 L62 282 Z" fill="#ece6f2"/>' +
+        '<path d="M84 116 L140 116 L136 150 L88 150 Z" fill="#ddd4e8"/>' +
+        '<path d="M96 210 C102 220 96 232 104 240 M138 232 C132 244 140 254 134 262" stroke="#9b1020" stroke-width="4" fill="none" opacity="0.7"/>' +
+        zombieArms('#ece6f2', '#ddd4e8', '#b6a6c8', '#a796ba') +
+        '<rect x="78" y="38" width="68" height="78" rx="26" fill="#b6a6c8"/>' +
+        '<path d="M74 64 C76 30 100 22 116 24 C138 26 152 38 152 66 C140 50 126 44 112 46 C100 50 88 54 74 64 Z" fill="#b8312f"/>' +
+        '<circle cx="92" cy="30" r="5" fill="#ff5d8f"/><circle cx="106" cy="24" r="5" fill="#fff"/><circle cx="120" cy="24" r="5" fill="#ff5d8f"/><circle cx="134" cy="30" r="5" fill="#fff"/>' +
+        '<circle cx="98" cy="78" r="9" fill="#2a1f35"/><circle cx="98" cy="78" r="3" fill="#ffe066"/>' +
+        '<circle cx="126" cy="78" r="9" fill="#2a1f35"/><circle cx="127" cy="79" r="3" fill="#ffe066"/>' +
+        '<path d="M98 102 C106 108 118 108 128 100" stroke="#7a0b18" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+        '<path d="M86 92 L92 96 M134 90 L140 86" stroke="#8a6fa8" stroke-width="2"/>' +
+        pin('head', 112, 22) +
+        '</svg>',
+
+        // Office zombie: shirt and tie, cracked glasses, briefcase
+        '<svg viewBox="0 0 220 300" aria-hidden="true">' +
+        zombieLegs(
+            '<path d="M86 200 L82 282 L104 282 L108 214 Z" fill="#2d2d38"/><path d="M76 282 L106 282 L106 292 L72 292 Z" fill="#111"/>',
+            '<path d="M120 200 L124 282 L146 282 L140 204 Z" fill="#2d2d38"/><path d="M122 282 L152 282 L156 292 L122 292 Z" fill="#111"/>',
+            [94, 242], [132, 242]) +
+        '<path d="M78 116 L146 116 L150 206 L140 198 L130 210 L118 200 L104 210 L92 200 L80 208 Z" fill="#f0eee6"/>' +
+        '<path d="M100 116 L112 128 L124 116 L118 134 L112 128 L106 134 Z" fill="#d8d5c8"/>' +
+        '<path d="M108 128 L116 128 L120 172 L112 184 L104 172 Z" fill="#c1121f"/>' +
+        '<path d="M90 160 C96 166 92 176 98 182" stroke="#9b6b3a" stroke-width="3" fill="none" opacity="0.6"/>' +
+        zombieArms('#f0eee6', '#e2dfd2', '#9fb7c7', '#8ea6b7',
+            '<path d="M18 180 L18 188" stroke="#3a2416" stroke-width="3"/>' +
+            '<rect x="2" y="188" width="34" height="26" rx="3" fill="#6b4226"/><rect x="2" y="196" width="34" height="3" fill="#4a2c18"/>') +
+        '<rect x="74" y="34" width="76" height="84" rx="20" fill="#9fb7c7"/>' +
+        '<path d="M72 60 C72 30 98 22 118 24 C142 26 154 40 152 60 L136 46 C120 52 96 50 72 60 Z" fill="#3a2a1e"/>' +
+        '<rect x="82" y="66" width="26" height="20" rx="4" fill="rgba(255,255,255,0.18)" stroke="#1d1d24" stroke-width="3"/>' +
+        '<rect x="116" y="66" width="26" height="20" rx="4" fill="rgba(255,255,255,0.18)" stroke="#1d1d24" stroke-width="3"/>' +
+        '<path d="M108 74 H116 M74 72 H82 M142 72 H150" stroke="#1d1d24" stroke-width="3"/>' +
+        '<path d="M86 68 L96 78 L92 84 M96 78 L104 76" stroke="#fff" stroke-width="1.5" fill="none"/>' +
+        '<circle cx="96" cy="77" r="3" fill="#c1121f"/><circle cx="129" cy="77" r="3" fill="#c1121f"/>' +
+        '<ellipse cx="112" cy="104" rx="10" ry="7" fill="#3a0d14"/>' +
+        '<path d="M106 100 L108 104 L110 100 M114 100 L116 104 L118 100" fill="#f4f1d0"/>' +
+        pin('head', 112, 22) +
+        '</svg>',
+
+        // Kid zombie: backwards cap, stitched teddy bear
+        '<svg viewBox="0 0 220 300" aria-hidden="true">' +
+        zombieLegs(
+            '<path d="M92 230 L92 280 L104 280 L104 230 Z" fill="#a6c96a"/><path d="M86 278 L106 278 L108 292 L82 292 Z" fill="#e63946"/>',
+            '<path d="M120 230 L120 280 L132 280 L132 230 Z" fill="#a6c96a"/><path d="M118 278 L138 278 L142 292 L116 292 Z" fill="#e63946"/>',
+            [98, 256], [126, 256]) +
+        '<path d="M88 196 L136 196 L140 238 L114 238 L112 218 L110 238 L84 238 Z" fill="#3b5ba5"/>' +
+        '<path d="M80 120 L144 120 L146 200 L78 200 Z" fill="#ff8a3d"/>' +
+        '<circle cx="112" cy="156" r="12" fill="#fff3e6"/><circle cx="108" cy="154" r="3" fill="#ff8a3d"/><circle cx="116" cy="154" r="3" fill="#ff8a3d"/>' +
+        zombieArms('#ff8a3d', '#e9762c', '#a6c96a', '#95b85b',
+            '<g transform="translate(16 196)">' +
+            '<circle cx="0" cy="0" r="12" fill="#8b5a2b"/><circle cx="-9" cy="-10" r="5" fill="#8b5a2b"/><circle cx="9" cy="-10" r="5" fill="#8b5a2b"/>' +
+            '<ellipse cx="0" cy="20" rx="11" ry="13" fill="#8b5a2b"/>' +
+            '<circle cx="-4" cy="-2" r="1.8" fill="#111"/><path d="M3 -4 L7 0 M7 -4 L3 0" stroke="#111" stroke-width="1.5"/>' +
+            '<path d="M-6 14 H6 M-4 11 V17 M0 11 V17 M4 11 V17" stroke="#3a2416" stroke-width="1.2"/></g>') +
+        '<rect x="72" y="30" width="80" height="90" rx="32" fill="#a6c96a"/>' +
+        '<path d="M70 58 C70 20 154 20 154 58 Z" fill="#2f6fd6"/>' +
+        '<path d="M152 50 L182 56 L180 66 L150 62 Z" fill="#2457b0"/>' +
+        '<circle cx="112" cy="26" r="5" fill="#2457b0"/>' +
+        '<circle cx="96" cy="80" r="13" fill="#fff"/><circle cx="99" cy="82" r="4" fill="#111"/>' +
+        '<circle cx="130" cy="82" r="9" fill="#fff"/><circle cx="128" cy="84" r="3" fill="#111"/>' +
+        '<path d="M96 104 C106 112 120 112 130 104" stroke="#2b2b2b" stroke-width="3" fill="none"/>' +
+        '<rect x="108" y="106" width="7" height="7" fill="#fff"/>' +
+        '<path d="M80 98 L88 94 M82 92 L86 100" stroke="#5f7d3a" stroke-width="2"/>' +
+        pin('head', 112, 18) +
+        '</svg>'
+    ];
 
     var DRACULA_SVG =
         '<svg viewBox="0 0 220 280" aria-hidden="true">' +
@@ -161,29 +270,80 @@
         '<path d="M80 66 L72 56 L80 74 Z M140 66 L148 56 L140 74 Z" fill="#e9e3f2"/>' +
         '</svg>';
 
-    var CASTLE_SVG =
-        '<svg class="hw-castle" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' +
-        '<g class="hw-castle-body">' +
-        '<rect x="660" y="140" width="320" height="60"/>' +
-        '<path d="M660 140 V128 H676 V140 H692 V128 H708 V140 M932 140 V128 H948 V140 H964 V128 H980 V140"/>' +
-        '<rect x="760" y="80" width="96" height="110"/>' +
-        '<path d="M760 80 V66 H776 V80 H792 V66 H808 V80 H824 V66 H840 V80 H856 V66 H856 V80"/>' +
-        '<rect x="718" y="44" width="38" height="146"/><path d="M712 46 L737 -14 L762 46 Z"/>' +
-        '<rect x="862" y="62" width="42" height="128"/><path d="M856 64 L883 4 L910 64 Z"/>' +
-        '<rect x="688" y="104" width="28" height="90"/><path d="M684 106 L702 66 L720 106 Z"/>' +
-        '<rect x="920" y="100" width="30" height="94"/><path d="M916 102 L935 58 L954 102 Z"/>' +
-        '<rect x="806" y="30" width="16" height="52"/><path d="M802 32 L814 2 L826 32 Z"/>' +
-        '<path d="M737 -14 V-34 L752 -28 L737 -22" class="hw-castle-flag"/>' +
+    // Background scene: crooked haunted house, bare tree with a hanging lantern, graveyard
+    var HOUSE_SVG =
+        '<svg class="hw-house" viewBox="0 -40 300 460" preserveAspectRatio="xMinYMax meet" aria-hidden="true">' +
+        '<g class="hw-house-body">' +
+        '<path d="M34 300 L40 214 L58 216 L54 300 Z"/><path d="M34 214 L62 210 L60 222 L36 224 Z"/>' +
+        '<path d="M44 410 L54 268 L244 258 L256 412 Z"/>' +
+        '<path d="M16 290 C30 286 40 280 52 270 L132 196 L250 258 C262 264 272 266 282 264 C270 276 254 276 240 270 L56 280 C44 290 30 294 16 290 Z"/>' +
+        '<path d="M74 268 L80 152 L212 140 L222 262 Z"/>' +
+        '<path d="M50 168 C60 166 70 160 80 150 L148 86 L226 140 C236 146 246 148 254 146 C244 158 230 158 218 152 L82 162 C72 170 60 172 50 168 Z"/>' +
+        '<path d="M106 150 L112 56 L190 50 L194 146 Z"/>' +
+        '<path d="M90 70 C100 68 108 62 114 54 L156 -6 L196 48 C204 54 212 56 220 54 C212 64 200 64 190 58 L116 64 C108 72 98 74 90 70 Z"/>' +
+        '<path d="M212 150 L222 40 L240 42 L232 152 Z"/><path d="M212 46 L242 -34 L248 48 Z"/>' +
+        '<path d="M22 410 L28 330 L50 332 L46 410 Z"/><path d="M16 338 L36 284 L58 340 Z"/>' +
         '</g>' +
-        '<g class="hw-castle-windows">' +
-        '<rect x="733" y="70" width="8" height="14" rx="4"/><rect x="733" y="110" width="8" height="14" rx="4"/>' +
-        '<rect x="878" y="90" width="9" height="15" rx="4.5"/><rect x="878" y="130" width="9" height="15" rx="4.5"/>' +
-        '<rect x="790" y="100" width="10" height="18" rx="5"/><rect x="816" y="100" width="10" height="18" rx="5"/>' +
-        '<rect x="698" y="128" width="7" height="12" rx="3.5"/><rect x="931" y="124" width="8" height="13" rx="4"/>' +
-        '<path d="M796 190 V160 A12 12 0 0 1 820 160 V190 Z"/>' +
+        '<g class="hw-house-windows">' +
+        '<path d="M88 400 V330 A18 18 0 0 1 124 330 V400 Z"/>' +
+        '<path d="M160 400 V320 A20 20 0 0 1 200 320 V400 Z"/>' +
+        '<rect x="118" y="186" width="44" height="40" rx="4"/>' +
+        '<circle cx="196" cy="204" r="12"/>' +
+        '<path d="M136 128 V96 A14 14 0 0 1 164 96 V128 Z"/>' +
+        '<circle cx="228" cy="96" r="6"/>' +
+        '<rect x="31" y="358" width="10" height="22" rx="5"/>' +
         '</g>' +
-        '<path class="hw-hills" d="M0 300 L0 236 C140 214 300 232 430 214 C560 196 640 176 760 176 C880 176 960 192 1060 206 C1120 214 1170 220 1200 222 L1200 300 Z"/>' +
-        '<path class="hw-hills hw-hills-front" d="M0 300 L0 262 C200 244 380 270 600 252 C820 236 1000 262 1200 248 L1200 300 Z"/>' +
+        '<path class="hw-house-mullions" d="M106 324 V400 M88 362 H124 M180 312 V400 M160 356 H200 M140 186 V226 M118 206 H162 M150 90 V128 M136 110 H164 M184 204 H208 M196 192 V216"/>' +
+        '</svg>';
+
+    var TREE_SVG =
+        '<svg class="hw-tree" viewBox="0 0 300 800" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">' +
+        '<g class="hw-tree-limbs">' +
+        '<path d="M262 800 C252 680 272 590 236 500 C206 420 220 330 206 250" stroke-width="18"/>' +
+        '<path d="M206 250 C196 180 204 110 236 20" stroke-width="10"/>' +
+        '<path d="M236 500 C190 478 150 486 96 452 C80 442 60 444 34 430" stroke-width="7"/>' +
+        '<path d="M120 466 L104 432 M70 446 L56 466 M150 478 L146 506" stroke-width="3"/>' +
+        '<path d="M214 360 C170 344 130 344 84 312 C70 302 52 300 36 288" stroke-width="6"/>' +
+        '<path d="M108 330 L96 296 M60 300 L44 318 M140 344 L150 372" stroke-width="3"/>' +
+        '<path d="M206 250 C176 232 156 204 118 192 C100 186 86 176 76 160" stroke-width="5"/>' +
+        '<path d="M130 196 L126 168 M96 182 L80 194" stroke-width="2.5"/>' +
+        '<path d="M216 140 C196 120 178 94 152 82 C140 76 130 66 124 52" stroke-width="4"/>' +
+        '<path d="M166 88 L170 62 M228 80 L254 54 M224 60 L210 36" stroke-width="2.5"/>' +
+        '<path d="M248 610 C220 600 196 610 168 596" stroke-width="5"/>' +
+        '</g>' +
+        '<g class="hw-hang">' +
+        '<path class="hw-hang-rope" d="M96 452 V522"/>' +
+        '<g transform="translate(96 552)">' +
+        '<path d="M-3 -27 L-1 -36 L4 -36 L3 -27 Z" fill="#1a1030"/>' +
+        '<ellipse cx="-14" cy="0" rx="20" ry="26" fill="#1c1130"/><ellipse cx="14" cy="0" rx="20" ry="26" fill="#1c1130"/>' +
+        '<ellipse cx="0" cy="0" rx="16" ry="28" fill="#2c1b4d"/>' +
+        '<g class="hw-pumpkin-face" fill="#ffb02e">' +
+        '<path d="M-20 -8 L-6 -4 L-12 6 Z"/><path d="M20 -8 L6 -4 L12 6 Z"/>' +
+        '<path d="M-20 10 C-10 22 10 22 20 10 L14 12 L10 8 L5 14 L0 9 L-5 14 L-10 8 L-14 12 Z"/>' +
+        '</g></g></g>' +
+        '</svg>';
+
+    var HAND_PATH = '<path class="hw-hand" d="M-7 0 L-6 -32 L-12 -40 L-15 -52 L-11 -53 L-8 -44 L-7 -58 L-3 -58 L-2 -46 L0 -62 L4 -62 L4 -46 L7 -58 L11 -57 L8 -42 L12 -48 L15 -46 L9 -32 L7 0 Z"/>';
+
+    var GRAVEYARD_SVG =
+        '<svg class="hw-ground" viewBox="0 0 1200 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' +
+        '<g class="hw-ground-stones">' +
+        '<path d="M300 176 V150 A16 16 0 0 1 332 150 V176 Z" transform="rotate(6 316 176)"/>' +
+        '<path d="M600 160 V128 A22 22 0 0 1 644 128 V160 Z" transform="rotate(-8 622 160)"/>' +
+        '<path d="M760 160 L762 128 L776 120 L784 132 L796 126 L798 160 Z"/>' +
+        '</g>' +
+        '<path class="hw-ground-cross" d="M396 176 V100 M376 118 H416 M520 166 V94 M500 114 H540 M980 176 V120 M966 134 H994"/>' +
+        '<circle class="hw-ground-cross" cx="520" cy="114" r="15" fill="none"/>' +
+        [[450, 172, ''], [566, 164, ' scale(-1 1)'], [700, 158, ''], [868, 170, ' scale(-1 1)'], [240, 178, '']].map(function (h, i) {
+            return '<g transform="translate(' + h[0] + ' ' + h[1] + ')' + h[2] + '" style="--i:' + i + '">' + HAND_PATH + '</g>';
+        }).join('') +
+        '<path class="hw-ground-fill" d="M0 220 L0 172 C120 152 220 178 340 170 C460 162 560 142 700 152 C820 160 940 180 1060 170 C1120 165 1170 162 1200 164 L1200 220 Z"/>' +
+        '</svg>';
+
+    // Dark wavy border around the whole scene
+    var FRAME_SVG =
+        '<svg class="hw-frame" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">' +
+        '<path fill-rule="evenodd" d="M-1 -1 H101 V101 H-1 Z M4 9 C10 4 18 6 26 4 C38 2 48 6 60 4 C72 2 84 5 93 6 C97 14 95 26 96 38 C98 52 95 64 96 76 C97 84 95 90 93 93 C80 95 66 93 52 95 C38 96 22 93 8 94 C4 86 5 74 3 62 C2 48 5 36 3 24 C2 16 3 12 4 9 Z"/>' +
         '</svg>';
 
     // ---------- audio ----------
@@ -435,8 +595,8 @@
         var skills = data.workSkills || {};
 
         var contact = [
-            info.email && '<a class="hw-chip hw-chip-link" href="mailto:' + esc(info.email) + '">✉️ ' + esc(info.email) + '</a>',
-            info.phone && '<a class="hw-chip hw-chip-link" href="tel:' + esc(info.phone.replace(/\s+/g, '')) + '">📞 ' + esc(info.phone) + '</a>',
+            info.email && '<a class="hw-chip hw-chip-link hw-secret" href="mailto:' + esc(info.email) + '">✉️ <span class="hw-secret-text">' + esc(info.email) + '</span></a>',
+            info.phone && '<a class="hw-chip hw-chip-link hw-secret" href="tel:' + esc(info.phone.replace(/\s+/g, '')) + '">📞 <span class="hw-secret-text">' + esc(info.phone) + '</span></a>',
             location && '<span class="hw-chip">📍 ' + esc(location) + '</span>'
         ].filter(Boolean).join('');
 
@@ -571,16 +731,22 @@
 
         root.innerHTML =
             '<div class="hw-root">' +
-            '<div class="hw-sky" aria-hidden="true"><div class="hw-moon"></div>' + CASTLE_SVG + '<div class="hw-fog hw-fog-1"></div><div class="hw-fog hw-fog-2"></div></div>' +
+
+            '<div class="hw-sky" aria-hidden="true">' +
+            '<div class="hw-cloud hw-cloud-1"></div><div class="hw-cloud hw-cloud-2"></div><div class="hw-cloud hw-cloud-3"></div><div class="hw-cloud hw-cloud-4"></div>' +
+            FRAME_SVG + '<div class="hw-moon"></div>' + HOUSE_SVG + TREE_SVG + GRAVEYARD_SVG +
+            '</div>' +
             '<div class="hw-bats" aria-hidden="true">' + bats + '</div>' +
             '<div class="hw-lantern" aria-hidden="true"></div>' +
             renderContent(data) +
             '<div class="hw-web-wrap" aria-hidden="true"><svg class="hw-web" viewBox="0 0 ' + WEB_SIZE + ' ' + WEB_SIZE + '"></svg><span class="hw-web-hint">swipe the web ♪</span></div>' +
             '<div class="hw-char hw-dracula" aria-hidden="true"><div class="hw-dancer">' + DRACULA_SVG + '</div></div>' +
-            '<div class="hw-char hw-pumpkin" aria-hidden="true"><div class="hw-dancer">' + PUMPKIN_SVG + '</div></div>' +
-            [1, 2, 3].map(function (n) {
-                return '<div class="hw-char hw-zombie hw-zombie-' + n + '" aria-hidden="true"><div class="hw-dancer">' + ZOMBIE_SVG + '</div></div>';
+            ZOMBIES.map(function (svg, i) {
+                return '<div class="hw-char hw-zombie hw-zombie-' + (i + 1) + '" aria-hidden="true"><div class="hw-dancer">' + svg + '</div></div>';
             }).join('') +
+            '<svg class="hw-puppet-layer" aria-hidden="true"></svg>' +
+            '<div class="hw-char hw-pumpkin hw-pumpkin-1" aria-hidden="true"><div class="hw-dancer">' + PUMPKIN_SVG + '</div></div>' +
+            '<div class="hw-char hw-pumpkin hw-pumpkin-2" aria-hidden="true"><div class="hw-dancer">' + PUMPKIN_SVG + '</div></div>' +
             '</div>';
 
         var hwRoot = root.querySelector('.hw-root');
@@ -600,10 +766,8 @@
 
         var startDance = createDanceFloor(
             [
-                { el: root.querySelector('.hw-zombie-1 .hw-dancer'), move: 0 },
-                { el: root.querySelector('.hw-zombie-2 .hw-dancer'), move: 2 },
-                { el: root.querySelector('.hw-zombie-3 .hw-dancer'), move: 5 },
-                { el: root.querySelector('.hw-pumpkin .hw-dancer'), move: 3 }
+                { el: root.querySelector('.hw-pumpkin-1 .hw-dancer'), move: 0 },
+                { el: root.querySelector('.hw-pumpkin-2 .hw-dancer'), move: 3 }
             ],
             function () {
                 hwRoot.classList.add('hw-dancing');
@@ -615,6 +779,44 @@
                 flight.active = false;
             }
         );
+
+        // A lone note makes one zombie and one pumpkin hop once (taking turns)
+        var hoppers = {
+            zombies: Array.prototype.slice.call(root.querySelectorAll('.hw-zombie .hw-dancer')),
+            pumpkins: Array.prototype.slice.call(root.querySelectorAll('.hw-pumpkin .hw-dancer'))
+        };
+
+        // Random pick that never repeats the previous one
+        function pickNew(list) {
+            var choice = list[Math.floor(Math.random() * list.length)];
+            if (choice === list.last && list.length > 1) choice = list[(list.indexOf(choice) + 1) % list.length];
+            list.last = choice;
+            return choice;
+        }
+
+        function hop(el) {
+            restartAnimation(el, 'hw-m-hop');
+            clearTimeout(el.hopTimer);
+            // Timer rather than animationend: a full dance can override the hop before it finishes
+            el.hopTimer = setTimeout(function () { el.classList.remove('hw-m-hop'); }, 750);
+        }
+
+        function hopOnce() {
+            hop(pickNew(hoppers.zombies));
+            hop(pickNew(hoppers.pumpkins));
+        }
+
+        var recentNotes = [];
+
+        function react(now) {
+            recentNotes.push(now);
+            while (recentNotes.length && now - recentNotes[0] > RATE_WINDOW_MS) recentNotes.shift();
+            if (recentNotes.length >= DANCE_RATE) {
+                startDance();
+            } else if (!hwRoot.classList.contains('hw-dancing')) {
+                hopOnce();
+            }
+        }
 
         function showNoteLabel(note, clientX, clientY) {
             var label = document.createElement('span');
@@ -641,7 +843,7 @@
             restartAnimation(dracula, 'hw-alert');
             playNote(noteIndex, strand.kind === 'radial');
             showNoteLabel(note, clientX, clientY);
-            startDance();
+            react(performance.now());
         }
 
         // Pointer → web coordinates
@@ -751,20 +953,102 @@
             hwRoot.classList.add('hw-dracula-out');
         }
 
+        // Marionettes: a controller hangs above each zombie and strings run straight up to it
+        var puppetLayer = root.querySelector('.hw-puppet-layer');
+        var puppets = Array.prototype.map.call(root.querySelectorAll('.hw-zombie'), function (zombie, i) {
+            var group = document.createElementNS(SVG_NS, 'g');
+            var lines = {};
+            ['head', 'handA', 'handB', 'kneeL', 'kneeR'].forEach(function (name) {
+                var line = document.createElementNS(SVG_NS, 'line');
+                line.setAttribute('class', 'hw-puppet-string');
+                group.appendChild(line);
+                lines[name] = line;
+            });
+            var controller = document.createElementNS(SVG_NS, 'g');
+            controller.setAttribute('class', 'hw-controller');
+            controller.innerHTML = CONTROLLER_SVG;
+            group.appendChild(controller);
+            puppetLayer.appendChild(group);
+            var pins = {};
+            zombie.querySelectorAll('.hw-pin').forEach(function (el) { pins[el.getAttribute('data-pin')] = el; });
+            return { zombie: zombie, pins: pins, lines: lines, controller: controller, i: i };
+        });
+        var puppetsVisibleUntil = 0;
+
+        function centreOf(el) {
+            var r = el.getBoundingClientRect();
+            return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+        }
+
+        function setLine(line, a, b) {
+            line.setAttribute('x1', a.x.toFixed(1));
+            line.setAttribute('y1', a.y.toFixed(1));
+            line.setAttribute('x2', b.x.toFixed(1));
+            line.setAttribute('y2', b.y.toFixed(1));
+        }
+
+        function byX(a, b) { return a.x - b.x; }
+
+        function stepPuppets(now) {
+            if (hwRoot.classList.contains('hw-dancing')) puppetsVisibleUntil = now + 600;
+            if (now > puppetsVisibleUntil) return; // hidden: nothing to draw
+            var t = now / 1000;
+            puppets.forEach(function (p) {
+                var pts = {};
+                Object.keys(p.pins).forEach(function (name) { pts[name] = centreOf(p.pins[name]); });
+                var scale = p.zombie.offsetWidth / 120;
+                var cx = (pts.head.x + pts.handA.x + pts.handB.x) / 3;
+                var cy = Math.max(24 * scale, pts.head.y - 120 * scale - Math.abs(Math.sin(t * 7 + p.i)) * 12 * scale);
+                var angle = Math.sin(t * 6.5 + p.i * 1.3) * 14;
+                var rad = angle * Math.PI / 180;
+                var cos = Math.cos(rad);
+                var sin = Math.sin(rad);
+                function world(local) {
+                    var lx = local[0] * scale;
+                    var ly = local[1] * scale;
+                    return { x: cx + lx * cos - ly * sin, y: cy + lx * sin + ly * cos };
+                }
+                p.controller.setAttribute('transform',
+                    'translate(' + cx.toFixed(1) + ' ' + cy.toFixed(1) + ') rotate(' + angle.toFixed(1) + ') scale(' + scale.toFixed(3) + ')');
+                // Pair left-most limb with left-most bar end so strings never cross
+                var handEnds = CONTROLLER_ENDS.hands.map(world).sort(byX);
+                var kneeEnds = CONTROLLER_ENDS.knees.map(world).sort(byX);
+                var hands = [{ name: 'handA', p: pts.handA }, { name: 'handB', p: pts.handB }].sort(function (a, b) { return a.p.x - b.p.x; });
+                var knees = [{ name: 'kneeL', p: pts.kneeL }, { name: 'kneeR', p: pts.kneeR }].sort(function (a, b) { return a.p.x - b.p.x; });
+                hands.forEach(function (h, k) { setLine(p.lines[h.name], handEnds[k], h.p); });
+                knees.forEach(function (h, k) { setLine(p.lines[h.name], kneeEnds[k], h.p); });
+                setLine(p.lines.head, world(CONTROLLER_ENDS.head), pts.head);
+            });
+        }
+
         var lastFrame = performance.now();
         function frame(now) {
             var dt = Math.min(50, now - lastFrame);
             lastFrame = now;
             stepSpider();
             stepDracula(dt);
+            stepPuppets(now);
             requestAnimationFrame(frame);
         }
         requestAnimationFrame(frame);
 
         var lantern = root.querySelector('.hw-lantern');
+
+        // Email / phone sharpen as the pointer approaches: clear within 40px, fully blurred past ~190px
+        var secrets = root.querySelectorAll('.hw-secret');
+        function revealNear(clientX, clientY) {
+            secrets.forEach(function (el) {
+                var r = el.getBoundingClientRect();
+                var dx = Math.max(r.left - clientX, 0, clientX - r.right);
+                var dy = Math.max(r.top - clientY, 0, clientY - r.bottom);
+                var blur = Math.min(6, Math.max(0, (Math.sqrt(dx * dx + dy * dy) - 40) / 25));
+                el.style.setProperty('--hw-blur', blur.toFixed(2) + 'px');
+            });
+        }
         window.addEventListener('pointermove', function (e) {
             lantern.style.setProperty('--mx', e.clientX + 'px');
             lantern.style.setProperty('--my', e.clientY + 'px');
+            revealNear(e.clientX, e.clientY);
             if (e.pointerType !== 'touch') track(e.clientX, e.clientY);
         }, { passive: true });
 
@@ -783,6 +1067,7 @@
             reveals.forEach(function (el) { el.classList.add('hw-in'); });
         }
         window.addEventListener('touchstart', function (e) {
+            revealNear(e.touches[0].clientX, e.touches[0].clientY);
             last = null;
             track(e.touches[0].clientX, e.touches[0].clientY);
         }, { passive: true });
