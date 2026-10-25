@@ -16,7 +16,7 @@ echo ""
 
 # Add all files except README.md
 echo "📁 Adding files to git..."
-git add index.html styles.css script.js script-server.js profile-data.json server.py
+git add index.html styles.css script.js script-server.js profile-data.json server.py templates
 echo "✅ Files added"
 echo ""
 

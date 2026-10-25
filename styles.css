@@ -1492,3 +1492,60 @@ h2 {
         padding: 30px 20px;
     }
 }
+
+/* ---------- Template switcher (shared by all templates) ---------- */
+html[data-template]:not([data-template="code"]) .container,
+html[data-template]:not([data-template="code"]) .page-footer,
+html[data-template]:not([data-template="code"]) .robot-container {
+    display: none;
+}
+
+#templateRoot {
+    flex: 1;
+    width: 100%;
+}
+
+html[data-template="code"] #templateRoot {
+    display: none;
+}
+
+.template-switcher {
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px 6px 14px;
+    border-radius: 999px;
+    background: rgba(8, 10, 24, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font: 600 12px/1 system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: rgba(255, 255, 255, 0.75);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.template-switcher select {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    padding: 6px 28px 6px 12px;
+    background: rgba(255, 255, 255, 0.08)
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ffffff'/%3E%3C/svg%3E")
+        no-repeat right 10px center;
+    color: #fff;
+    font: 600 13px/1.2 system-ui, -apple-system, 'Segoe UI', sans-serif;
+    text-transform: none;
+    cursor: pointer;
+}
+
+.template-switcher select option {
+    color: #111;
+}

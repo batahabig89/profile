@@ -1,5 +1,73 @@
 /* Keep ?v= in sync with index.html (cache-bust on GitHub Pages) */
-var ASSET_VER = '6';
+var ASSET_VER = '7';
+
+// Selectable page templates. "code" is the built-in editor look; others load their own CSS/JS
+// and register a renderer on window.ProfileTemplates[name].
+var TEMPLATES = {
+    code: { label: 'Code Editor' },
+    halloween: {
+        label: 'Halloween 🎃',
+        css: 'templates/halloween/halloween.css',
+        js: 'templates/halloween/halloween.js'
+    }
+};
+var TEMPLATE_STORAGE_KEY = 'profileTemplate';
+
+function getSelectedTemplate() {
+    let name = new URLSearchParams(location.search).get('template');
+    if (!name) {
+        try {
+            name = localStorage.getItem(TEMPLATE_STORAGE_KEY);
+        } catch (_) {
+            /* storage blocked */
+        }
+    }
+    return TEMPLATES[name] ? name : 'halloween';
+}
+
+var ACTIVE_TEMPLATE = getSelectedTemplate();
+// Set immediately so the default layout is hidden before first paint
+document.documentElement.setAttribute('data-template', ACTIVE_TEMPLATE);
+
+function initTemplateSwitcher() {
+    const select = document.getElementById('templateSelect');
+    if (!select) return;
+    select.innerHTML = Object.entries(TEMPLATES)
+        .map(([name, t]) => `<option value="${name}">${t.label}</option>`)
+        .join('');
+    select.value = ACTIVE_TEMPLATE;
+    select.addEventListener('change', () => {
+        try {
+            localStorage.setItem(TEMPLATE_STORAGE_KEY, select.value);
+        } catch (_) {
+            /* storage blocked — URL param still carries the choice */
+        }
+        const params = new URLSearchParams(location.search);
+        params.set('template', select.value);
+        location.search = params.toString();
+    });
+}
+
+function loadTemplateAssets(name) {
+    const t = TEMPLATES[name];
+    const withVer = (url) => url + '?v=' + ASSET_VER;
+    const css = new Promise((resolve, reject) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = withVer(t.css);
+        link.onload = resolve;
+        link.onerror = () => reject(new Error('Failed to load ' + t.css));
+        document.head.appendChild(link);
+    });
+    const js = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = withVer(t.js);
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Failed to load ' + t.js));
+        document.body.appendChild(script);
+    });
+    return Promise.all([css, js]);
+}
 
 // Calculate age from birthdate
 function calculateAge(birthdate) {
@@ -29,7 +97,7 @@ async function loadProfile() {
             data.personalInfo.age = calculateAge(data.personalInfo.birthdate);
         }
 
-        renderProfile(data);
+        await renderProfile(data);
     } catch (error) {
         console.error('Could not load profile-data.json:', error);
         const message =
@@ -42,7 +110,19 @@ async function loadProfile() {
     }
 }
 
-function renderProfile(data) {
+async function renderProfile(data) {
+    if (ACTIVE_TEMPLATE !== 'code') {
+        try {
+            await loadTemplateAssets(ACTIVE_TEMPLATE);
+            window.ProfileTemplates[ACTIVE_TEMPLATE].render(data, document.getElementById('templateRoot'));
+            updatePageTitle(data);
+            return;
+        } catch (error) {
+            console.error('Template "' + ACTIVE_TEMPLATE + '" failed, falling back to code template:', error);
+            ACTIVE_TEMPLATE = 'code';
+            document.documentElement.setAttribute('data-template', 'code');
+        }
+    }
     renderLeftPanel(data);
     renderRightPanel(data);
     updatePageTitle(data);
@@ -574,7 +654,10 @@ function initRobotDraggable() {
 
 // Load profile when page loads
 document.addEventListener('DOMContentLoaded', () => {
+    initTemplateSwitcher();
     loadProfile();
-    initRobotEyeTracking();
-    initRobotDraggable();
+    if (ACTIVE_TEMPLATE === 'code') {
+        initRobotEyeTracking();
+        initRobotDraggable();
+    }
 });

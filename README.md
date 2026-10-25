@@ -53,6 +53,22 @@ profile_page/
   - Languages Spoken
   - Profile Traits
 
+## 🎭 Templates
+
+Pick a template with the switcher at the bottom of the page (the choice is remembered),
+or link to one directly with `?template=code` / `?template=halloween`. Every template
+renders the same `profile-data.json`.
+
+- **Halloween** (default, `templates/halloween/`) — flying bats, Dracula, a pumpkin and a zombie.
+  Sweep the cursor (or a finger) across the spider web in the top-right corner: each ring
+  plays a bell note (Do Re Mi Fa Sol La Ti Do, from the corner outward) and the zombie and
+  pumpkin dance.
+  Sound is always on; browsers only start it after the first click/tap/key press on the page.
+- **Code Editor** — the syntax-highlighted layout with the robot.
+
+To add a template, register it in `TEMPLATES` in `script.js` and have its JS set
+`window.ProfileTemplates.<name> = { render(data, rootElement) }`.
+
 ## 🔧 Customization
 
 ### To Update Profile Information:
