@@ -10,7 +10,7 @@
     var WEB_CENTER = WEB_SIZE / 2;
     var RING_START = 24;
     var RING_GAP = 20;
-    var RADIAL_COUNT = 14;
+    var RADIAL_COUNT = 23;
     var WEB_RADIUS = 172;
     var SPIDER_FOLLOW_RANGE = WEB_RADIUS + 80;
     var SPIDER_SPEED = 1.2;
@@ -632,7 +632,7 @@
 
         var experience = (data.experience || []).map(function (exp) {
             var d = exp.duration || {};
-            var corner = '<span class="hw-pc-rank">' + esc(String(d.start || '').split('-')[0]) + '</span><span class="hw-pc-suit">🎃</span>';
+            var corner = '<span class="hw-pc-rank">' + esc(String(d.start || '').split('-')[0]) + '</span><span class="hw-pc-suit">🦇</span>';
             return (
                 '<article class="hw-playing-card">' +
                 '<div class="hw-pc-corner hw-pc-top" aria-hidden="true">' + corner + '</div>' +
