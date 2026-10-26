@@ -683,14 +683,21 @@
             );
         }).join('');
 
-        var projects = (data.projects || []).map(function (p) {
+        // Every project is a crystal ball on a stand with a numbered curse
+        var projects = (data.projects || []).map(function (p, i) {
             return (
                 '<article class="hw-project hw-reveal-item">' +
-                '<div class="hw-project-icon" aria-hidden="true">' + esc(p.icon || '🦇') + '</div>' +
+                '<div class="hw-orb" aria-hidden="true">' +
+                '<div class="hw-orb-ball"><span class="hw-orb-icon">' + esc(p.icon || '🦇') + '</span></div>' +
+                '<div class="hw-orb-stand"></div>' +
+                '</div>' +
+                '<div class="hw-project-body">' +
+                '<span class="hw-project-no">Curse No. ' + (i < 9 ? '0' : '') + (i + 1) + '</span>' +
                 '<h3>' + esc(p.name) + '</h3>' +
                 '<p>' + esc(p.description) + '</p>' +
                 '<div class="hw-chips">' + chips(p.technologies) + '</div>' +
-                (p.url ? '<a class="hw-link" href="' + esc(p.url) + '" target="_blank" rel="noopener">Visit if you dare →</a>' : '') +
+                (p.url ? '<a class="hw-link" href="' + esc(p.url) + '" target="_blank" rel="noopener">Visit if you dare <span aria-hidden="true">→</span></a>' : '') +
+                '</div>' +
                 '</article>'
             );
         }).join('');

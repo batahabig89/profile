@@ -1412,26 +1412,91 @@ html[data-template="halloween"] body::before {
     opacity: 0.35;
 }
 
-.hw-project-icon {
-    display: grid;
-    place-items: center;
-    width: 56px;
-    height: 56px;
-    margin-bottom: 14px;
-    border-radius: 50%;
-    font-size: 26px;
-    background: radial-gradient(circle at 50% 40%, rgba(255, 179, 71, 0.4), rgba(255, 122, 24, 0.08) 70%);
-    box-shadow: 0 0 22px rgba(255, 140, 0, 0.35);
-    transition: transform 0.4s ease;
+/* Crystal ball holding the project's icon */
+.hw-orb {
+    position: relative;
+    align-self: center;
+    width: 92px;
+    margin: 4px 0 16px;
 }
 
-.hw-project:hover .hw-project-icon {
-    transform: rotate(-12deg) scale(1.12);
+.hw-orb-ball {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.55) 0 6%, transparent 18%),
+        radial-gradient(circle at 50% 55%, rgba(199, 125, 255, 0.55), rgba(76, 29, 120, 0.85) 62%, rgba(26, 10, 46, 0.95) 100%);
+    border: 1px solid rgba(220, 190, 255, 0.45);
+    box-shadow: 0 0 26px rgba(199, 125, 255, 0.45), inset 0 -10px 22px rgba(0, 0, 0, 0.45);
+    animation: hwOrbFloat 4s ease-in-out infinite;
+}
+
+/* Swirling mist inside the ball */
+.hw-orb-ball::before {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    background: conic-gradient(from 0deg, transparent, rgba(139, 212, 80, 0.35), transparent 35%, rgba(255, 122, 24, 0.3), transparent 70%);
+    filter: blur(6px);
+    animation: hwOrbSwirl 7s linear infinite;
+}
+
+.hw-orb-icon {
+    position: relative;
+    font-size: 36px;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+}
+
+.hw-orb-stand {
+    width: 64px;
+    height: 16px;
+    margin: -6px auto 0;
+    border-radius: 8px 8px 4px 4px;
+    background: linear-gradient(#6b4226, #3a2416);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.45);
+    clip-path: polygon(12% 0, 88% 0, 100% 100%, 0 100%);
+}
+
+.hw-project:hover .hw-orb-ball {
+    box-shadow: 0 0 40px rgba(199, 125, 255, 0.75), 0 0 18px rgba(139, 212, 80, 0.45), inset 0 -10px 22px rgba(0, 0, 0, 0.45);
+}
+
+.hw-project:hover .hw-orb-ball::before {
+    animation-duration: 1.8s;
+}
+
+@keyframes hwOrbFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes hwOrbSwirl {
+    to { transform: rotate(360deg); }
+}
+
+.hw-project-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.hw-project-no {
+    font-family: 'Creepster', cursive;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: var(--hw-slime);
 }
 
 .hw-project h3 {
     font-size: 1.12rem;
     font-weight: 800;
+    overflow-wrap: anywhere;
 }
 
 .hw-project p {
@@ -1444,10 +1509,26 @@ html[data-template="halloween"] body::before {
 }
 
 .hw-link {
+    align-self: flex-start;
     margin-top: auto;
     padding-top: 14px;
     color: var(--hw-orange);
     font-weight: 800;
+    text-decoration: none;
+}
+
+.hw-project .hw-link {
+    margin-top: 16px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 122, 24, 0.55);
+    background: rgba(255, 122, 24, 0.12);
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hw-project .hw-link:hover {
+    background: rgba(255, 122, 24, 0.25);
+    box-shadow: 0 0 16px rgba(255, 122, 24, 0.45);
     text-decoration: none;
 }
 
@@ -1608,6 +1689,77 @@ html[data-template="halloween"] body::before {
         grid-template-columns: 1fr;
     }
 
+    /* Projects become a compact list: small crystal ball beside the text */
+    .hw-project {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 14px;
+    }
+
+    .hw-project::after {
+        font-size: 16px;
+        top: 6px;
+        right: 8px;
+    }
+
+    .hw-orb {
+        align-self: flex-start;
+        width: 52px;
+        margin: 2px 0 0;
+        flex: none;
+    }
+
+    .hw-orb-ball {
+        width: 52px;
+        height: 52px;
+    }
+
+    .hw-orb-icon {
+        font-size: 22px;
+    }
+
+    .hw-orb-stand {
+        width: 38px;
+        height: 10px;
+        margin-top: -4px;
+    }
+
+    .hw-project-no {
+        font-size: 11px;
+    }
+
+    .hw-project h3 {
+        font-size: 0.95rem;
+    }
+
+    .hw-project p {
+        margin-top: 2px;
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+
+    .hw-project .hw-chips {
+        margin-top: 8px;
+        gap: 4px;
+    }
+
+    .hw-project .hw-chip {
+        padding: 2px 7px;
+        font-size: 0.68rem;
+    }
+
+    .hw-project .hw-link {
+        margin-top: 8px;
+        padding: 3px 10px;
+        font-size: 0.78rem;
+    }
+
+    .hw-grid-3 {
+        gap: 12px;
+    }
+
     /* Compact poison shelf, two bottles per row */
     .hw-skeleton {
         top: -26px;
@@ -1764,7 +1916,9 @@ html[data-template="halloween"] body::before {
     .hw-photo,
     .hw-skel-arm,
     .hw-skel-leg,
-    .hw-skel-head {
+    .hw-skel-head,
+    .hw-orb-ball,
+    .hw-orb-ball::before {
         animation: none;
     }
 
