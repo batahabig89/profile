@@ -75,6 +75,40 @@
 
     // ---------- artwork ----------
 
+    // Skull drawn in a 64×64 box; reused by the poison labels, jar watermarks and the skeleton
+    var SKULL_PARTS =
+        '<path class="hw-bone" d="M32 6C18 6 9 16 9 29c0 8 4 13 9 16v7c0 3 2 5 5 5h18c3 0 5-2 5-5v-7c5-3 9-8 9-16C55 16 46 6 32 6z"/>' +
+        '<ellipse class="hw-socket" cx="22.5" cy="31" rx="6.5" ry="7.5"/><ellipse class="hw-socket" cx="41.5" cy="31" rx="6.5" ry="7.5"/>' +
+        '<circle class="hw-eye-glow" cx="22.5" cy="32" r="2.4"/><circle class="hw-eye-glow" cx="41.5" cy="32" r="2.4"/>' +
+        '<path class="hw-socket" d="M32 39l-4 7h8z"/>' +
+        '<path class="hw-teeth" d="M26 50v7M30.7 50v7M35.3 50v7M40 50v7"/>';
+
+    var SKULL_SVG = '<svg viewBox="0 0 64 64" aria-hidden="true">' + SKULL_PARTS + '</svg>';
+
+    var POISON_SVG =
+        '<svg viewBox="0 0 64 64" aria-hidden="true">' +
+        '<path class="hw-crossbones" d="M10 12L54 56M54 12L10 56"/>' +
+        '<circle class="hw-bone" cx="8" cy="10" r="5"/><circle class="hw-bone" cx="56" cy="10" r="5"/>' +
+        '<circle class="hw-bone" cx="8" cy="58" r="5"/><circle class="hw-bone" cx="56" cy="58" r="5"/>' +
+        '<g transform="translate(13 6) scale(0.6)">' + SKULL_PARTS + '</g>' +
+        '</svg>';
+
+    // Skeleton sitting on the potion shelf, legs dangling, one arm waving
+    var SKELETON_SVG =
+        '<svg viewBox="0 0 120 210" aria-hidden="true">' +
+        '<g class="hw-skel-bones">' +
+        '<path d="M60 44V122"/>' +
+        '<path d="M60 64C46 62 40 70 43 80M60 64C74 62 80 70 77 80M60 76C48 75 44 81 46 89M60 76C72 75 76 81 74 89M60 88C51 88 49 92 50 98M60 88C69 88 71 92 70 98"/>' +
+        '<path d="M38 58Q60 52 82 58"/>' +
+        '<path d="M38 58L28 92L40 124"/>' +
+        '<g class="hw-skel-leg hw-skel-leg-l"><path d="M50 124L40 166L46 202h-10"/></g>' +
+        '<g class="hw-skel-leg hw-skel-leg-r"><path d="M70 124L80 166L74 202h10"/></g>' +
+        '<g class="hw-skel-arm"><path d="M82 58L102 36L106 10M106 10l-5-7M106 10l0-8M106 10l5-6"/></g>' +
+        '</g>' +
+        '<path class="hw-bone" d="M44 118Q60 136 76 118Q68 112 60 116Q52 112 44 118z"/>' +
+        '<g transform="translate(36 0) scale(0.75)"><g class="hw-skel-head">' + SKULL_PARTS + '</g></g>' +
+        '</svg>';
+
     var BAT_SVG =
         '<svg viewBox="0 0 100 50" aria-hidden="true">' +
         '<g class="hw-wing hw-wing-l"><path d="M48 24 C40 10 26 6 8 10 C14 14 12 19 4 22 C12 24 12 29 6 34 C20 30 34 32 46 30 Z"/></g>' +
@@ -623,7 +657,8 @@
                 '<div class="hw-jar hw-reveal-item" style="--liquid:' + POTION_COLORS[i % POTION_COLORS.length] + ';--i:' + i + '">' +
                 '<div class="hw-jar-cork" aria-hidden="true"></div>' +
                 '<div class="hw-jar-glass">' +
-                '<span class="hw-jar-label">' + esc(group.title) + '</span>' +
+                '<span class="hw-jar-label"><span class="hw-poison-icon">' + POISON_SVG + '</span>' + esc(group.title) + '</span>' +
+                '<div class="hw-jar-mark" aria-hidden="true">' + SKULL_SVG + '</div>' +
                 '<div class="hw-chips">' + chips(group.items) + '</div>' +
                 '<div class="hw-jar-liquid" aria-hidden="true"><i></i><i></i><i></i><i></i></div>' +
                 '</div></div>'
@@ -700,7 +735,8 @@
             '</div>' +
             '</header>' +
 
-            '<section class="hw-section hw-reveal">' + heading('🧪', 'Potion shelf', 'skills') +
+            '<section class="hw-section hw-reveal hw-skills">' + heading('🧪', 'Potion shelf', 'skills') +
+            '<div class="hw-skeleton" aria-hidden="true">' + SKELETON_SVG + '</div>' +
             '<div class="hw-shelf">' + jars + '</div></section>' +
 
             '<section class="hw-section hw-reveal">' + heading('🃏', 'Haunted deck', 'experience') +
