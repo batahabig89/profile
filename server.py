@@ -6,7 +6,7 @@ This solves the CORS issue when loading JSON files.
 Usage:
     python3 server.py
 
-Then open: http://localhost:8000
+Then open: http://localhost:8001
 """
 
 import http.server
@@ -23,12 +23,17 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        # Never cache during local development, so edits show up on a normal reload
+        self.send_header('Cache-Control', 'no-store')
         super().end_headers()
 
 def start_server():
     # Change to the directory containing the files
     os.chdir(Path(__file__).parent)
-    
+
+    # Allow an immediate restart after Ctrl+C (otherwise the port stays in TIME_WAIT)
+    socketserver.TCPServer.allow_reuse_address = True
+
     with socketserver.TCPServer(("", PORT), MyHTTPRequestHandler) as httpd:
         print(f"Server running at http://localhost:{PORT}/")
         print("Press Ctrl+C to stop the server")

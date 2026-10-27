@@ -1712,10 +1712,6 @@ html[data-template="halloween"] body::before {
     }
 
     /* Keep the bottom free for the zombie gang and pumpkins */
-    .template-switcher {
-        bottom: calc(10px + env(safe-area-inset-bottom));
-    }
-
     .hw-house {
         height: 34vh;
         opacity: 0.6;

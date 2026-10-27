@@ -14,7 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
     <title id="pageTitle">Loading...</title>
-    <link rel="stylesheet" href="styles.css?v=13">
+    <link rel="stylesheet" href="styles.css?v=15">
 </head>
 <body>
     <div class="container">
@@ -37,9 +37,15 @@
     <!-- Alternate templates (e.g. Halloween) render here -->
     <div id="templateRoot"></div>
 
-    <div class="template-switcher">
-        <label for="templateSelect">Template</label>
-        <select id="templateSelect"></select>
+    <div class="template-switcher" id="templateSwitcher">
+        <!-- Phones show only this hamburger; it unfolds the panel below -->
+        <button class="template-menu-btn" id="templateMenuBtn" type="button" aria-label="Choose template" aria-expanded="false" aria-controls="templatePanel">
+            <span></span><span></span><span></span>
+        </button>
+        <div class="template-panel" id="templatePanel">
+            <label for="templateSelect">Template</label>
+            <select id="templateSelect"></select>
+        </div>
     </div>
 
     <!-- Robot Character -->
@@ -94,6 +100,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=13"></script>
+    <script src="script.js?v=15"></script>
 </body>
 </html>

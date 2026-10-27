@@ -1549,3 +1549,83 @@ html[data-template="code"] #templateRoot {
 .template-switcher select option {
     color: #111;
 }
+
+/* On wide screens the panel's label and select sit straight in the pill */
+.template-panel {
+    display: contents;
+}
+
+.template-menu-btn {
+    display: none;
+}
+
+/* Compact hamburger whenever the window is tablet-sized or narrower */
+@media (max-width: 1024px) {
+    .template-switcher {
+        top: calc(10px + env(safe-area-inset-top));
+        left: 10px;
+        bottom: auto;
+        transform: none;
+        padding: 0;
+        background: none;
+        border: none;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    .template-menu-btn {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px;
+        width: 36px;
+        height: 36px;
+        padding: 0 9px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(8, 10, 24, 0.82);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+        cursor: pointer;
+    }
+
+    .template-menu-btn span {
+        display: block;
+        height: 2px;
+        border-radius: 2px;
+        background: #fff;
+        transition: transform 0.25s ease, opacity 0.2s ease;
+    }
+
+    /* Lines fold into an X while the menu is open */
+    .template-switcher.open .template-menu-btn span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .template-switcher.open .template-menu-btn span:nth-child(2) { opacity: 0; }
+    .template-switcher.open .template-menu-btn span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    .template-panel {
+        position: absolute;
+        top: 44px;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px 12px 12px;
+        border-radius: 12px;
+        background: rgba(8, 10, 24, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        font-size: 10px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-6px);
+        transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    }
+
+    .template-switcher.open .template-panel {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+    }
+}

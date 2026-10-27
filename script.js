@@ -1,5 +1,5 @@
 /* Keep ?v= in sync with index.html (cache-bust on GitHub Pages) */
-var ASSET_VER = '13';
+var ASSET_VER = '15';
 
 // Selectable page templates. "code" is the built-in editor look; others load their own CSS/JS
 // and register a renderer on window.ProfileTemplates[name].
@@ -45,6 +45,22 @@ function initTemplateSwitcher() {
         const params = new URLSearchParams(location.search);
         params.set('template', select.value);
         location.search = params.toString();
+    });
+
+    // Hamburger toggle for the compact phone layout; a tap anywhere else closes it
+    const switcher = document.getElementById('templateSwitcher');
+    const menuBtn = document.getElementById('templateMenuBtn');
+    if (!switcher || !menuBtn) return;
+    const setOpen = (open) => {
+        switcher.classList.toggle('open', open);
+        menuBtn.setAttribute('aria-expanded', String(open));
+    };
+    menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setOpen(!switcher.classList.contains('open'));
+    });
+    document.addEventListener('click', (e) => {
+        if (!switcher.contains(e.target)) setOpen(false);
     });
 }
 
