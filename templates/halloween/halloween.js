@@ -15,6 +15,9 @@
     var SPIDER_FOLLOW_RANGE = WEB_RADIUS + 80;
     var SPIDER_SPEED = 1.2;
     var SPIDER_LAG = 0.03;
+    var SPIDER_TOUCH_LAG = 0.07;
+    var TOUCH_LINGER_MS = 2500;
+    var TAP_PLUCK_RANGE = 16;
     var STRAND_COOLDOWN_MS = 110;
     var DANCE_STEP_MS = 700;
     var DANCE_HOLD_MS = 2600;
@@ -683,21 +686,26 @@
             );
         }).join('');
 
-        // Every project is a crystal ball on a stand with a numbered curse
+        // Every project is a burnt grimoire page sealed with a glowing summoning sigil
         var projects = (data.projects || []).map(function (p, i) {
+            var mono = String(p.name || '?').replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase();
             return (
                 '<article class="hw-project hw-reveal-item">' +
-                '<div class="hw-orb" aria-hidden="true">' +
-                '<div class="hw-orb-ball"><span class="hw-orb-icon">' + esc(p.icon || '🦇') + '</span></div>' +
-                '<div class="hw-orb-stand"></div>' +
-                '</div>' +
-                '<div class="hw-project-body">' +
+                '<div class="hw-project-head">' +
+                '<svg class="hw-sigil" viewBox="0 0 100 100" aria-hidden="true">' +
+                '<circle class="hw-sigil-ring" cx="50" cy="50" r="46"/>' +
+                '<circle class="hw-sigil-runes" cx="50" cy="50" r="40"/>' +
+                '<circle class="hw-sigil-ring" cx="50" cy="50" r="33"/>' +
+                '<path class="hw-sigil-tri" d="M50 19 L77 66 L23 66 Z M50 81 L23 34 L77 34 Z"/>' +
+                '<text class="hw-sigil-mono" x="50" y="51">' + esc(mono) + '</text>' +
+                '</svg>' +
+                '<div>' +
                 '<span class="hw-project-no">Curse No. ' + (i < 9 ? '0' : '') + (i + 1) + '</span>' +
                 '<h3>' + esc(p.name) + '</h3>' +
+                '</div></div>' +
                 '<p>' + esc(p.description) + '</p>' +
                 '<div class="hw-chips">' + chips(p.technologies) + '</div>' +
                 (p.url ? '<a class="hw-link" href="' + esc(p.url) + '" target="_blank" rel="noopener">Visit if you dare <span aria-hidden="true">→</span></a>' : '') +
-                '</div>' +
                 '</article>'
             );
         }).join('');
@@ -755,7 +763,9 @@
             '<section class="hw-section hw-reveal">' + heading('🪦', 'Graveyard of wisdom', 'education &amp; certifications') +
             '<div class="hw-graveyard">' + education + certifications + '</div></section>' +
 
-            '<footer class="hw-footer">🕸️ Sweep your cursor across the spider web to play Do-Re-Mi and make the crew dance.</footer>' +
+            '<footer class="hw-footer">🕸️ ' + (window.matchMedia && window.matchMedia('(hover: none)').matches
+                ? 'Tap or swipe the spider web to play Do-Re-Mi and make the crew dance.'
+                : 'Sweep your cursor across the spider web to play Do-Re-Mi and make the crew dance.') + '</footer>' +
             '</main>'
         );
     }
@@ -782,7 +792,7 @@
             '<div class="hw-bats" aria-hidden="true">' + bats + '</div>' +
             '<div class="hw-lantern" aria-hidden="true"></div>' +
             renderContent(data) +
-            '<div class="hw-web-wrap" aria-hidden="true"><svg class="hw-web" viewBox="0 0 ' + WEB_SIZE + ' ' + WEB_SIZE + '"></svg><span class="hw-web-hint">swipe the web ♪</span></div>' +
+            '<div class="hw-web-wrap" aria-hidden="true"><svg class="hw-web" viewBox="0 0 ' + WEB_SIZE + ' ' + WEB_SIZE + '"></svg><span class="hw-web-hint">' + (window.matchMedia && window.matchMedia('(hover: none)').matches ? 'tap the web ♪' : 'swipe the web ♪') + '</span></div>' +
             '<div class="hw-char hw-dracula" aria-hidden="true"><div class="hw-dancer">' + DRACULA_SVG + '</div></div>' +
             ZOMBIES.map(function (svg, i) {
                 return '<div class="hw-char hw-zombie hw-zombie-' + (i + 1) + '" aria-hidden="true"><div class="hw-dancer">' + svg + '</div></div>';
@@ -801,6 +811,8 @@
         var spiderPos = { x: WEB_CENTER, y: WEB_CENTER, angle: 0 };
         var spiderGoal = { x: WEB_CENTER, y: WEB_CENTER };
         var pointer = null;
+        var touchMode = false;
+        var touchReleaseTimer = null;
 
         GESTURE_EVENTS.forEach(function (type) {
             window.addEventListener(type, unlockAudio, true);
@@ -919,6 +931,42 @@
             pointer = p;
         }
 
+        // Touch has no hover: a tap on the web plucks the closest strand right away
+        function tapWeb(clientX, clientY) {
+            var scale = webRect.width / WEB_SIZE;
+            var p = { x: (clientX - webRect.left) / scale, y: (clientY - webRect.top) / scale };
+            var best = null;
+            var bestDist = TAP_PLUCK_RANGE;
+            web.strands.forEach(function (strand) {
+                strand.segs.forEach(function (s) {
+                    var vx = s[2] - s[0];
+                    var vy = s[3] - s[1];
+                    var t = Math.max(0, Math.min(1, ((p.x - s[0]) * vx + (p.y - s[1]) * vy) / (vx * vx + vy * vy || 1)));
+                    var hx = s[0] + vx * t;
+                    var hy = s[1] + vy * t;
+                    var d = Math.sqrt(Math.pow(p.x - hx, 2) + Math.pow(p.y - hy, 2));
+                    if (d < bestDist) {
+                        bestDist = d;
+                        best = { strand: strand, hit: { x: hx, y: hy } };
+                    }
+                });
+            });
+            if (!best) return;
+            best.strand.last = performance.now();
+            pluck(best.strand, best.hit, clientX, clientY);
+        }
+
+        // Glowing ripple where a finger lands, and a faint trail while it drags
+        var lastTrail = 0;
+        function showTouch(clientX, clientY, kind) {
+            var mark = document.createElement('span');
+            mark.className = 'hw-touch hw-touch-' + kind;
+            mark.style.left = clientX + 'px';
+            mark.style.top = clientY + 'px';
+            hwRoot.appendChild(mark);
+            mark.addEventListener('animationend', function () { mark.remove(); });
+        }
+
         // Spider creeps after the cursor (with a lag) while it is near the web, then back to the hub
         function stepSpider() {
             var target = { x: WEB_CENTER, y: WEB_CENTER };
@@ -932,8 +980,9 @@
                 }
             }
             // The goal trails the cursor, so the spider reacts late and walks slowly
-            spiderGoal.x += (target.x - spiderGoal.x) * SPIDER_LAG;
-            spiderGoal.y += (target.y - spiderGoal.y) * SPIDER_LAG;
+            var lag = touchMode ? SPIDER_TOUCH_LAG : SPIDER_LAG;
+            spiderGoal.x += (target.x - spiderGoal.x) * lag;
+            spiderGoal.y += (target.y - spiderGoal.y) * lag;
             var mx = spiderGoal.x - spiderPos.x;
             var my = spiderGoal.y - spiderPos.y;
             var dist = Math.sqrt(mx * mx + my * my);
@@ -1110,12 +1159,31 @@
             reveals.forEach(function (el) { el.classList.add('hw-in'); });
         }
         window.addEventListener('touchstart', function (e) {
-            revealNear(e.touches[0].clientX, e.touches[0].clientY);
+            var t = e.touches[0];
+            touchMode = true;
+            clearTimeout(touchReleaseTimer);
+            lantern.style.setProperty('--mx', t.clientX + 'px');
+            lantern.style.setProperty('--my', t.clientY + 'px');
+            revealNear(t.clientX, t.clientY);
+            showTouch(t.clientX, t.clientY, 'tap');
             last = null;
-            track(e.touches[0].clientX, e.touches[0].clientY);
+            track(t.clientX, t.clientY);
+            tapWeb(t.clientX, t.clientY);
         }, { passive: true });
         window.addEventListener('touchmove', function (e) {
-            track(e.touches[0].clientX, e.touches[0].clientY);
+            var t = e.touches[0];
+            var now = performance.now();
+            if (now - lastTrail > 45) {
+                lastTrail = now;
+                showTouch(t.clientX, t.clientY, 'trail');
+            }
+            track(t.clientX, t.clientY);
+        }, { passive: true });
+        // The spider keeps walking toward the last tap for a moment, then heads back to the hub
+        window.addEventListener('touchend', function () {
+            last = null;
+            clearTimeout(touchReleaseTimer);
+            touchReleaseTimer = setTimeout(function () { pointer = null; }, TOUCH_LINGER_MS);
         }, { passive: true });
         document.addEventListener('mouseleave', function () {
             last = null;
