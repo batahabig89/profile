@@ -800,13 +800,27 @@ html[data-template="halloween"] body::before {
     padding: 40px 24px 200px;
 }
 
-/* Starts just right of the moon (which ends ~182px from the left) and stops short of the web */
+/* Starts just right of the moon (which ends ~182px from the left) and stops short of the
+   visible three quarters of the web */
 .hw-hero {
     display: flex;
     align-items: flex-start;
     gap: 24px;
     margin: 0 0 80px calc(206px - max(0px, (100vw - 980px) / 2) - 24px);
-    max-width: calc(100vw - 206px - var(--hw-web-size) - 30px);
+    max-width: calc(100vw - 206px - var(--hw-web-size) * 0.75 - 30px);
+}
+
+/* Tablet widths: too narrow to fit beside the moon, so the intro starts below it
+   at the left edge and gets the full width up to the web */
+@media (min-width: 769px) and (max-width: 1100px) {
+    .hw-page {
+        padding-top: 200px;
+    }
+
+    .hw-hero {
+        margin-left: 0;
+        max-width: calc(100vw - var(--hw-web-size) * 0.75 - 40px);
+    }
 }
 
 .hw-hero-text {
