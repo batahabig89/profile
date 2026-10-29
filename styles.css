@@ -1493,6 +1493,71 @@ h2 {
     }
 }
 
+/* ---------- Nickname / full name (shared by all templates) ---------- */
+/* Nickname and full name share one grid cell and cross-fade; the surname stays blurred until hovered / tapped */
+.name-swap {
+    display: inline-grid;
+    vertical-align: bottom;
+    outline: none;
+    cursor: default;
+}
+
+.name-nick,
+.name-full {
+    grid-area: 1 / 1;
+    white-space: nowrap;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.name-full {
+    opacity: 0;
+    transform: translateY(6px);
+}
+
+.name-swap.name-near .name-nick,
+.name-swap:focus-visible .name-nick {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+
+.name-swap.name-near .name-full,
+.name-swap:focus-visible .name-full {
+    opacity: 1;
+    transform: none;
+}
+
+/* Inline variant: plain text swap, no reserved width */
+.name-swap-inline {
+    display: inline;
+}
+
+.name-swap-inline .name-full,
+.name-swap-inline.name-near .name-nick,
+.name-swap-inline:focus-visible .name-nick {
+    display: none;
+}
+
+.name-swap-inline.name-near .name-full,
+.name-swap-inline:focus-visible .name-full {
+    display: inline;
+}
+
+.name-last {
+    display: inline-block;
+    filter: blur(6px);
+    transition: filter 0.2s ease;
+}
+
+.name-swap.name-revealed .name-last {
+    filter: none;
+}
+
+@media (hover: hover) {
+    .name-swap:hover .name-last {
+        filter: none;
+    }
+}
+
 /* ---------- Template switcher (shared by all templates) ---------- */
 html[data-template]:not([data-template="code"]) .container,
 html[data-template]:not([data-template="code"]) .page-footer,

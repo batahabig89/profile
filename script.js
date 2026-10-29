@@ -1,5 +1,5 @@
 /* Keep ?v= in sync with index.html (cache-bust on GitHub Pages) */
-var ASSET_VER = '25';
+var ASSET_VER = '26';
 
 // Selectable page templates. "code" is the built-in editor look; others load their own CSS/JS
 // and register a renderer on window.ProfileTemplates[name].
@@ -147,19 +147,73 @@ async function renderProfile(data) {
     }
     renderLeftPanel(data);
     renderRightPanel(data);
+    initNameReveal(document.querySelector('.container'));
     updatePageTitle(data);
 }
 
 function updatePageTitle(data) {
     // Update page title
-    // Alternate templates hide the surname, so the tab title uses the nickname there too
-    const shownName = (ACTIVE_TEMPLATE !== 'code' && data.personalInfo.nickname) || data.personalInfo.name;
+    // Every template hides the surname, so the tab title uses the nickname
+    const shownName = data.personalInfo.nickname || data.personalInfo.name;
     document.getElementById('pageTitle').textContent = `${shownName} - ${data.personalInfo.title}`;
     
     // Update footer name and title
-    document.getElementById('profileName').textContent = data.personalInfo.name;
+    const profileName = document.getElementById('profileName');
+    profileName.innerHTML = nameRevealMarkup(data.personalInfo, true);
+    initNameReveal(profileName);
     document.getElementById('profileTitle').textContent = data.personalInfo.title;
 }
+
+// ---------- Nickname / full name (shared by every template) ----------
+// Shows the nickname; the full name fades in when the pointer comes within NAME_NEAR_PX (or on a tap),
+// and the surname stays blurred until it is hovered (or tapped a second time).
+var NAME_NEAR_PX = 140;
+var NAME_TAP_HOLD_MS = 8000;
+var IS_TOUCH = !!(window.matchMedia && window.matchMedia('(hover: none)').matches);
+
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+// `inline` swaps the text in place instead of reserving room for the full name (used inside code lines)
+function nameRevealMarkup(info, inline) {
+    const parts = String(info.name || '').trim().split(/\s+/);
+    const last = parts.length > 1 ? parts.pop() : '';
+    const nick = info.nickname || parts[0] || '';
+    return `<span class="name-swap${inline ? ' name-swap-inline' : ''}" tabindex="0" aria-label="${escapeHtml(nick)}">` +
+        `<span class="name-nick" aria-hidden="true">${escapeHtml(nick)}</span>` +
+        `<span class="name-full" aria-hidden="true">${escapeHtml(parts.join(' '))}` +
+        (last ? ` <span class="name-last">${escapeHtml(last)}</span>` : '') +
+        `</span></span>`;
+}
+
+function initNameReveal(root) {
+    root.querySelectorAll('.name-swap').forEach((el) => {
+        let timer = null;
+        el.addEventListener('click', () => {
+            if (!IS_TOUCH) return;
+            if (el.classList.contains('name-near')) el.classList.add('name-revealed');
+            el.classList.add('name-near');
+            clearTimeout(timer);
+            timer = setTimeout(() => el.classList.remove('name-near', 'name-revealed'), NAME_TAP_HOLD_MS);
+        });
+    });
+}
+
+window.addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'touch') return;
+    document.querySelectorAll('.name-swap').forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (!r.width) return;
+        const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right);
+        const dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
+        el.classList.toggle('name-near', Math.sqrt(dx * dx + dy * dy) < NAME_NEAR_PX);
+    });
+}, { passive: true });
 
 function profileImageSrc(url) {
     if (!url || /^https?:\/\//i.test(url)) return url;
@@ -173,7 +227,7 @@ function renderLeftPanel(data) {
         <div class="profile-section">
             <img src="${profileImageSrc(data.personalInfo.profileImage)}" alt="Profile Photo" class="profile-img">
             <div class="username">
-                <span class="keyword">public</span> ${data.personalInfo.name}
+                <span class="keyword">public</span> ${nameRevealMarkup(data.personalInfo, true)}
             </div>
         </div>
 
@@ -265,7 +319,7 @@ function renderRightPanel(data) {
                 <span class="keyword">public</span> <span class="class-name">INFORMATION</span>
             </div>
             <div class="code-line indent-1">
-                <span class="keyword">public string</span> <span class="string">"${data.personalInfo.name}"</span>,
+                <span class="keyword">public string</span> <span class="string">"${nameRevealMarkup(data.personalInfo, true)}"</span>,
             </div>
             <div class="code-line indent-1">
                 <span class="keyword">public string</span> <span class="string">"${data.personalInfo.title}"</span>,

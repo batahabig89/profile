@@ -8,7 +8,7 @@
     "location": ["Sukhbaatar", "Ulaanbaatar", "Mongolia"],
         "vehicleLicense": true,
         "birthdate": "1989-02-22",
-        "profileImage": "assets/profile-photo.png"
+        "profileImage": "assets/white-king.svg"
   },
   "summary": {
     "lines": [

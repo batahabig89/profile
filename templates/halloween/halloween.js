@@ -743,7 +743,7 @@
             // Dracula (positioned from JS) lives inside this ring until the web rings
             '<div class="hw-photo"><div class="hw-photo-hole"></div></div>' +
             '<div class="hw-hero-text">' +
-            '<h1 class="hw-name">' + esc(info.name) + '</h1>' +
+            '<h1 class="hw-name">' + window.nameRevealMarkup(info) + '</h1>' +
             '<p class="hw-title">' + esc(info.title) + '</p>' +
             '<div class="hw-summary">' + ((data.summary && data.summary.lines) || []).map(function (l) { return '<p>🎃 ' + esc(l) + '</p>'; }).join('') + '</div>' +
             '<div class="hw-chips hw-contact">' + contact + '</div>' +
@@ -802,6 +802,7 @@
             '<div class="hw-char hw-pumpkin hw-pumpkin-2" aria-hidden="true"><div class="hw-dancer">' + PUMPKIN_SVG + '</div></div>' +
             '</div>';
 
+        window.initNameReveal(root);
         var hwRoot = root.querySelector('.hw-root');
         var webSvg = root.querySelector('.hw-web');
         var web = buildWeb(webSvg);

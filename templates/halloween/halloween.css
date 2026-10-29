@@ -879,6 +879,11 @@ html[data-template="halloween"] body::before {
     animation: hwNeonFlicker 7s linear infinite;
 }
 
+/* The long full name may wrap; the nickname keeps its one line */
+.hw-name .name-full {
+    white-space: normal;
+}
+
 @keyframes hwNeonFlicker {
     0%, 91%, 93.5%, 96%, 100% { opacity: 1; }
     92%, 95% { opacity: 0.55; text-shadow: none; }
