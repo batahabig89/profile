@@ -56,10 +56,16 @@ profile_page/
 ## 🎭 Templates
 
 Pick a template with the switcher at the bottom of the page (the choice is remembered),
-or link to one directly with `?template=code` / `?template=halloween`. Every template
-renders the same `profile-data.json`.
+or link to one directly with `?template=code` / `?template=halloween` / `?template=chess-halloween`.
+Every template renders the same `profile-data.json`.
 
-- **Halloween** (default, `templates/halloween/`) — flying bats, Dracula, a pumpkin and a zombie.
+- **Chess Halloween** (default, `templates/chess-halloween/`) — a green & white chess board where
+  armoured Roman-style legions trade real chess moves: the white side (gods, angels, pegasi) at the
+  bottom and the black side (Dracula, demons, witches) at the top. Idle black pieces hover and spin
+  on brooms; idle white pieces get carried off on short flights by winged horses. Drag any piece
+  onto any square — dropping it on an enemy piece fights and destroys it. Behind it all is a top-down
+  strategy map: the light kingdom in daylight on the left, a ghost-ship island under night sky on the right.
+- **Halloween** (`templates/halloween/`) — flying bats, Dracula, a pumpkin and a zombie.
   Sweep the cursor (or a finger) across the spider web in the top-right corner: each ring
   plays a bell note (Do Re Mi Fa Sol La Ti Do, from the corner outward) and the zombie and
   pumpkin dance.

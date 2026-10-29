@@ -1,5 +1,5 @@
 /* Keep ?v= in sync with index.html (cache-bust on GitHub Pages) */
-var ASSET_VER = '16';
+var ASSET_VER = '25';
 
 // Selectable page templates. "code" is the built-in editor look; others load their own CSS/JS
 // and register a renderer on window.ProfileTemplates[name].
@@ -9,9 +9,15 @@ var TEMPLATES = {
         label: 'Halloween 🎃',
         css: 'templates/halloween/halloween.css',
         js: 'templates/halloween/halloween.js'
+    },
+    'chess-halloween': {
+        label: 'Chess Halloween ♞',
+        css: 'templates/chess-halloween/chess-halloween.css',
+        js: 'templates/chess-halloween/chess-halloween.js'
     }
 };
-var TEMPLATE_STORAGE_KEY = 'profileTemplate';
+// Renamed when the default template changes, so earlier saved choices don't hide the new default
+var TEMPLATE_STORAGE_KEY = 'profileTemplate.v2';
 
 function getSelectedTemplate() {
     let name = new URLSearchParams(location.search).get('template');
@@ -22,7 +28,7 @@ function getSelectedTemplate() {
             /* storage blocked */
         }
     }
-    return TEMPLATES[name] ? name : 'halloween';
+    return TEMPLATES[name] ? name : 'chess-halloween';
 }
 
 var ACTIVE_TEMPLATE = getSelectedTemplate();
@@ -146,7 +152,9 @@ async function renderProfile(data) {
 
 function updatePageTitle(data) {
     // Update page title
-    document.getElementById('pageTitle').textContent = `${data.personalInfo.name} - ${data.personalInfo.title}`;
+    // Alternate templates hide the surname, so the tab title uses the nickname there too
+    const shownName = (ACTIVE_TEMPLATE !== 'code' && data.personalInfo.nickname) || data.personalInfo.name;
+    document.getElementById('pageTitle').textContent = `${shownName} - ${data.personalInfo.title}`;
     
     // Update footer name and title
     document.getElementById('profileName').textContent = data.personalInfo.name;

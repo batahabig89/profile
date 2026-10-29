@@ -1,0 +1,1111 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Creepster&family=Nunito:wght@400;600;800&display=swap');
+
+/* ---------- Chess Halloween template ---------- */
+html[data-template="chess-halloween"] body {
+    --ch-green: #2f9a5e;
+    --ch-deep: #0c3322;
+    --ch-slime: #7dff9b;
+    --ch-mint: #d9f7e3;
+    --ch-white: #f6fff8;
+    --ch-gold: #e2b84a;
+    --ch-blood: #c1121f;
+    --ch-text: #0f2e1f;
+    --ch-muted: #3e6650;
+    --ch-card: rgba(246, 255, 248, 0.9);
+    --ch-line: rgba(47, 154, 94, 0.35);
+    --ch-board: min(560px, calc(100vw - 32px));
+
+    color: var(--ch-text);
+    font-family: 'Nunito', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    background-color: #145a52;
+}
+
+html[data-template="chess-halloween"] body::before {
+    opacity: 0.12;
+}
+
+.ch-root {
+    position: relative;
+    min-height: 100vh;
+    overflow-x: clip;
+}
+
+/* ---------- sky ---------- */
+.ch-sky {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* Top-down strategy map filling the background; it drifts very slowly like a camera pan.
+   Translate only (no scale) so the composited layer is never re-rasterised. */
+.ch-map {
+    position: absolute;
+    inset: -4%;
+    animation: chPan 90s ease-in-out infinite alternate;
+    will-change: transform;
+}
+
+.ch-map-img,
+.ch-map-fx {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@keyframes chPan {
+    from { transform: translate(0, 0); }
+    to { transform: translate(-2.5%, -1.5%); }
+}
+
+.ch-ship {
+    animation: chSail var(--dur) ease-in-out var(--delay) infinite alternate;
+}
+
+@keyframes chSail {
+    from { transform: translate(0, 0) rotate(-3deg); }
+    to { transform: translate(90px, 14px) rotate(3deg); }
+}
+
+.ch-map-flag {
+    transform-box: fill-box;
+    transform-origin: left center;
+    animation: chFlagWave 1.6s ease-in-out infinite;
+}
+
+@keyframes chFlagWave {
+    0%, 100% { transform: scaleX(1) skewY(0); }
+    50% { transform: scaleX(0.8) skewY(8deg); }
+}
+
+.ch-map-glow { animation: chEyes 2.2s ease-in-out infinite; }
+.ch-star { animation: chTwinkle 3s ease-in-out infinite; }
+
+@keyframes chTwinkle {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 0.2; }
+}
+
+.ch-sun-rays { animation: chSunSpin 60s linear infinite; }
+
+@keyframes chSunSpin {
+    to { transform: rotate(360deg); }
+}
+
+.ch-map-fog {
+    animation: chFogDrift 40s ease-in-out infinite alternate;
+}
+
+@keyframes chFogDrift {
+    from { transform: translateX(-40px); }
+    to { transform: translateX(60px); }
+}
+
+.ch-mist {
+    position: absolute;
+    width: 520px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 70%);
+    filter: blur(6px);
+    animation: chMist 80s linear infinite;
+}
+
+.ch-mist-1 { top: 18%; left: -10%; }
+.ch-mist-2 { top: 46%; left: 30%; animation-duration: 110s; animation-delay: -40s; opacity: 0.7; }
+.ch-mist-3 { top: 72%; left: 60%; animation-duration: 95s; animation-delay: -70s; opacity: 0.5; }
+
+@keyframes chMist {
+    from { transform: translateX(-30vw); }
+    to { transform: translateX(110vw); }
+}
+
+.ch-flyer {
+    position: absolute;
+    left: 0;
+    width: var(--size);
+    animation: chFlyAcross var(--dur) linear var(--delay) infinite;
+}
+
+.ch-flyer-art,
+.ch-flyer-rider {
+    display: block;
+    width: 100%;
+    animation: chBob 2.4s ease-in-out infinite;
+}
+
+.ch-flyer-witch { animation-name: chFlyBack; }
+
+.ch-flyer-rider {
+    position: relative;
+    aspect-ratio: 1;
+    transform: scaleX(-1);
+}
+
+.ch-flyer-rider .ch-fig { position: absolute; inset: 0 0 18% 0; width: 100%; }
+.ch-flyer-rider .ch-broom { position: absolute; left: -10%; width: 120%; bottom: 14%; }
+
+@keyframes chFlyAcross {
+    from { transform: translateX(-200px) translateY(0); }
+    50% { transform: translateX(50vw) translateY(-40px); }
+    to { transform: translateX(110vw) translateY(10px); }
+}
+
+@keyframes chFlyBack {
+    from { transform: translateX(110vw) translateY(0); }
+    50% { transform: translateX(45vw) translateY(30px); }
+    to { transform: translateX(-200px) translateY(-10px); }
+}
+
+@keyframes chBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.ch-flyer-rider { animation-name: chBobFlip; }
+
+@keyframes chBobFlip {
+    0%, 100% { transform: scaleX(-1) translateY(0) rotate(-3deg); }
+    50% { transform: scaleX(-1) translateY(-10px) rotate(3deg); }
+}
+
+/* Wing flaps — shared by pieces, mounts and flyers */
+.ch-wing {
+    transform-box: fill-box;
+    animation: chFlap 0.9s ease-in-out infinite;
+}
+
+.ch-wing-l { transform-origin: right center; }
+.ch-wing-r { transform-origin: left center; animation-name: chFlapR; }
+.ch-wing-far,
+.ch-wing-near { transform-origin: 100% 100%; animation-name: chFlapHorse; }
+.ch-wing-far { opacity: 0.75; animation-delay: -0.1s; }
+.ch-wing-small { animation-duration: 0.6s; }
+
+@keyframes chFlap {
+    0%, 100% { transform: rotate(0); }
+    50% { transform: rotate(14deg); }
+}
+
+@keyframes chFlapR {
+    0%, 100% { transform: rotate(0); }
+    50% { transform: rotate(-14deg); }
+}
+
+@keyframes chFlapHorse {
+    0%, 100% { transform: rotate(0) scaleY(1); }
+    50% { transform: rotate(20deg) scaleY(0.75); }
+}
+
+/* ---------- layout ---------- */
+.ch-page {
+    position: relative;
+    z-index: 1;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 24px 110px;
+}
+
+.ch-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 40px;
+    align-items: center;
+    margin-bottom: 48px;
+}
+
+.ch-hero-text {
+    padding: 26px 28px;
+    border-radius: 20px;
+    background: var(--ch-card);
+    border: 1px solid var(--ch-line);
+    box-shadow: 0 18px 50px rgba(8, 40, 24, 0.25);
+}
+
+.ch-photo {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 14px;
+    border-radius: 50%;
+    padding: 4px;
+    background: conic-gradient(var(--ch-green) 0 25%, var(--ch-white) 0 50%, var(--ch-green) 0 75%, var(--ch-white) 0);
+    box-shadow: 0 0 0 3px var(--ch-deep), 0 0 26px rgba(125, 255, 155, 0.7);
+}
+
+.ch-photo img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.ch-name {
+    margin: 0;
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    font-size: clamp(30px, 4.4vw, 52px);
+    line-height: 1.08;
+    color: var(--ch-deep);
+    text-shadow: 0 0 18px rgba(125, 255, 155, 0.65);
+    overflow-wrap: anywhere;
+    display: grid;
+    outline: none;
+}
+
+/* Nickname and full name share one grid cell and cross-fade */
+.ch-nick,
+.ch-full {
+    grid-area: 1 / 1;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.ch-full { opacity: 0; transform: translateY(8px); font-size: 0.62em; line-height: 1.15; align-self: center; }
+
+.ch-name.ch-near .ch-nick,
+.ch-name:focus-visible .ch-nick { opacity: 0; transform: translateY(-8px); }
+
+.ch-name.ch-near .ch-full,
+.ch-name:focus-visible .ch-full { opacity: 1; transform: none; }
+
+.ch-name.ch-revealed .ch-last { filter: none; }
+
+@media (hover: hover) {
+    .ch-name:hover .ch-last { filter: none; }
+}
+
+.ch-title {
+    margin: 8px 0 14px;
+    font-weight: 800;
+    color: var(--ch-green);
+    letter-spacing: 0.02em;
+}
+
+.ch-summary p {
+    margin: 2px 0;
+    color: var(--ch-muted);
+}
+
+.ch-contact { margin-top: 16px; }
+
+/* ---------- battle board ---------- */
+.ch-battle {
+    position: relative;
+    width: var(--ch-board);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ch-side {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.ch-side small {
+    margin-left: auto;
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    opacity: 0.75;
+}
+
+.ch-side-icon { font-size: 18px; }
+
+.ch-side-b {
+    background: linear-gradient(90deg, #0d0a12, #2a0f3a);
+    color: var(--ch-slime);
+    border: 1px solid rgba(125, 255, 155, 0.35);
+}
+
+.ch-side-w {
+    background: linear-gradient(90deg, #ffffff, #e6f8ec);
+    color: var(--ch-deep);
+    border: 1px solid rgba(226, 184, 74, 0.6);
+}
+
+.ch-turn-b .ch-side-b { box-shadow: 0 0 22px rgba(125, 255, 155, 0.7); transform: scale(1.02); }
+.ch-turn-w .ch-side-w { box-shadow: 0 0 22px rgba(255, 255, 255, 0.95); transform: scale(1.02); }
+
+.ch-board-frame {
+    padding: 10px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0c3322, #1f6b43 50%, #0c3322);
+    box-shadow: 0 0 0 2px rgba(125, 255, 155, 0.45), 0 24px 60px rgba(4, 24, 14, 0.55), 0 0 50px rgba(125, 255, 155, 0.25);
+}
+
+.ch-board {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 6px;
+}
+
+.ch-squares {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.ch-light { background: radial-gradient(circle at 35% 30%, #ffffff, #e4f7ea); }
+.ch-dark { background: radial-gradient(circle at 35% 30%, #4fb67a, #2a8a55); }
+
+/* Black's half carries a faint night tint, white's half a little daylight */
+.ch-squares::before,
+.ch-squares::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 50%;
+    pointer-events: none;
+}
+
+.ch-squares::before { top: 0; background: linear-gradient(180deg, rgba(42, 15, 58, 0.28), transparent); }
+.ch-squares::after { bottom: 0; background: linear-gradient(0deg, rgba(255, 246, 196, 0.3), transparent); }
+
+.ch-pieces {
+    position: absolute;
+    inset: 0;
+}
+
+.ch-piece {
+    position: absolute;
+    left: calc(var(--c) * 12.5%);
+    top: calc(var(--r) * 12.5%);
+    width: 12.5%;
+    height: 12.5%;
+    z-index: calc(var(--r) + 10);
+    transition: left 0.7s cubic-bezier(0.5, 0, 0.3, 1), top 0.7s cubic-bezier(0.5, 0, 0.3, 1);
+}
+
+.ch-piece.ch-moving { z-index: 40; }
+
+/* Selected piece and the squares it can legally reach */
+.ch-hints { position: absolute; inset: 0; pointer-events: none; }
+
+.ch-hints i {
+    position: absolute;
+    left: calc(var(--c) * 12.5%);
+    top: calc(var(--r) * 12.5%);
+    width: 12.5%;
+    height: 12.5%;
+    z-index: 4;
+}
+
+.ch-hint::after {
+    content: '';
+    position: absolute;
+    inset: 36%;
+    border-radius: 50%;
+    background: rgba(12, 51, 34, 0.55);
+    box-shadow: 0 0 10px rgba(125, 255, 155, 0.9);
+    animation: chHintPulse 1.2s ease-in-out infinite;
+}
+
+.ch-hint-cap {
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 4px rgba(255, 59, 59, 0.85), inset 0 0 18px rgba(255, 59, 59, 0.6);
+    animation: chEyes 0.8s ease-in-out infinite;
+}
+
+.ch-hint-from {
+    background: rgba(255, 216, 77, 0.45);
+    box-shadow: inset 0 0 0 3px #ffd84d;
+}
+
+.ch-selected .ch-act { filter: drop-shadow(0 0 8px #ffd84d); }
+
+@keyframes chHintPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(0.75); }
+}
+
+/* Any piece can be grabbed and dropped on another square */
+.ch-piece {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.ch-piece.ch-drag {
+    z-index: 90;
+    cursor: grabbing;
+    transition: none;
+}
+
+.ch-drag .ch-float,
+.ch-drag .ch-spin { animation: none; }
+.ch-drag .ch-act { transform: scale(1.25) rotate(-6deg); filter: drop-shadow(0 12px 8px rgba(0, 0, 0, 0.35)); }
+
+.ch-target {
+    position: absolute;
+    left: calc(var(--c) * 12.5%);
+    top: calc(var(--r) * 12.5%);
+    width: 12.5%;
+    height: 12.5%;
+    z-index: 5;
+    border-radius: 6px;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 3px var(--ch-slime), inset 0 0 18px rgba(125, 255, 155, 0.7);
+    transition: opacity 0.15s ease;
+}
+
+.ch-target.ch-show { opacity: 1; }
+.ch-target.ch-enemy {
+    box-shadow: inset 0 0 0 3px #ff3b3b, inset 0 0 22px rgba(255, 59, 59, 0.8);
+    animation: chEyes 0.6s ease-in-out infinite;
+}
+
+/* The defender recoils from the blow before it falls */
+.ch-hit .ch-act { animation: chHit 0.35s ease-in-out; }
+
+@keyframes chHit {
+    0%, 100% { transform: translateX(0); filter: none; }
+    25% { transform: translateX(-10%) rotate(-8deg); filter: brightness(2.2); }
+    50% { transform: translateX(8%) rotate(6deg); }
+    75% { transform: translateX(-5%); filter: brightness(1.6); }
+}
+
+.ch-float,
+.ch-spin,
+.ch-act {
+    position: absolute;
+    inset: 0;
+}
+
+.ch-act { inset: -22% -12% 2% -12%; }
+
+.ch-fig {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* Piece animations run on their own compositor layers; no per-piece filters, which repainted every frame */
+.ch-float,
+.ch-flyer,
+.ch-mist { will-change: transform; }
+
+.ch-halo { animation: chHalo 2.4s ease-in-out infinite; }
+.ch-b .ch-eye { animation: chEyes 2s ease-in-out infinite; }
+.ch-orb,
+.ch-bolt,
+.ch-flame { animation: chHalo 1.4s ease-in-out infinite; }
+
+@keyframes chHalo {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+}
+
+@keyframes chEyes {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* Night idles on a broom: hovering, swaying and every few seconds a full spin on the spot */
+.ch-broom {
+    position: absolute;
+    left: -6%;
+    width: 112%;
+    bottom: 10%;
+    overflow: visible;
+}
+
+.ch-b .ch-float { animation: chBroomBob 2.6s ease-in-out var(--d) infinite; }
+.ch-b .ch-spin { animation: chSpin var(--spin) ease-in-out var(--d) infinite; }
+.ch-b.ch-t-n .ch-float,
+.ch-b.ch-t-b .ch-float,
+.ch-b.ch-t-r .ch-float { animation-name: chHover; }
+
+/* Camels plod on the spot, war-wagon wheels roll back and forth and its cannon recoils when it attacks */
+.ch-camel .ch-leg-a,
+.ch-camel .ch-leg-b {
+    transform-box: fill-box;
+    transform-origin: top center;
+    animation: chPlod 1.4s ease-in-out infinite alternate;
+}
+
+.ch-camel .ch-leg-b { animation-direction: alternate-reverse; }
+
+@keyframes chPlod {
+    from { transform: rotate(-6deg); }
+    to { transform: rotate(6deg); }
+}
+
+.ch-wheel { animation: chWheel 3s ease-in-out infinite alternate; }
+
+@keyframes chWheel {
+    from { transform: rotate(-40deg); }
+    to { transform: rotate(40deg); }
+}
+
+.ch-moving .ch-wheel { animation: chWheel 0.35s linear infinite alternate; }
+.ch-slit { animation: chEyes 1.8s ease-in-out infinite; }
+.ch-muzzle { opacity: 0; }
+.ch-attack .ch-barrel { animation: chRecoil 0.75s ease-out; }
+.ch-attack .ch-muzzle { animation: chMuzzle 0.75s ease-out; }
+
+@keyframes chRecoil {
+    0%, 40%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-6px); }
+}
+
+@keyframes chMuzzle {
+    0%, 40%, 100% { opacity: 0; }
+    48% { opacity: 1; }
+}
+
+@keyframes chBroomBob {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-16%) rotate(5deg); }
+}
+
+@keyframes chHover {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12%); }
+}
+
+@keyframes chSpin {
+    0%, 78% { transform: rotateY(0) translateX(0); }
+    86% { transform: rotateY(180deg) translateX(8%); }
+    94%, 100% { transform: rotateY(360deg) translateX(0); }
+}
+
+/* Light idles gently; now and then a pegasus swoops in, carries the piece for a loop and leaves */
+.ch-w .ch-float { animation: chGlow 3.2s ease-in-out var(--d) infinite; }
+.ch-w.ch-t-n .ch-float { animation-name: chHover; animation-duration: 2.2s; }
+
+@keyframes chGlow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5%); }
+}
+
+.ch-mount {
+    position: absolute;
+    left: -30%;
+    right: -30%;
+    bottom: -18%;
+    opacity: 0;
+    transform: scale(0.3) translateX(-120%);
+    pointer-events: none;
+}
+
+.ch-mount-horse {
+    display: block;
+    width: 100%;
+    overflow: visible;
+}
+
+.ch-ride .ch-mount { animation: chMountIn 3.4s ease-in-out forwards; }
+.ch-ride .ch-float { animation: chRide 3.4s ease-in-out forwards; }
+
+@keyframes chMountIn {
+    0% { opacity: 0; transform: scale(0.3) translateX(-140%); }
+    18%, 82% { opacity: 1; transform: scale(1) translateX(0); }
+    100% { opacity: 0; transform: scale(0.3) translateX(140%); }
+}
+
+@keyframes chRide {
+    0%, 15% { transform: translate(0, 0); }
+    35% { transform: translate(18%, -55%) rotate(-6deg); }
+    55% { transform: translate(-18%, -75%) rotate(6deg); }
+    75% { transform: translate(8%, -40%) rotate(-3deg); }
+    90%, 100% { transform: translate(0, 0); }
+}
+
+/* War drum: the frame thumps on every beat; a flurry of beats makes every idle piece dance */
+.ch-board-frame.ch-thump { animation: chThump 0.25s ease-out; }
+
+@keyframes chThump {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.012); box-shadow: 0 0 0 3px var(--ch-slime), 0 24px 60px rgba(4, 24, 14, 0.55), 0 0 70px rgba(125, 255, 155, 0.6); }
+    100% { transform: scale(1); }
+}
+
+.ch-dancing .ch-piece:not(.ch-moving):not(.ch-drag) .ch-float,
+.ch-dancing .ch-piece:not(.ch-moving):not(.ch-drag) .ch-spin { animation: none; }
+
+.ch-dancing .ch-piece:not(.ch-moving):not(.ch-drag) .ch-act {
+    animation: var(--dance) 0.5s ease-in-out infinite alternate;
+    animation-delay: calc(var(--c) * -0.06s);
+}
+
+.ch-dancing .ch-wing { animation-duration: 0.25s; }
+
+@keyframes chDanceHop {
+    from { transform: translateY(0) scaleY(0.92); }
+    to { transform: translateY(-28%) scaleY(1.05); }
+}
+
+@keyframes chDanceSway {
+    from { transform: rotate(-14deg) translateX(-8%); }
+    to { transform: rotate(14deg) translateX(8%); }
+}
+
+@keyframes chDanceSpin {
+    from { transform: rotateY(0) translateY(0); }
+    to { transform: rotateY(180deg) translateY(-14%); }
+}
+
+@keyframes chDanceShake {
+    from { transform: scale(1, 1) skewX(-10deg); }
+    to { transform: scale(1.12, 0.9) skewX(10deg); }
+}
+
+/* Moving / attacking */
+.ch-moving .ch-float,
+.ch-moving .ch-spin { animation: none; }
+
+.ch-attack .ch-act { animation: chLunge 0.75s ease-in-out; }
+.ch-attack .ch-weapon { transform-box: fill-box; transform-origin: center bottom; animation: chThrust 0.75s ease-in-out; }
+.ch-leap .ch-act { animation: chLeap 0.75s ease-in-out; }
+.ch-leap .ch-wing { animation-duration: 0.3s; }
+
+@keyframes chLunge {
+    0%, 100% { transform: scale(1); }
+    40% { transform: scale(1.18) translateY(-8%); }
+    70% { transform: scale(1.12) rotate(-6deg); }
+}
+
+@keyframes chThrust {
+    0%, 30%, 100% { transform: rotate(0); }
+    55% { transform: rotate(-35deg) translate(-6%, -10%); }
+}
+
+@keyframes chLeap {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-90%) scale(1.25); }
+}
+
+/* Captured: light ascends to the sky, night bursts into green smoke */
+.ch-w.ch-fall { animation: chAscend 0.9s ease-in forwards; }
+.ch-b.ch-fall { animation: chPoof 0.9s ease-in forwards; }
+
+@keyframes chAscend {
+    0% { opacity: 1; transform: translateY(0); filter: brightness(1); }
+    100% { opacity: 0; transform: translateY(-140%) scale(0.7); filter: brightness(2.2); }
+}
+
+@keyframes chPoof {
+    0% { opacity: 1; transform: scale(1) rotate(0); filter: blur(0); }
+    40% { transform: scale(1.2) rotate(-12deg); }
+    100% { opacity: 0; transform: scale(0.3) rotate(40deg); filter: blur(6px) hue-rotate(60deg); }
+}
+
+.ch-clash {
+    position: absolute;
+    left: calc(var(--c) * 12.5%);
+    top: calc(var(--r) * 12.5%);
+    width: 12.5%;
+    height: 12.5%;
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: chClash 0.7s ease-out forwards;
+}
+
+.ch-clash span { font-size: clamp(18px, 4vw, 32px); }
+.ch-clash-w { background: radial-gradient(circle, #fff 0%, rgba(255, 216, 77, 0.8) 35%, transparent 70%); }
+.ch-clash-b { background: radial-gradient(circle, #eafff0 0%, rgba(125, 255, 155, 0.85) 35%, transparent 70%); }
+
+@keyframes chClash {
+    0% { opacity: 0; transform: scale(0.3); }
+    30% { opacity: 1; transform: scale(1.6); }
+    100% { opacity: 0; transform: scale(2.2); }
+}
+
+.ch-verdict {
+    position: absolute;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    place-content: center;
+    text-align: center;
+    gap: 4px;
+    border-radius: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.ch-verdict.ch-show { opacity: 1; }
+.ch-verdict b { font-family: 'Cinzel', serif; font-size: clamp(24px, 5vw, 40px); }
+.ch-win-w { background: rgba(255, 255, 255, 0.78); color: var(--ch-deep); }
+.ch-win-b { background: rgba(13, 10, 18, 0.8); color: var(--ch-slime); }
+.ch-win-none { background: rgba(31, 107, 67, 0.75); color: #fff; }
+
+.ch-log {
+    list-style: none;
+    margin: 0;
+    padding: 8px 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    min-height: 36px;
+    border-radius: 12px;
+    background: rgba(12, 51, 34, 0.75);
+    color: var(--ch-mint);
+    font: 600 13px/1.4 ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+.ch-log li:last-child { color: #fff; }
+.ch-log-no { opacity: 0.6; }
+.ch-log-b { color: var(--ch-slime); }
+
+/* ---------- sections ---------- */
+.ch-section {
+    margin-top: 56px;
+}
+
+.ch-section h2 {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 20px;
+    font-family: 'Creepster', 'Cinzel', serif;
+    font-weight: 400;
+    font-size: clamp(30px, 4vw, 44px);
+    letter-spacing: 0.04em;
+    color: var(--ch-white);
+    text-shadow: 0 0 14px rgba(125, 255, 155, 0.9), 0 3px 0 var(--ch-deep);
+}
+
+.ch-h2-sub {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ch-mint);
+    text-shadow: 0 1px 3px #03130d, 0 0 10px #03130d;
+}
+
+.ch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.ch-grid-3 { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+
+.ch-card {
+    position: relative;
+    padding: 18px 20px;
+    border-radius: 16px;
+    background: var(--ch-card);
+    border: 1px solid var(--ch-line);
+    box-shadow: 0 10px 30px rgba(8, 40, 24, 0.2);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ch-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px rgba(8, 40, 24, 0.3), 0 0 22px rgba(125, 255, 155, 0.55);
+}
+
+.ch-card h3 {
+    margin: 0 0 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 17px;
+    color: var(--ch-deep);
+    text-transform: capitalize;
+}
+
+.ch-card p { margin: 4px 0; color: var(--ch-muted); }
+
+.ch-card-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+    border-radius: 8px;
+    background: var(--ch-deep);
+    color: var(--ch-slime);
+    font-size: 18px;
+    vertical-align: middle;
+}
+
+.ch-armory-card:nth-child(even) .ch-card-icon {
+    background: #fff;
+    color: var(--ch-deep);
+    box-shadow: inset 0 0 0 1px var(--ch-line);
+}
+
+.ch-at { color: var(--ch-green); font-weight: 800; font-family: 'Nunito', sans-serif; text-transform: none; }
+.ch-date { font-size: 13px; font-weight: 700; color: var(--ch-green) !important; }
+
+.ch-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.ch-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #e3f7ea;
+    border: 1px solid var(--ch-line);
+    color: var(--ch-deep);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    word-break: break-word;
+}
+
+.ch-chip-link:hover { background: var(--ch-deep); color: var(--ch-slime); }
+
+/* Email & phone stay blurred until hovered (mouse) or tapped once (touch) */
+.ch-secret-text {
+    display: inline-block;
+    filter: blur(5px);
+    transition: filter 0.2s ease;
+}
+
+.ch-secret:focus-visible .ch-secret-text,
+.ch-secret.ch-revealed .ch-secret-text { filter: none; }
+
+@media (hover: hover) {
+    .ch-secret:hover .ch-secret-text { filter: none; }
+}
+
+/* Campaigns: a 4 × 2 mini board, each square flips to show the job's details */
+.ch-campaigns {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 8px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0c3322, #1f6b43 50%, #0c3322);
+    box-shadow: 0 0 0 2px rgba(125, 255, 155, 0.45), 0 18px 40px rgba(4, 24, 14, 0.45);
+}
+
+.ch-exp {
+    aspect-ratio: 2.1;
+    perspective: 900px;
+    outline: none;
+    cursor: pointer;
+}
+
+.ch-exp-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+
+.ch-exp.ch-flipped .ch-exp-inner,
+.ch-exp:focus-visible .ch-exp-inner { transform: rotateY(180deg); }
+
+@media (hover: hover) {
+    .ch-exp:hover .ch-exp-inner { transform: rotateY(180deg); }
+}
+
+.ch-exp-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 2px;
+    padding: 10px 14px;
+    overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: radial-gradient(circle at 35% 30%, #ffffff, #e4f7ea);
+    color: var(--ch-deep);
+}
+
+/* Checkerboard colouring: 4 squares per rank on wide screens, 2 per rank on phones */
+.ch-exp:nth-child(8n + 2) .ch-exp-face,
+.ch-exp:nth-child(8n + 4) .ch-exp-face,
+.ch-exp:nth-child(8n + 5) .ch-exp-face,
+.ch-exp:nth-child(8n + 7) .ch-exp-face {
+    background: radial-gradient(circle at 35% 30%, #4fb67a, #2a8a55);
+    color: #fff;
+}
+
+.ch-exp-back {
+    transform: rotateY(180deg);
+    justify-content: center;
+    background: #0d0a12 !important;
+    color: var(--ch-mint) !important;
+    box-shadow: inset 0 0 0 2px rgba(125, 255, 155, 0.5);
+}
+
+.ch-exp-square {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font: 800 11px/1 ui-monospace, Menlo, monospace;
+    opacity: 0.6;
+}
+
+.ch-exp-icon {
+    position: absolute;
+    top: -6px;
+    right: 6px;
+    font-size: clamp(36px, 4vw, 52px);
+    line-height: 1;
+    opacity: 0.22;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.ch-exp:hover .ch-exp-icon { transform: translateY(4px) rotate(-8deg); opacity: 0.4; }
+
+.ch-exp-years {
+    font: 800 20px/1 'Cinzel', serif;
+}
+
+.ch-exp-years small {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.ch-exp h3 {
+    margin: 4px 0 0;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.ch-exp-company {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    opacity: 0.8;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ch-exp-desc {
+    margin: 0 0 8px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #fff;
+}
+
+.ch-exp-meta {
+    margin: 0;
+    font: 700 11px/1.4 ui-monospace, Menlo, monospace;
+    color: var(--ch-slime);
+}
+
+.ch-project { padding-top: 26px; }
+
+.ch-project-no {
+    position: absolute;
+    top: -12px;
+    right: 16px;
+    padding: 3px 10px;
+    border-radius: 8px;
+    background: var(--ch-deep);
+    color: var(--ch-slime);
+    font: 800 13px/1.4 ui-monospace, Menlo, monospace;
+}
+
+.ch-project .ch-chips { margin-top: 10px; }
+
+.ch-link {
+    display: inline-block;
+    margin-top: 12px;
+    color: var(--ch-green);
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.ch-link:hover { text-decoration: underline; }
+
+.ch-scroll { border-left: 5px solid var(--ch-green); }
+
+/* Reveal on scroll */
+.ch-reveal .ch-reveal-item {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.ch-reveal.ch-in .ch-reveal-item { opacity: 1; transform: none; }
+.ch-reveal.ch-in .ch-reveal-item:nth-child(2) { transition-delay: 0.06s; }
+.ch-reveal.ch-in .ch-reveal-item:nth-child(3) { transition-delay: 0.12s; }
+.ch-reveal.ch-in .ch-reveal-item:nth-child(4) { transition-delay: 0.18s; }
+.ch-reveal.ch-in .ch-reveal-item:nth-child(n + 5) { transition-delay: 0.24s; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1024px) {
+    .ch-hero {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: center;
+    }
+
+    .ch-hero-text { width: 100%; }
+    .ch-page { padding-top: 60px; }
+}
+
+@media (max-width: 600px) {
+    .ch-page { padding: 56px 16px 90px; }
+    .ch-hero-text { padding: 20px; }
+    .ch-photo { width: 96px; height: 96px; }
+    .ch-board-frame { padding: 6px; }
+    .ch-side small { display: none; }
+    .ch-grid,
+    .ch-grid-3 { grid-template-columns: minmax(0, 1fr); }
+    .ch-campaigns { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 6px; }
+    .ch-exp { aspect-ratio: 1.6; }
+    .ch-exp:nth-child(n) .ch-exp-face { background: radial-gradient(circle at 35% 30%, #ffffff, #e4f7ea); color: var(--ch-deep); }
+    .ch-exp:nth-child(4n + 2) .ch-exp-face,
+    .ch-exp:nth-child(4n + 3) .ch-exp-face { background: radial-gradient(circle at 35% 30%, #4fb67a, #2a8a55); color: #fff; }
+    .ch-exp-face { padding: 10px; }
+    .ch-exp-years { font-size: 17px; }
+    .ch-exp h3 { font-size: 13px; }
+    .ch-flyer-witch:nth-of-type(n) { opacity: 0.8; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ch-map,
+    .ch-ship,
+    .ch-map-flag,
+    .ch-map-fog,
+    .ch-star,
+    .ch-sun-rays,
+    .ch-mist,
+    .ch-flyer,
+    .ch-flyer-art,
+    .ch-flyer-rider,
+    .ch-wing,
+    .ch-b .ch-float,
+    .ch-b .ch-spin,
+    .ch-w .ch-float,
+    .ch-halo,
+    .ch-eye {
+        animation: none !important;
+    }
+
+    .ch-flyer { display: none; }
+}
