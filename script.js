@@ -1,5 +1,5 @@
 /* Keep ?v= in sync with index.html (cache-bust on GitHub Pages) */
-var ASSET_VER = '26';
+var ASSET_VER = '58';
 
 // Selectable page templates. "code" is the built-in editor look; others load their own CSS/JS
 // and register a renderer on window.ProfileTemplates[name].
@@ -14,6 +14,11 @@ var TEMPLATES = {
         label: 'Chess Halloween ♞',
         css: 'templates/chess-halloween/chess-halloween.css',
         js: 'templates/chess-halloween/chess-halloween.js'
+    },
+    rubik: {
+        label: 'Rubik Cube 🧊',
+        css: 'templates/rubik/rubik.css',
+        js: 'templates/rubik/rubik.js'
     }
 };
 // Renamed when the default template changes, so earlier saved choices don't hide the new default
@@ -52,6 +57,46 @@ function initTemplateSwitcher() {
         params.set('template', select.value);
         location.search = params.toString();
     });
+
+    // Custom dropdown (a native <select> list is always plain white and cannot be themed); the select stays as the source of truth
+    const drop = document.createElement('div');
+    drop.className = 'ts-drop';
+    const dropBtn = document.createElement('button');
+    dropBtn.type = 'button';
+    dropBtn.className = 'ts-btn';
+    dropBtn.setAttribute('aria-haspopup', 'listbox');
+    dropBtn.setAttribute('aria-expanded', 'false');
+    dropBtn.textContent = TEMPLATES[ACTIVE_TEMPLATE].label;
+    const dropList = document.createElement('ul');
+    dropList.className = 'ts-list';
+    dropList.setAttribute('role', 'listbox');
+    Object.entries(TEMPLATES).forEach(([name, t]) => {
+        const li = document.createElement('li');
+        li.setAttribute('role', 'option');
+        li.dataset.value = name;
+        li.setAttribute('aria-selected', String(name === ACTIVE_TEMPLATE));
+        li.textContent = t.label;
+        dropList.appendChild(li);
+    });
+    drop.append(dropBtn, dropList);
+    select.after(drop);
+    select.classList.add('ts-native');
+    const setDrop = (open) => {
+        drop.classList.toggle('open', open);
+        dropBtn.setAttribute('aria-expanded', String(open));
+    };
+    dropBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setDrop(!drop.classList.contains('open'));
+    });
+    dropList.addEventListener('click', (e) => {
+        const li = e.target.closest('li');
+        if (!li) return;
+        select.value = li.dataset.value;
+        select.dispatchEvent(new Event('change'));
+    });
+    document.addEventListener('click', () => setDrop(false));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setDrop(false); });
 
     // Hamburger toggle for the compact phone layout; a tap anywhere else closes it
     const switcher = document.getElementById('templateSwitcher');
