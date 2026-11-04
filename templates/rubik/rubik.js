@@ -520,125 +520,77 @@
             var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
             return lerp(lerp(hash(xi, yi, sd), hash(xi + 1, yi, sd), u), lerp(hash(xi, yi + 1, sd), hash(xi + 1, yi + 1, sd), u), v);
         }
-        var EARTH_BIG = (function () {
-            var n = 130, c = document.createElement('canvas'); c.width = n; c.height = n;
-            var g = c.getContext('2d');
-            for (var j = 0; j < n; j++) for (var i = 0; i < n; i++) {
-                var dx = (i + 0.5 - n / 2) / (n / 2), dy = (j + 0.5 - n / 2) / (n / 2);
-                if (dx * dx + dy * dy > 1) continue;
-                var light = clamp(0.62 - dy * 0.55 - dx * 0.25, 0, 1);
-                var land = vnoise(i * 0.09, j * 0.09, 11) * 0.65 + vnoise(i * 0.24, j * 0.24, 12) * 0.35, col;
-                if (vnoise(i * 0.16, j * 0.16, 21) > 0.7) col = light > 0.45 ? '#ffffff' : '#dfe8f5';
-                else if (land > 0.56) col = land > 0.7 ? (light > 0.45 ? '#9c7a45' : '#7a5c32') : (light > 0.45 ? '#58b34a' : '#3d8f38');
-                else col = light > 0.55 ? '#4a8cf0' : (light > 0.3 ? '#2f6fd8' : '#1d4f9f');
-                g.fillStyle = col; g.fillRect(i, j, 1, 1);
-            }
-            return c;
-        })();
+        // A small black hole that stays where it is while the sky changes around it: a black event horizon, a razor-thin photon ring,
+        // a glowing accretion disc seen almost edge-on, its far side bent over the top and under the bottom (lensing), faint jets and a
+        // sparkling Einstein ring.
+        var BH_N = 260, BH_SPAN = 5.5, bhCv = document.createElement('canvas');
+        bhCv.width = bhCv.height = BH_N;
+        var bhCtx = bhCv.getContext('2d'), bhImg = bhCtx.createImageData(BH_N, BH_N);
 
-        // The globe: a land mask built from coarse continent outlines (North America, South America, Africa, Eurasia,
-        // Australia, Antarctica), drawn as a blocky sphere that spins in towards Mongolia while you scroll down
-        var CONTINENTS = [
-            [1, [[-168, 66], [-162, 71], [-140, 70], [-125, 72], [-110, 73], [-95, 73], [-82, 70], [-80, 63], [-90, 58], [-79, 52], [-66, 60], [-60, 55], [-55, 50], [-66, 44], [-76, 38], [-81, 30], [-80, 25], [-84, 30], [-90, 29], [-97, 26], [-97, 20], [-90, 21], [-87, 16], [-83, 10], [-78, 8], [-85, 12], [-92, 15], [-105, 20], [-110, 24], [-112, 29], [-117, 32], [-124, 40], [-124, 48], [-133, 55], [-148, 60], [-158, 58], [-165, 62]]],
-            [1, [[-73, 78], [-60, 82], [-30, 83], [-20, 78], [-20, 70], [-30, 67], [-43, 60], [-52, 64], [-58, 75]]],
-            [2, [[-80, 9], [-72, 12], [-62, 10], [-52, 5], [-50, 0], [-44, -2], [-35, -6], [-38, -14], [-40, -22], [-48, -26], [-53, -34], [-58, -38], [-65, -42], [-66, -47], [-69, -52], [-73, -52], [-75, -46], [-73, -37], [-71, -27], [-70, -18], [-76, -14], [-81, -6], [-80, 0], [-77, 4]]],
-            [3, [[-17, 21], [-16, 28], [-9, 32], [-5, 36], [10, 37], [11, 33], [20, 31], [32, 31], [34, 28], [38, 21], [43, 12], [51, 12], [48, 5], [41, -3], [40, -11], [40, -17], [35, -25], [32, -29], [27, -34], [19, -35], [16, -29], [12, -17], [13, -8], [9, -1], [9, 4], [3, 6], [-8, 4], [-13, 8], [-17, 14]]],
-            [3, [[44, -25], [47, -25], [50, -15], [49, -12], [44, -17]]],
-            [4, [[-10, 36], [-9, 43], [-2, 43], [-1, 48], [3, 51], [8, 54], [10, 57], [5, 60], [8, 63], [15, 68], [25, 71], [40, 68], [45, 68], [60, 70], [70, 73], [80, 73], [100, 77], [115, 73], [130, 71], [142, 72], [160, 70], [172, 67], [180, 66], [180, 62], [163, 58], [156, 51], [143, 52], [141, 46], [135, 43], [130, 43], [127, 38], [126, 35], [122, 40], [121, 32], [122, 28], [117, 23], [109, 21], [108, 16], [109, 11], [105, 9], [100, 13], [100, 5], [104, 1], [98, 8], [98, 16], [94, 17], [90, 22], [86, 20], [80, 13], [77, 8], [73, 17], [70, 21], [67, 25], [60, 25], [57, 26], [56, 25], [52, 27], [48, 30], [50, 26], [56, 24], [59, 22], [53, 16], [44, 13], [39, 22], [35, 28], [34, 31], [36, 36], [30, 36], [27, 37], [26, 40], [23, 38], [21, 40], [19, 42], [15, 45], [12, 45], [16, 41], [18, 40], [15, 38], [9, 44], [3, 43], [-1, 38]]],
-            [4, [[-5, 50], [1, 51], [2, 53], [-2, 58], [-6, 57], [-5, 54]]],
-            [4, [[130, 31], [132, 34], [135, 35], [140, 36], [142, 40], [141, 45], [145, 44], [140, 41], [137, 38], [131, 34]]],
-            [5, [[113, -22], [122, -18], [130, -12], [136, -12], [142, -11], [146, -19], [153, -26], [151, -34], [146, -39], [140, -38], [135, -34], [129, -32], [116, -35], [114, -28]]],
-            [5, [[109, 2], [117, 7], [119, 1], [116, -4], [110, -3]]]
-        ];
-        var MASK_W = 180, MASK_H = 90, MASK = new Uint8Array(MASK_W * MASK_H);
-        (function buildMask() {
-            function inPoly(x, y, P) {
-                var c = false;
-                for (var i = 0, k = P.length - 1; i < P.length; k = i++) {
-                    var xi = P[i][0], yi = P[i][1], xk = P[k][0], yk = P[k][1];
-                    if (((yi > y) !== (yk > y)) && (x < (xk - xi) * (y - yi) / (yk - yi) + xi)) c = !c;
+        function drawBlackHole(ap, day) {
+            if (ap < 0.02 || day > 0.97) return;
+            ctx.fillStyle = 'rgba(3,4,10,' + clamp(ap * 3, 0, 0.96) + ')'; ctx.fillRect(0, 0, w, h);      // the solar system fades away behind it
+
+            var cx = w * 0.5, cy = h * 0.5, Rh = Math.min(0.11 * h, 0.2 * w);
+            var N = BH_N, data = bhImg.data, tilt = 0.2, i, j2;
+            for (j2 = 0; j2 < N; j2++) for (i = 0; i < N; i++) {
+                var x = (i + 0.5 - N / 2) / (N / 2) * BH_SPAN, y = (j2 + 0.5 - N / 2) / (N / 2) * BH_SPAN, r = Math.hypot(x, y), o = (j2 * N + i) * 4;
+                var R = 0, G = 0, B2 = 0, A = 0;
+
+                // a violet-orange halo that gets darker towards the horizon (depth)
+                if (r > 1.0) {
+                    var hg = Math.exp(-(r - 1) * 0.9);
+                    R += 255 * 0.34 * hg; G += 120 * 0.34 * hg; B2 += 90 * 0.34 * hg; A += 0.3 * hg;
+                    var vio = Math.exp(-Math.pow((r - 1.25) / 0.22, 2)) * 0.22;
+                    R += 90 * vio; G += 40 * vio; B2 += 160 * vio; A += 0.25 * vio;
                 }
-                return c;
-            }
-            for (var jj = 0; jj < MASK_H; jj++) for (var ii = 0; ii < MASK_W; ii++) {
-                var lon = -180 + (ii + 0.5) * 2, lat = 90 - (jj + 0.5) * 2, id = 0;
-                if (lat < -69 + 1.5 * Math.sin(lon * 0.09)) id = 6;
-                else for (var k2 = 0; k2 < CONTINENTS.length; k2++) if (inPoly(lon, lat, CONTINENTS[k2][1])) { id = CONTINENTS[k2][0]; break; }
-                MASK[jj * MASK_W + ii] = id;
-            }
-        })();
+                // faint relativistic jets along the axis
+                var jet = Math.exp(-Math.pow(x / (0.12 + Math.abs(y) * 0.05), 2)) * Math.exp(-Math.abs(y) * 0.38) * (Math.abs(y) > 0.9 ? 1 : 0) * 0.35;
+                if (jet > 0.01) { R += 110 * jet; G += 150 * jet; B2 += 255 * jet; A = Math.max(A, jet * 0.9); }
 
-        function earthColor(lat, lon, id, shade, cloud) {
-            var r, g, b, rgb;
-            if (!id) { var k = 0.8 + 0.2 * Math.cos(lat * DEG); r = 36 * k; g = 95 * k; b = 184 * k; }
-            else {
-                if (id === 6 || lat > 70 || (id === 1 && lat > 60 && lon > -75 && lon < -10)) rgb = [238, 246, 255];
-                else if ((id === 3 && lat > 13 && lat < 31) || (id === 4 && lon > 35 && lon < 58 && lat > 16 && lat < 30)) rgb = [210, 180, 105];
-                else if (id === 5 && lon > 120 && lon < 146 && lat > -31 && lat < -20) rgb = [207, 159, 90];
-                else if (lon > 70 && lon < 100 && lat > 27 && lat < 40) rgb = [139, 122, 85];
-                else if (lon > 88 && lon < 122 && lat > 41 && lat < 52) rgb = [158, 194, 79];
-                else if ((id === 2 && lat > -12 && lat < 6) || (id === 3 && lat > -6 && lat < 6)) rgb = [47, 143, 58];
-                else rgb = [79, 174, 72];
-                r = rgb[0]; g = rgb[1]; b = rgb[2];
-            }
-            r *= shade; g *= shade; b *= shade;
-            if (cloud > 0) { r += (255 - r) * cloud; g += (255 - g) * cloud; b += (255 - b) * cloud; }
-            return [r, g, b];
-        }
+                // sparkling Einstein ring: background starlight smeared round the hole
+                if (r > 1.55 && r < 2.3) {
+                    var sp = Math.sin(Math.atan2(y, x) * 40 + T * 0.4) * 0.5 + 0.5, hs = hash(Math.floor(i / 2), Math.floor(j2 / 2), 61);
+                    if (hs > 0.965) { var sb = (1 - Math.abs(r - 1.9) / 0.4) * (0.5 + 0.5 * sp); if (sb > 0) { R += 255 * sb; G += 255 * sb; B2 += 255 * sb; A = Math.max(A, sb); } }
+                }
 
-        var EARTH_N = 128, earthCv = document.createElement('canvas'), earthCtx;
-        earthCv.width = earthCv.height = EARTH_N; earthCtx = earthCv.getContext('2d');
-        var earthImg = earthCtx.createImageData(EARTH_N, EARTH_N);
-
-        function drawEarth(ap, day) {
-            if (ap < 0.02) return;
-            // fade the solar system out behind the globe (the sun stays: it is drawn afterwards)
-            ctx.fillStyle = 'rgba(4,6,14,' + clamp(ap * 3, 0, 0.94) + ')'; ctx.fillRect(0, 0, w, h);
-
-            var N = EARTH_N, data = earthImg.data, e = ease(clamp(ap / 0.75, 0, 1));
-            var lon0 = lerp(-95, 106, e), lat0 = lerp(-28, 47, e), cp = Math.cos(lat0 * DEG), sp = Math.sin(lat0 * DEG), i, j;
-            for (j = 0; j < N; j++) for (i = 0; i < N; i++) {
-                var x = (i + 0.5 - N / 2) / (N / 2), y = -(j + 0.5 - N / 2) / (N / 2), r2 = x * x + y * y, o = (j * N + i) * 4;
-                if (r2 > 1) { data[o + 3] = 0; continue; }
-                var z = Math.sqrt(1 - r2), y2 = y * cp + z * sp, z2 = -y * sp + z * cp;
-                var lat = Math.asin(clamp(y2, -1, 1)) / DEG, lon = ((lon0 + Math.atan2(x, z2) / DEG + 540) % 360) - 180;
-                var id = MASK[clamp(Math.floor((90 - lat) / 2), 0, MASK_H - 1) * MASK_W + clamp(Math.floor((lon + 180) / 2), 0, MASK_W - 1)];
-                var cloud = Math.min(0.7, Math.max(0, (vnoise(lon * 0.08 + 3, lat * 0.1, 31) * 0.6 + vnoise(lon * 0.25, lat * 0.3, 32) * 0.4 - 0.66) * 3));
-                var shade = clamp(0.4 - x * 0.35 + y * 0.45 + z * 0.55, 0.12, 1) * (0.7 + 0.3 * z);
-                var col = earthColor(lat, lon, id, 0.35 + 0.65 * shade, cloud);
-                data[o] = col[0]; data[o + 1] = col[1]; data[o + 2] = col[2]; data[o + 3] = 255;
+                // accretion disc (white-blue at the inner edge, yellow, orange, deep red outside); the left side rushes towards us and is brighter
+                var rho = Math.hypot(x, y / tilt), front = y > 0, onDisc = false;
+                if (rho > 1.6 && rho < 5.3 && (front || r > 1.0)) {
+                    var ang = Math.atan2(y / tilt, x), dop = clamp(0.62 - 0.45 * (x / rho), 0.15, 1.15);
+                    var streak = 0.7 + 0.3 * Math.sin(ang * 6 - T * 5 / Math.pow(rho, 1.3)) * (0.6 + 0.4 * Math.sin(rho * 9 + T * 0.6));
+                    var br = clamp(Math.pow(1.6 / rho, 1.1) * 1.8 * dop * streak, 0, 1.5), t = clamp((rho - 1.6) / 3.6, 0, 1);
+                    var dr, dg, db;
+                    if (t < 0.18) { var u = t / 0.18; dr = lerp(215, 255, u); dg = lerp(228, 238, u); db = lerp(255, 190, u); }
+                    else { var u2 = (t - 0.18) / 0.82; dr = lerp(255, 135, u2); dg = lerp(238, 28, Math.pow(u2, 0.8)); db = lerp(190, 14, u2); }
+                    var edge = clamp((5.3 - rho) * 1.4, 0, 1) * clamp((rho - 1.6) * 8, 0, 1);
+                    R = lerp(R, dr * br, edge); G = lerp(G, dg * br, edge); B2 = lerp(B2, db * br, edge); A = Math.max(A, edge * clamp(br * 1.5, 0, 1));
+                    onDisc = true;
+                }
+                // the far side of the disc, bent over the top (strong) and under the bottom (weak) of the horizon
+                var wt = y < 0 ? Math.pow(clamp(-y / Math.max(r, 0.001), 0, 1), 0.6) : 0.5 * Math.pow(clamp(y / Math.max(r, 0.001), 0, 1), 1.1);
+                var arch = Math.exp(-Math.pow((r - 1.17) / 0.28, 2)) * wt;
+                if (arch > 0.02 && r > 1.0) {
+                    var ad = clamp(0.72 - 0.3 * (x / Math.max(r, 0.001)), 0.3, 1);
+                    var av = arch * ad * (0.82 + 0.18 * Math.sin(Math.atan2(y, x) * 9 - T * 4));
+                    R += 255 * av; G += 214 * av; B2 += 150 * av; A = Math.max(A, clamp(av * 1.3, 0, 1));
+                }
+                // photon rings: a bright razor-thin one with a blue inner and orange outer fringe, and a fainter second image
+                var ring = Math.exp(-Math.pow((r - 1.035) / 0.03, 2)), ring2 = Math.exp(-Math.pow((r - 1.11) / 0.02, 2)) * 0.45;
+                var sh2 = 0.85 + 0.15 * Math.sin(Math.atan2(y, x) * 3 + T * 1.2);
+                if (ring > 0.02) { var rb = ring * sh2; R += 255 * rb; G += 245 * rb; B2 += 225 * rb; A = Math.max(A, clamp(rb * 1.5, 0, 1)); }
+                if (r > 0.97 && r < 1.0) { var inn = (1 - Math.abs(r - 0.985) / 0.015) * 0.7; R += 120 * inn; G += 160 * inn; B2 += 255 * inn; A = Math.max(A, inn); }
+                if (r > 1.06 && r < 1.15) { var out = (1 - Math.abs(r - 1.1) / 0.05) * 0.5; R += 255 * out; G += 150 * out; B2 += 60 * out; A = Math.max(A, out); }
+                if (ring2 > 0.02) { R += 255 * ring2; G += 220 * ring2; B2 += 180 * ring2; A = Math.max(A, ring2); }
+                // the event horizon is pure black (the near side of the disc passes in front of it)
+                if (r < 0.985 && !onDisc) { R = G = B2 = 0; A = 1; }
+                data[o] = clamp(R, 0, 255); data[o + 1] = clamp(G, 0, 255); data[o + 2] = clamp(B2, 0, 255); data[o + 3] = clamp(A * 255, 0, 255);
             }
-            earthCtx.putImageData(earthImg, 0, 0);
-
-            // the whole globe stays in view while it spins; only then does it zoom in
-            var R = ap < 0.55 ? lerp(0.22 * h, 0.7 * h, ap / 0.55) : lerp(0.7 * h, 3.4 * h, Math.pow((ap - 0.55) / 0.45, 2)), cx = w * 0.5, cy = h * 0.5;
-            ctx.globalAlpha = clamp(ap * 8, 0, 1);
-            ctx.drawImage(earthCv, Math.round(cx - R), Math.round(cy - R), Math.round(2 * R), Math.round(2 * R));
-            if (R < 2 * h) {                                                   // thin blue atmosphere
-                var rg = ctx.createRadialGradient(cx, cy, R * 0.96, cx, cy, R * 1.07);
-                rg.addColorStop(0, 'rgba(130,200,255,0.5)'); rg.addColorStop(1, 'rgba(130,200,255,0)');
-                ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(cx, cy, R * 1.07, 0, 6.2832); ctx.fill();
-            }
-            // a pulsing marker on Mongolia (Ulaanbaatar) once it turns into view
-            var mla = 47.9 * DEG, mlo = (106.9 - lon0) * DEG;
-            var mx = Math.cos(mla) * Math.sin(mlo), my = Math.sin(mla), mz = Math.cos(mla) * Math.cos(mlo);
-            var yv = my * cp - mz * sp, zv = my * sp + mz * cp;
-            if (zv > 0.1) {
-                var sx = cx + mx * R, sy = cy - yv * R, pulse = 6 + (Math.sin(T * 5) + 1) * 4;
-                ctx.fillStyle = '#ff2a2a'; ctx.fillRect(Math.round(sx - 4), Math.round(sy - 4), 8, 8);
-                ctx.strokeStyle = 'rgba(255,60,60,0.8)'; ctx.lineWidth = 2; ctx.strokeRect(Math.round(sx - pulse), Math.round(sy - pulse), pulse * 2, pulse * 2);
-                if (R > 0.3 * h) { ctx.font = '16px VT323, monospace'; ctx.fillStyle = '#ffffff'; ctx.fillText('Mongolia', Math.round(sx + pulse + 6), Math.round(sy + 5)); }
-            }
+            bhCtx.putImageData(bhImg, 0, 0);
+            var half = BH_SPAN * Rh;
+            ctx.globalAlpha = clamp(ap * 4, 0, 1) * (1 - day);
+            ctx.drawImage(bhCv, Math.round(cx - half), Math.round(cy - half), Math.round(2 * half), Math.round(2 * half));
             ctx.globalAlpha = 1;
-        }
-
-        function drawEarthLimb(ap) {
-            if (ap < 0.01) return;
-            var De = Math.max(w * 3.4, h * 3.2), R = De / 2, top = h - ap * h * 0.58, cy = top + R;
-            ctx.drawImage(EARTH_BIG, Math.round(w / 2 - R), Math.round(top), Math.round(De), Math.round(De));
-            var rg = ctx.createRadialGradient(w / 2, cy, R * 0.99, w / 2, cy, R * 1.07);
-            rg.addColorStop(0, 'rgba(130,200,255,0.55)'); rg.addColorStop(1, 'rgba(130,200,255,0)');
-            ctx.fillStyle = rg; ctx.fillRect(0, top - R * 0.08, w, R * 0.14);
         }
 
         function drawSky(day) {
@@ -648,26 +600,508 @@
             ctx.globalAlpha = day; ctx.fillStyle = g; ctx.fillRect(0, 0, w, h); ctx.globalAlpha = 1;
         }
 
-        // pixel clouds
+        /* ---------- the bottom of the page: a Minecraft landscape in real perspective ----------
+           A tiny voxel renderer: every block is a box whose visible faces (top, front, side) are projected with a perspective
+           camera and painted back to front. The static scene (terrain, trees, the ger, the well, fences) is rendered once into two
+           canvases; the herder, the bucket, the animals, the clouds and the smoke are drawn again every frame between them. */
+
+        var CAM = { x: 0, y: 5.5, z: -10, pitch: 0.12 }, VW = { F: 1000, cx: 0, cy: 0, cs: 1, sn: 0 };
+        function setupCam() {
+            VW.F = 0.85 * w; VW.cs = Math.cos(CAM.pitch); VW.sn = Math.sin(CAM.pitch);
+            VW.cx = w * 0.5; VW.cy = h * 0.6 + Math.tan(CAM.pitch) * VW.F;               // the horizon sits at 60% of the screen height
+        }
+        function proj(X, Y, Z) {
+            var dx = X - CAM.x, dy = Y - CAM.y, dz = Z - CAM.z;
+            var zz = -dy * VW.sn + dz * VW.cs, yy = dy * VW.cs + dz * VW.sn, k = VW.F / zz;
+            return [VW.cx + dx * k, VW.cy - yy * k, zz];
+        }
+        var shCache = {};
+        function sh(col, f) {
+            var key = col + f;
+            if (shCache[key]) return shCache[key];
+            var n = parseInt(col.slice(1), 16);
+            return (shCache[key] = 'rgb(' + Math.round(((n >> 16) & 255) * f) + ',' + Math.round(((n >> 8) & 255) * f) + ',' + Math.round((n & 255) * f) + ')');
+        }
+        function quad(g, p1, p2, p3, p4, fill, edge) {
+            g.fillStyle = fill; g.beginPath(); g.moveTo(p1[0], p1[1]); g.lineTo(p2[0], p2[1]); g.lineTo(p3[0], p3[1]); g.lineTo(p4[0], p4[1]); g.closePath(); g.fill();
+            if (edge) { g.strokeStyle = edge; g.lineWidth = 1; g.stroke(); }
+        }
+        var EDGE = 'rgba(0,0,0,0.17)';
+        function box(g, x, y, z, sx, sy, sz, col, edge) {                 // a block: top, front and the side that faces the middle of the screen
+            var x1 = x + sx, y1 = y + sy, z1 = z + sz, e = edge === undefined ? EDGE : edge;
+            if (CAM.y > y1) quad(g, proj(x, y1, z), proj(x1, y1, z), proj(x1, y1, z1), proj(x, y1, z1), sh(col, 1), e);
+            quad(g, proj(x, y1, z), proj(x1, y1, z), proj(x1, y, z), proj(x, y, z), sh(col, 0.82), e);
+            if (x1 <= CAM.x) quad(g, proj(x1, y1, z), proj(x1, y1, z1), proj(x1, y, z1), proj(x1, y, z), sh(col, 0.64), e);
+            else if (x >= CAM.x) quad(g, proj(x, y1, z), proj(x, y1, z1), proj(x, y, z1), proj(x, y, z), sh(col, 0.64), e);
+        }
+
+        // scene layout (1 unit = 1 block, y is up, z is away from the viewer)
+        var XMIN = -64, XMAX = 64, ZMIN = 8, ZMAX = 100, ZSPLIT = 24;
+        var RIVER = { x0: 8, x1: 11 };
+        var GER = { x: -14.5, z: 36, r: 4.0 }, WELL = { x: -4.5, z: 25 }, TROUGH = { x0: -1.8, x1: 4.8, z: 26.8 };
+        var DUNES = [{ x: -36, z: 92, r: 30, hgt: 15 }, { x: 40, z: 94, r: 30, hgt: 17 }, { x: -4, z: 99, r: 24, hgt: 11 }];
+        function peakH(x, z) {                                                  // smooth sand mounds on the horizon (no rock, no snow)
+            var m = 0;
+            DUNES.forEach(function (p) {
+                var d = Math.hypot((x - p.x) * 0.9, (z - p.z) * 1.3) / p.r;
+                if (d < 1) m = Math.max(m, p.hgt * (0.5 + 0.5 * Math.cos(Math.PI * d)) * (0.92 + 0.08 * Math.sin(x * 0.55 + z * 0.3)));
+            });
+            return Math.round(m);
+        }
+        function pathAt(x, z) {                                              // a dirt road from the foreground to the ger door
+            var t = clamp((z - 8) / 22, 0, 1), cxp = lerp(2.2, GER.x + 0.5, Math.pow(t, 1.1));
+            return z < GER.z - GER.r + 0.6 && Math.abs(x + 0.5 - cxp) < 1.6;
+        }
+        function hAt(x, z) {
+            if (x === Math.floor(WELL.x) && z === Math.floor(WELL.z)) return -3;
+            if (x >= RIVER.x0 && x < RIVER.x1 && z < 72) return -1;
+            var base = 0, ramp = clamp((x - 46) / 6, 0, 1);
+            if (ramp > 0) {                                                  // the Gobi: tall dunes that grow into mountains
+                var rz = 0.55 + z / 90, zf = clamp((z - 32) / 22, 0, 1);
+                var tall = rz * (7 * Math.abs(Math.sin(x * 0.12 + z * 0.045 + 0.6)) + 3 * Math.abs(Math.sin(x * 0.26 - z * 0.1 + 1.7)) + 1.4 * Math.abs(Math.sin(x * 0.5 + z * 0.2)));
+                var ripple = 1.1 * Math.abs(Math.sin(x * 0.5 + z * 0.2 + 0.4)) + 0.9 * Math.abs(Math.sin(x * 0.23 - z * 0.15 + 1.1));      // low wind ripples near the viewer
+                base = Math.round(ramp * (ripple * (1 - zf) + tall * zf));
+            } else if (z > 55) base = Math.round((z - 55) / 12 * (0.6 + 0.4 * Math.sin(x * 0.09 + z * 0.05)));
+            return base + peakH(x, z);
+        }
+        function matAt(x, z, hh) {
+            if (x === Math.floor(WELL.x) && z === Math.floor(WELL.z)) return 'hole';
+            if (x >= RIVER.x0 && x < RIVER.x1 && z < 72) return 'bed';
+            if (peakH(x, z) > 1) return 'sand';
+            if (x >= 50 || (x >= 46 && hash(x, z, 5) < (x - 46) / 4)) return 'sand';
+            if (pathAt(x, z)) return 'path';
+            return 'grass';
+        }
+        var GRASS = ['#5fae3a', '#58a533', '#66b840', '#53a02f'], SAND = ['#e8d08e', '#dfc27d', '#ecd699', '#d9bb74'], STONE = ['#7d7d7d', '#757575', '#848484'];
+        function topCol(m, x, z) {
+            var n = hash(x, z, 3);
+            if (m === 'grass') return GRASS[Math.floor(n * 4) % 4];
+            if (m === 'sand') return SAND[Math.floor(n * 4) % 4];
+            if (m === 'stone') return STONE[Math.floor(n * 3) % 3];
+            if (m === 'snow') return '#f2f6ff';
+            if (m === 'path') return n < 0.5 ? '#b89a5a' : '#ad8f50';
+            if (m === 'hole') return '#1b140e';
+            return '#d9c88a';
+        }
+        function sideCol(m, first, x, z) {
+            var n = hash(x, z, 4);
+            if (m === 'grass') return first ? '#5fae3a' : (n < 0.5 ? '#8b5a2b' : '#835428');
+            if (m === 'sand') return SAND[Math.floor(n * 4) % 4];
+            if (m === 'stone') return STONE[Math.floor(n * 3) % 3];
+            if (m === 'snow') return first ? '#f2f6ff' : '#7d7d7d';
+            if (m === 'hole') return '#2b1d10';
+            return n < 0.5 ? '#8b5a2b' : '#835428';
+        }
+
+        var world = { far: null, near: null, rise: 0, ents: null };
+        var smokeAt = { x: 0, y: 0, z: 0 }, WF = { x: 0, y: 0, z: 0, h: 11 }, FLOW = 4.0;
+
+        function buildWorld() {
+            setupCam();
+            var cwid = Math.max(1, Math.round(w)), chei = Math.max(1, Math.round(h));
+            var far = document.createElement('canvas'), near = document.createElement('canvas');
+            far.width = near.width = cwid; far.height = near.height = chei;
+            var gf = far.getContext('2d'), gn = near.getContext('2d'), items = [], x, z, i, k;
+
+            // ----- terrain heights -----
+            var NX = XMAX - XMIN, NZ = ZMAX - ZMIN, H = new Int16Array(NX * NZ);
+            function hget(xx, zz) { if (xx < XMIN || xx >= XMAX || zz < ZMIN || zz >= ZMAX) return null; return H[(zz - ZMIN) * NX + (xx - XMIN)]; }
+            for (z = ZMIN; z < ZMAX; z++) for (x = XMIN; x < XMAX; x++) H[(z - ZMIN) * NX + (x - XMIN)] = hAt(x, z);
+            world.H = hget;
+
+            function add(kz, ax, y, f) { items.push({ k: kz, ax: ax, y: y, f: f }); }
+            function addBox(bx, by, bz, sx, sy, sz, col) {
+                var p = proj(bx + sx / 2, by + sy / 2, bz + sz / 2);
+                if (p[0] < -250 || p[0] > w + 250) return;
+                add(bz + sz / 2, Math.abs(bx + sx / 2 - CAM.x), by, function (g) { box(g, bx, by, bz, sx, sy, sz, col); });
+            }
+            function addBoxK(kz, bx, by, bz, sx, sy, sz, col) {
+                var p = proj(bx + sx / 2, by + sy / 2, bz + sz / 2);
+                if (p[0] < -250 || p[0] > w + 250) return;
+                add(kz, Math.abs(bx + sx / 2 - CAM.x), by, function (g) { box(g, bx, by, bz, sx, sy, sz, col); });
+            }
+            function ground(xx, zz) { return hget(Math.floor(xx), Math.floor(zz)) || 0; }
+
+            // ----- terrain columns -----
+            for (z = ZMAX - 1; z >= ZMIN; z--) {
+                for (x = XMIN; x < XMAX; x++) {
+                    var pc = proj(x + 0.5, 0, z + 0.5);
+                    if (pc[0] < -200 || pc[0] > w + 200) continue;
+                    (function (x, z) {
+                        var Hc = hget(x, z), m = matAt(x, z, Hc), Hf = hget(x, z - 1), sxn = (x + 0.5 < CAM.x) ? x + 1 : x - 1, Hs = hget(sxn, z);
+                        if (Hf === null) Hf = Hc - 1; if (Hs === null) Hs = Hc - 1;
+                        add(z + 0.5, Math.abs(x + 0.5 - CAM.x), Hc, function (g) {
+                            var yy, lvl = 0;
+                            for (yy = Hc - 1; yy >= Math.max(Hf, Hc - 20); yy--) quad(g, proj(x, yy + 1, z), proj(x + 1, yy + 1, z), proj(x + 1, yy, z), proj(x, yy, z), sh(sideCol(m, yy === Hc - 1, x, z), 0.82), EDGE);
+                            for (yy = Hc - 1; yy >= Math.max(Hs, Hc - 20); yy--) {
+                                if (x + 0.5 < CAM.x) quad(g, proj(x + 1, yy + 1, z), proj(x + 1, yy + 1, z + 1), proj(x + 1, yy, z + 1), proj(x + 1, yy, z), sh(sideCol(m, yy === Hc - 1, x, z), 0.64), EDGE);
+                                else quad(g, proj(x, yy + 1, z), proj(x, yy + 1, z + 1), proj(x, yy, z + 1), proj(x, yy, z), sh(sideCol(m, yy === Hc - 1, x, z), 0.64), EDGE);
+                            }
+                            quad(g, proj(x, Hc, z), proj(x + 1, Hc, z), proj(x + 1, Hc, z + 1), proj(x, Hc, z + 1), sh(topCol(m, x, z), 1), 'rgba(0,0,0,0.1)');
+                            if (m === 'bed') quad(g, proj(x, -0.3, z), proj(x + 1, -0.3, z), proj(x + 1, -0.3, z + 1), proj(x, -0.3, z + 1), 'rgba(59,111,224,0.9)', 'rgba(255,255,255,0.12)');
+                            else if (m === 'hole') quad(g, proj(x, -2.4, z), proj(x + 1, -2.4, z), proj(x + 1, -2.4, z + 1), proj(x, -2.4, z + 1), '#2f5fc4', null);
+                        });
+                    })(x, z);
+                }
+            }
+
+            var nTerrain = items.length;
+
+            // ----- trees, bushes, flowers, shrubs -----
+            var LEAF = ['#2f7d32', '#3a8f3a', '#2a6f2c', '#4aa04a'];
+            function tree(tx, tz, tall) {
+                var yb = ground(tx, tz), lx, lz, dy;
+                addBox(tx, yb, tz, 1, tall, 1, '#6b4a2b');
+                for (dy = 0; dy < 4; dy++) {
+                    var r = dy < 2 ? 2 : (dy === 2 ? 1 : 0);
+                    for (lx = -r; lx <= r; lx++) for (lz = -r; lz <= r; lz++) {
+                        if (dy < 2 && Math.abs(lx) === 2 && Math.abs(lz) === 2) continue;
+                        if (dy === 3 && Math.abs(lx) + Math.abs(lz) > 1 && r === 0) continue;
+                        if (dy === 0 && lx === 0 && lz === 0) continue;
+                        addBox(tx + lx, yb + tall - 1 + dy, tz + lz, 1, 1, 1, LEAF[Math.floor(hash(tx + lx, tz + lz + dy * 7, 21) * 4) % 4]);
+                    }
+                }
+            }
+            function bush(bx, bz) { var yb = ground(bx, bz); for (var lx = 0; lx < 2; lx++) for (var lz = 0; lz < 2; lz++) addBox(bx + lx, yb, bz + lz, 1, 1, 1, LEAF[(lx + lz + Math.floor(bx)) & 3]); addBox(bx + 0.5, yb + 1, bz + 0.5, 1, 0.7, 1, LEAF[1]); }
+            function saxaul(sx, sz) { var yb = ground(sx, sz); addBox(sx, yb, sz, 0.35, 1.6, 0.35, '#6b5a3a'); addBox(sx - 0.4, yb + 1.5, sz - 0.3, 1.1, 0.6, 1.1, '#8a8a4a'); addBox(sx - 0.1, yb + 2.0, sz, 0.8, 0.5, 0.8, '#7a7a3e'); }
+            function rock(rx, rz) { var yb = ground(rx, rz); addBox(rx, yb, rz, 1.2, 0.8, 1.0, '#8a8070'); addBox(rx + 0.2, yb + 0.8, rz + 0.1, 0.8, 0.5, 0.7, '#9a9080'); }
+            function flower(fx, fz, col) { var yb = ground(fx, fz); addBox(fx, yb, fz, 0.12, 0.55, 0.12, '#2f7d32'); addBox(fx - 0.1, yb + 0.5, fz - 0.1, 0.32, 0.32, 0.32, col); }
+
+            [[-23, 14, 6], [-31, 20, 5], [-26, 30, 6], [-40, 52, 6], [-42, 70, 6], [14, 66, 5]]
+                .forEach(function (t) { tree(t[0], t[1], t[2]); });
+            [[-16, 21], [-1, 40], [3, 29], [-20, 38], [-6, 56]].forEach(function (b2) { bush(b2[0], b2[1]); });
+            for (i = 0; i < 90; i++) {
+                var fx = Math.floor(rand(-34, 7)), fz = Math.floor(rand(10, 46));
+                if (matAt(fx, fz, 0) !== 'grass' || Math.hypot(fx - GER.x, fz - GER.z) < 5 || (fz > 22 && fz < 36 && fx > -9 && fx < 8)) continue;
+                flower(fx + rand(0.1, 0.8), fz + rand(0.1, 0.8), hash(fx, fz, 9) > 0.7 ? '#d7263d' : (hash(fx, fz, 10) > 0.5 ? '#ffffff' : '#ffd400'));
+            }
+            for (i = 0; i < 40; i++) {
+                var sx2 = Math.floor(rand(16, 56)), sz2 = Math.floor(rand(12, 70));
+                if (matAt(sx2, sz2, hget(sx2, sz2)) !== 'sand') continue;
+                if (hash(sx2, sz2, 31) > 0.5) saxaul(sx2, sz2); else rock(sx2, sz2);
+            }
+
+            // ----- Turtle Rock (Melkhii khad): a granite giant shaped like a tortoise - domed scuted shell, head stretched out to the left, four legs, a tail -----
+            (function () {
+                var cx = -10, cz = 70, gy = ground(cx, cz), px, py, pz;
+                function inShell(a, b, c) { if (b < 2) return false; var dx = (a - cx) / 11, dy = (b - 2) / 11.5, dz = (c - cz) / 7.6; return dx * dx + dy * dy + dz * dz <= 1; }
+                function inHead(a, b, c) { var dx = (a - (cx + 15)) / 4.4, dy = (b - 11.6) / 3.4, dz = (c - cz) / 3.4; if (a > cx + 16.5 && b > 10 && b < 11 && Math.abs(c - cz) < 1.9) return false; return dx * dx + dy * dy + dz * dz <= 1; }
+                function inNeck(a, b, c) { var dx = (a - (cx + 11.8)) / 3.5, dy = (b - 7.6) / 5.4, dz = (c - cz) / 3.4; return dx * dx + dy * dy + dz * dz <= 1; }
+                function inTail(a, b, c) { var dx = (a - (cx - 12)) / 2.8, dy = (b - 2.0) / 1.2, dz = (c - cz) / 1.1; return dx * dx + dy * dy + dz * dz <= 1; }
+                function inLeg(a, b, c) {
+                    if (b < 0 || b > 4.4) return false;
+                    var dx = a - cx, dz = Math.abs(c - cz);
+                    var sp = (4.4 - b) * 0.55; return (Math.abs(Math.abs(dx) - (6.6 + sp)) < 2.0) && dz > 2.4 + sp * 0.8 && dz < 6.2 + sp * 0.8;
+                }
+                function solid(a, b, c) { return inShell(a, b, c) || inHead(a, b, c) || inNeck(a, b, c) || inTail(a, b, c) || inLeg(a, b, c); }
+                for (px = Math.floor(cx - 15); px <= Math.ceil(cx + 20); px++) for (pz = Math.floor(cz - 10); pz <= Math.ceil(cz + 10); pz++) for (py = 0; py <= 17; py++) {
+                    var X = px + 0.5, Y = py + 0.5, Z = pz + 0.5;
+                    if (!solid(X, Y, Z)) continue;
+                    var sx2 = X < CAM.x ? X + 1 : X - 1;
+                    if (solid(X, Y + 1, Z) && solid(X, Y, Z - 1) && solid(sx2, Y, Z)) continue;                                          // buried: never seen
+                    var n = hash(px, py * 7 + pz, 77), top = !solid(X, Y + 1, Z), col;
+                    var shell = inShell(X, Y, Z), skin = !shell && (inHead(X, Y, Z) || inNeck(X, Y, Z));
+                    if (shell) {
+                        // scutes: a brick-like net of dark seams, alternating light and warm grey plates, moss on the crown
+                        var row = Math.floor((py + (pz - cz) * 0.35 + 30) / 2.6), u = px - cx + (row % 2 ? 1.6 : 0), cell = Math.floor((u + 40) / 3.2), fx = ((u % 3.2) + 3.2) % 3.2;
+                        var seam = fx < 0.9 || ((py + (pz - cz) * 0.35 + 30) % 2.6) < 0.9;
+                        if (py <= 4) col = seam ? '#1f4d22' : '#2f7a34';                                                                // the dark rim of the shell
+                        else if (seam) col = '#1f5a26';
+                        else if (top && n > 0.55 && py > 9) col = '#8fcf4a';
+                        else col = (cell + row) % 2 ? '#52b24a' : '#3f9a3e';
+                    } else if (skin) {
+                        col = !solid(X, Y - 1, Z) ? '#4a3018' : (n < 0.5 ? '#9a6a3a' : '#8a5c30');
+                        // eye and mouth on the side that faces us
+                        if (inHead(X, Y, Z) && !solid(X, Y, Z - 1) && px === cx + 17 && py === 13) col = '#1b1a14';
+                        if (inHead(X, Y, Z) && !solid(X, Y, Z - 1) && px === cx + 17 && py === 14) col = '#f4ecd8';
+                        if (inHead(X, Y, Z) && !solid(X, Y, Z - 1) && py === 9 && px >= cx + 17) col = '#a02e2e';
+                    } else {
+                        col = inLeg(X, Y, Z) ? (py < 1 ? '#4a3018' : (n < 0.5 ? '#8a5c30' : '#7c5028')) : '#8a5c30';                    // legs and tail
+                    }
+                    addBox(px, gy + py, pz, 1, 1, 1, col);
+                }
+                // water pours from the mouth like a waterfall into a little pool
+                var wy, wc = ['#4aa3ff', '#7cc4ff', '#bfe4ff', '#5ab0ff'];
+                WF.x = cx + 19; WF.y = gy; WF.z = cz - 1;                                      // the falling water itself is animated every frame (drawWaterfall)
+                // a few loose boulders in front of it
+                [[cx - 5, cz - 11], [cx + 4, cz - 10], [cx - 11, cz - 8]].forEach(function (r2) { rock(Math.floor(r2[0]), Math.floor(r2[1])); });
+            })();
+            function pine(qx, qz, tall) {
+                var yb = ground(qx, qz), lay, lx, lz, half = [2, 2, 1, 1, 0];
+                addBox(qx, yb, qz, 1, tall, 1, '#5a3d22');
+                for (lay = 0; lay < 5; lay++) for (lx = -half[lay]; lx <= half[lay]; lx++) for (lz = -half[lay]; lz <= half[lay]; lz++)
+                    addBox(qx + lx, yb + tall - 2 + lay, qz + lz, 1, 1, 1, (lx + lz + lay) % 2 ? '#1f5a2a' : '#276a32');
+            }
+            [[34, 50, 7], [30, 58, 7], [26, 63, 7], [17, 61, 6], [37, 42, 5], [12, 60, 6], [36, 58, 7], [22, 66, 7]].forEach(function (p) { pine(p[0], p[1], p[2]); });
+            for (i = 0; i < 70; i++) {                                                  // flowers in the meadow on the right as well
+                var gx = Math.floor(rand(13, 36)), gz = Math.floor(rand(10, 36));
+                if (matAt(gx, gz, 0) !== 'grass' || (gz > 22 && gz < 28 && gx > 12 && gx < 19)) continue;
+                flower(gx + rand(0.1, 0.8), gz + rand(0.1, 0.8), hash(gx, gz, 9) > 0.7 ? '#d7263d' : (hash(gx, gz, 10) > 0.5 ? '#ffffff' : '#ffd400'));
+            }
+
+            // ----- the ger: a smooth round felt tent (cylinder wall and a round, gently domed roof), orange double door, crown and stovepipe -----
+            (function () {
+                var gy = ground(GER.x, GER.z), cx = GER.x, cz = GER.z, rW = GER.r, N = 72, LGT = [-0.45, 0.8, -0.4];
+                function pt(r, y, ang) { return proj(cx + Math.cos(ang) * r, y, cz + Math.sin(ang) * r); }
+                function lit(nx, ny, nz) { return 0.6 + 0.48 * Math.max(0, nx * LGT[0] + ny * LGT[1] + nz * LGT[2]); }
+                add(cz, 0, gy, function (g) {
+                    var i, a0, a1, am, nx, nz, f, lv;
+                    // wall: white felt, a brown rope round it, a blue band with golden squares at the top
+                    var levels = [[0, 0.9, 'w'], [0.9, 1.08, 'rope'], [1.08, 1.85, 'w'], [1.85, 2.03, 'rope'], [2.03, 2.7, 'w'], [2.7, 3.0, 'band']];
+                    for (i = 0; i < N; i++) {
+                        a0 = i / N * 6.2832; a1 = (i + 1) / N * 6.2832; am = (a0 + a1) / 2; nx = Math.cos(am); nz = Math.sin(am);
+                        if ((CAM.x - (cx + nx * rW)) * nx + (CAM.z - (cz + nz * rW)) * nz <= 0) continue;
+                        f = lit(nx, 0, nz);
+                        for (var q = 0; q < levels.length; q++) {
+                            lv = levels[q];
+                            var col = lv[2] === 'w' ? '#f4efe3' : (lv[2] === 'rope' ? '#7a5a32' : (i % 4 === 1 ? '#ffd24a' : '#1f4aa3')), fs = sh(col, f);
+                            quad(g, pt(rW, gy + lv[1], a0), pt(rW, gy + lv[1], a1), pt(rW, gy + lv[0], a1), pt(rW, gy + lv[0], a0), fs, fs);
+                        }
+                        // the double door, painted on the curved wall: orange panels, a dark frame, a seam and golden knobs
+                        var dd = Math.abs(am - 4.7124) * rW;
+                        if (dd < 1.3) {
+                            function dq(y1b, y2b, c0) { var cc = sh(c0, f); quad(g, pt(rW + 0.02, gy + y2b, a0), pt(rW + 0.02, gy + y2b, a1), pt(rW + 0.02, gy + y1b, a1), pt(rW + 0.02, gy + y1b, a0), cc, cc); }
+                            if (dd < 1.0) {
+                                dq(0, 2.2, dd < 0.07 ? '#8b2e0f' : '#d4501e');
+                            } else dq(0, 2.2, '#8b2e0f');
+                            dq(2.2, 2.5, '#8b2e0f');
+                        }
+                    }
+                    // the olziy (endless-knot) ornament and small handles on the door, drawn finely on the curved wall
+                    (function () {
+                        var A0 = 4.7124, fd = lit(0, 0, -1), OLZ = ['11111', '00001', '11101', '10001', '10111'];
+                        function dp(s, y) { return pt(rW + 0.03, gy + y, A0 + s / rW); }
+                        function dr(s0, s1, y0, y1, c0) { var cc = sh(c0, fd); quad(g, dp(s0, y1), dp(s1, y1), dp(s1, y0), dp(s0, y0), cc, cc); }
+                        [-0.5, 0.5].forEach(function (sc, side) {
+                            [1.65, 0.6].forEach(function (yc) {
+                                var cs = 0.11, rr, cc2;
+                                for (rr = 0; rr < 5; rr++) for (cc2 = 0; cc2 < 5; cc2++) {
+                                    var col2 = side ? 4 - cc2 : cc2;                                                       // the right leaf is the mirror image
+                                    if (OLZ[rr].charAt(col2) === '1') dr(sc + (cc2 - 2.5) * cs, sc + (cc2 - 1.5) * cs, yc + (2.5 - rr - 1) * cs, yc + (2.5 - rr) * cs, '#ffd24a');
+                                }
+                            });
+                            dr(sc - 0.43, sc + 0.43, 1.12, 1.16, '#ffd24a'); dr(sc - 0.43, sc + 0.43, 0.04, 0.08, '#ffd24a');   // gold lines across the leaf
+                        });
+                        dr(-0.2, -0.14, 0.9, 1.25, '#3b2410'); dr(0.14, 0.2, 0.9, 1.25, '#3b2410');                   // small handles
+                        dr(-0.19, -0.15, 0.93, 1.0, '#ffd24a'); dr(0.15, 0.19, 0.93, 1.0, '#ffd24a');
+                    })();
+                    // roof: a smooth round dome of white felt with ropes running down it and a darker flap at the eaves
+                    var R0 = rW + 0.55, rings = 10, H = 2.6, y0 = gy + 3, r1, r2, y1, y2, t1, t2, j2, nyv;
+                    function rad(t) { return R0 - (R0 - 1.0) * t; }                       // a straight cone, as a real ger roof is
+                    function hgt(t) { return y0 + H * t; }
+                    for (i = 0; i < rings; i++) {
+                        t1 = i / rings; t2 = (i + 1) / rings; r1 = rad(t1); r2 = rad(t2); y1 = hgt(t1); y2 = hgt(t2);
+                        var dy = y2 - y1, dr = r2 - r1, nl = Math.hypot(dy, dr);
+                        for (j2 = 0; j2 < N; j2++) {
+                            a0 = j2 / N * 6.2832; a1 = (j2 + 1) / N * 6.2832; am = (a0 + a1) / 2;
+                            nx = Math.cos(am) * dy / nl; nyv = -dr / nl; nz = Math.sin(am) * dy / nl;
+                            var mx = cx + Math.cos(am) * (r1 + r2) / 2, my = (y1 + y2) / 2, mz = cz + Math.sin(am) * (r1 + r2) / 2;
+                            if ((CAM.x - mx) * nx + (CAM.y - my) * nyv + (CAM.z - mz) * nz <= 0) continue;
+                            var rc = i === 0 ? '#ddd3b8' : ((j2 % 9 === 0) ? '#8b6b3b' : '#f3eddc'), fr2 = sh(rc, lit(nx, nyv, nz));
+                            quad(g, pt(r1, y1, a0), pt(r1, y1, a1), pt(r2, y2, a1), pt(r2, y2, a0), fr2, fr2);
+                        }
+                    }
+                    // the crown (toono): a round wooden ring with an open centre
+                    var yt = hgt(1), k2, ring = [], hole = [];
+                    for (k2 = 0; k2 < 28; k2++) { var ca = k2 / 28 * 6.2832; ring.push(pt(1.15, yt + 0.12, ca)); hole.push(pt(0.55, yt + 0.16, ca)); }
+                    g.fillStyle = sh('#a0522d', 1); g.beginPath(); ring.forEach(function (p, n2) { if (n2) g.lineTo(p[0], p[1]); else g.moveTo(p[0], p[1]); }); g.closePath(); g.fill();
+                    g.fillStyle = sh('#4a2410', 1); g.beginPath(); hole.forEach(function (p, n2) { if (n2) g.lineTo(p[0], p[1]); else g.moveTo(p[0], p[1]); }); g.closePath(); g.fill();
+                });
+                // crown spokes and the stovepipe sit on the roof, so they are drawn after it
+                addBoxK(cz - 0.2, cx - 1.1, gy + 5.6, cz - 0.1, 2.2, 0.18, 0.2, '#6b3418'); addBoxK(cz - 0.2, cx - 0.1, gy + 5.6, cz - 1.1, 0.2, 0.18, 2.2, '#6b3418');
+                addBoxK(cz - 0.2, cx + 0.625, gy + 5.5, cz - 0.075, 0.15, 0.62, 0.15, '#3b3b3b'); addBoxK(cz - 0.2, cx + 0.59, gy + 6.07, cz - 0.11, 0.22, 0.07, 0.22, '#2b2b2b');
+                smokeAt.x = cx + 0.7; smokeAt.y = gy + 6.3; smokeAt.z = cz;
+            })();
+
+            // ----- the well: a stone crib round the shaft and an A-frame with a pulley -----
+            (function () {
+                var wx = Math.floor(WELL.x), wz = Math.floor(WELL.z), a, b2;
+                for (a = -1; a <= 1; a++) for (b2 = -1; b2 <= 1; b2++) {
+                    if (!a && !b2) continue;
+                    addBox(wx + a, 0, wz + b2, 1, 0.9, 1, (a + b2) % 2 ? '#8a8a8a' : '#777777');
+                }
+                function post(x1, x2) {
+                    var n = 9;
+                    for (var q = 0; q <= n; q++) { var t = q / n; addBox(lerp(x1, x2, t) - 0.18, 0.9 + t * 4.6, wz + 0.4, 0.36, 0.6, 0.36, '#7a4a24'); }
+                }
+            })();
+
+            // ----- fences: a corral behind the trough -----
+            (function () {
+                var fz = 33.2, xa = -3.5, xb = 7.5, q;
+                function rails(x1, z1, x2, z2) {
+                    var n = Math.max(1, Math.round(Math.hypot(x2 - x1, z2 - z1) / 1.4));
+                    for (q = 0; q <= n; q++) {
+                        var px = lerp(x1, x2, q / n), pz = lerp(z1, z2, q / n);
+                        addBox(px - 0.15, 0, pz - 0.15, 0.3, 1.4, 0.3, '#8b5a2b');
+                        if (q < n) {
+                            var nx = lerp(x1, x2, (q + 1) / n), nz = lerp(z1, z2, (q + 1) / n);
+                            addBox(Math.min(px, nx), 0.45, Math.min(pz, nz) - 0.08, Math.abs(nx - px) + 0.12, 0.2, Math.abs(nz - pz) + 0.16, '#a97f48');
+                            addBox(Math.min(px, nx), 0.95, Math.min(pz, nz) - 0.08, Math.abs(nx - px) + 0.12, 0.2, Math.abs(nz - pz) + 0.16, '#a97f48');
+                        }
+                    }
+                }
+                rails(xa, fz, xb, fz); rails(xa, 28.6, xa, fz); rails(xb, 28.6, xb, fz);
+            })();
+
+            // ----- render the static scene in two layers: everything behind the animals, and everything in front of them -----
+            items.slice(0, nTerrain).forEach(function (it) { it.t = true; });
+            items.sort(function (p, q) { return (q.k - p.k) || (q.ax - p.ax) || (p.y - q.y); });
+            var mask = document.createElement('canvas'), gm;
+            mask.width = cwid; mask.height = chei; gm = mask.getContext('2d');                       // only the standing things (no ground): they hide the river ripples
+            items.forEach(function (it) { it.f(it.k >= ZSPLIT ? gf : gn); if (it.k >= ZSPLIT && !it.t) it.f(gm); });
+            // distance haze, strongest at the horizon
+            var hz = VW.cy - Math.tan(CAM.pitch) * VW.F, haze = gf.createLinearGradient(0, hz - h * 0.2, 0, hz + h * 0.1);
+            haze.addColorStop(0, 'rgba(215,235,255,0)'); haze.addColorStop(0.6, 'rgba(215,235,255,0.42)'); haze.addColorStop(1, 'rgba(215,235,255,0)');
+            gf.fillStyle = haze; gf.fillRect(0, hz - h * 0.2, w, h * 0.3);
+
+            world.far = far; world.near = near; world.mask = mask; world.tmp = document.createElement('canvas'); world.tmp.width = cwid; world.tmp.height = chei;
+            var mk = function (kind, x0, x1, zz) { return { kind: kind, x0: x0, x1: x1, x: rand(x0, x1), z: zz, dir: Math.random() < 0.5 ? -1 : 1, face: 1, t: rand(0.5, 4), sp: rand(0.35, 0.7), ph: rand(0, 6) }; };
+            world.animals = [mk('sheep', -2.5, 6, 29.3), mk('sheep', -2.5, 6, 30.5), mk('goat', -2.5, 6, 29.9), mk('camel', 1.5, 6.4, 31.9), mk('bear', 12.6, 18, 24.4)];
+        }
+
+        // animal models (blocks, facing +x): [x, y, z, sx, sy, sz, colour]
+        var MODELS = {
+            sheep: { s: 1, legs: [[-0.7, -0.3], [-0.7, 0.1], [0.4, -0.3], [0.4, 0.1]], lw: 0.22, lh: 0.7, lc: '#6b6b6b',
+                parts: [[-0.9, 0.7, -0.45, 1.8, 0.9, 0.9, '#f2f2f2'], [0.85, 0.85, -0.27, 0.6, 0.6, 0.54, '#c9ae8b'], [0.9, 1.35, -0.4, 0.2, 0.2, 0.15, '#b89a76'], [0.9, 1.35, 0.25, 0.2, 0.2, 0.15, '#b89a76']] },
+            goat: { s: 1, legs: [[-0.7, -0.3], [-0.7, 0.1], [0.5, -0.3], [0.5, 0.1]], lw: 0.2, lh: 0.8, lc: '#8d7a62',
+                parts: [[-0.9, 0.8, -0.4, 1.8, 0.8, 0.8, '#c4b08f'], [0.8, 1.0, -0.28, 0.75, 0.75, 0.56, '#b09a78'], [1.0, 1.7, -0.2, 0.12, 0.45, 0.12, '#f0e8d8'], [1.0, 1.7, 0.1, 0.12, 0.45, 0.12, '#f0e8d8'], [1.4, 0.75, -0.06, 0.12, 0.35, 0.12, '#8d7a62']] },
+            camel: { s: 1.0, legs: [[-1.25, -0.4], [-1.25, 0.05], [1.0, -0.4], [1.0, 0.05]], lw: 0.32, lh: 1.5, lc: '#8a6a3a',
+                parts: [[-1.55, 1.5, -0.5, 3.1, 1.1, 1.0, '#b08a55'], [-1.0, 2.55, -0.35, 0.85, 0.85, 0.7, '#a07a48'], [0.05, 2.55, -0.35, 0.85, 0.85, 0.7, '#a07a48'],
+                    [-0.85, 3.35, -0.2, 0.55, 0.2, 0.4, '#8a6a3a'], [0.2, 3.35, -0.2, 0.55, 0.2, 0.4, '#8a6a3a'],
+                    [1.3, 2.2, -0.27, 0.6, 1.0, 0.54, '#b08a55'], [1.5, 3.1, -0.27, 0.6, 0.85, 0.54, '#b08a55'], [1.7, 3.85, -0.3, 1.0, 0.52, 0.6, '#a07a48'],
+                    [2.55, 3.75, -0.22, 0.32, 0.38, 0.44, '#c9a875'], [1.95, 4.35, -0.28, 0.18, 0.18, 0.16, '#8a6a3a'], [-1.75, 2.0, -0.1, 0.22, 1.0, 0.22, '#8a6a3a'], [1.45, 2.3, -0.3, 0.2, 0.7, 0.6, '#8a6a3a']] },
+            bear: { s: 1.15, legs: [[-0.8, -0.55], [-0.8, 0.15], [0.7, -0.55], [0.7, 0.15]], lw: 0.42, lh: 0.8, lc: '#5a3d22',
+                parts: [[-1.0, 0.75, -0.6, 2.0, 1.15, 1.2, '#7a5532'], [-0.3, 1.85, -0.5, 1.2, 0.35, 1.0, '#6b4a2e'], [0.7, 0.8, -0.62, 0.5, 1.0, 1.24, '#d9b98a'],
+                    [0.9, 0.9, -0.4, 0.85, 0.85, 0.8, '#7a5532'], [1.65, 0.95, -0.22, 0.35, 0.42, 0.44, '#c9a572'], [1.95, 1.2, -0.1, 0.12, 0.14, 0.2, '#111111'],
+                    [1.45, 1.45, -0.4, 0.1, 0.1, 0.06, '#111111'], [1.05, 1.7, -0.35, 0.24, 0.24, 0.2, '#5a3d22'], [1.05, 1.7, 0.15, 0.24, 0.24, 0.2, '#5a3d22'], [-1.1, 1.4, -0.1, 0.18, 0.18, 0.18, '#5a3d22']] }
+        };
+
+        MODELS.cub = { s: 0.6, legs: MODELS.bear.legs, lw: MODELS.bear.lw, lh: MODELS.bear.lh, lc: MODELS.bear.lc, parts: MODELS.bear.parts };      // a mazaalai cub
+
+        // dynamic things, drawn every frame between the two static layers
+        function entList(dt) {
+            var list = [], a;
+            // ---- animals wander inside their own area ----
+            world.animals.forEach(function (an) {
+                an.t -= dt;
+                if (an.t <= 0) { an.t = rand(2, 6); an.dir = Math.random() < 0.3 ? 0 : (Math.random() < 0.5 ? -1 : 1); an.sp = rand(0.35, 0.7); }
+                an.x += an.dir * an.sp * dt * speed;
+                if (an.x < an.x0) { an.x = an.x0; an.dir = 1; } if (an.x > an.x1) { an.x = an.x1; an.dir = -1; }
+                if (an.dir) an.face = an.dir;
+                list.push({ z: an.z, f: function (g) { drawAnimal(g, an); } });
+            });
+            list.push({ z: smokeAt.z, f: drawSmoke });
+            list.push({ z: WF.z, f: drawWaterfall });
+            list.sort(function (p, q) { return q.z - p.z; });
+            return list;
+        }
+        function drawAnimal(g, an) {
+            var md = MODELS[an.kind], gy = world.H(Math.floor(an.x), Math.floor(an.z)) || 0, f = an.face, s = md.s, sw = an.dir ? Math.sin(T * 7 + an.ph) * 0.25 : 0, parts = [], k;
+            function P(px, py, pz, sx, sy, sz, col) { var cx = f > 0 ? px : -px - sx; parts.push([an.x + cx * s, gy + py * s, an.z + pz * s, sx * s, sy * s, sz * s, col]); }
+            md.parts.forEach(function (p) { P(p[0], p[1], p[2], p[3], p[4], p[5], p[6]); });
+            md.legs.forEach(function (l, i2) { P(l[0] + (i2 % 2 ? sw : -sw), 0, l[1], md.lw, md.lh, md.lw, md.lc); });
+            parts.sort(function (p, q) { return (q[2] + q[5] / 2 - p[2] - p[5] / 2) || (Math.abs(q[0] + q[3] / 2 - CAM.x) - Math.abs(p[0] + p[3] / 2 - CAM.x)) || (p[1] - q[1]); });
+            parts.forEach(function (p) { box(g, p[0], p[1], p[2], p[3], p[4], p[5], p[6]); });
+        }
+        function drawWaterfall(g) {
+            var k, y, cols = ['#4aa3ff', '#7cc4ff', '#bfe4ff', '#5ab0ff'];
+            box(g, WF.x + 0.15, WF.y, WF.z + 0.15, 1.7, WF.h - 1, 1.7, '#3b8fe0', null);
+            box(g, WF.x - 2.2, WF.y + WF.h - 1, WF.z + 0.3, 2.4, 0.8, 1.4, '#5ab0ff', null);                   // the stream leaves the open mouth ...
+            box(g, WF.x - 0.05, WF.y + WF.h - 1.2, WF.z + 0.15, 1.9, 1.0, 1.7, '#7cc4ff', null);                  // ... and bends down                       // the body of the stream
+            for (k = 0; k < 16; k++) {                                                                   // bright streaks sliding down it
+                y = (WF.h - 1) - ((k * 0.7 + T * FLOW) % (WF.h - 1));
+                box(g, WF.x + ((k * 5) % 3) * 0.45, WF.y + y - 0.55, WF.z - 0.05 - (k % 2) * 0.05, 0.7 + (k % 3) * 0.3, 0.55 + (k % 2) * 0.3, 1.1, cols[k % 4], null);
+            }
+            for (k = 0; k < 7; k++) {                                                                    // splash and foam where it lands
+                var a2 = (T * 1.6 + k / 7) % 1, sx = WF.x + 1 + Math.sin(k * 2.4) * (0.6 + a2 * 1.6), sy = WF.y + 0.1 + Math.sin(a2 * 3.14) * 1.1;
+                box(g, sx - 0.15, sy, WF.z + 0.4 + Math.cos(k * 1.7) * 1.2, 0.3, 0.3, 0.3, '#e8f6ff', null);
+            }
+        }
+        function drawTrough(g) {
+            var level = 0.8, x0 = TROUGH.x0, len = TROUGH.x1 - TROUGH.x0, z0 = TROUGH.z;
+            box(g, x0, 0, z0, len, 0.35, 1.3, '#7a5230');
+            box(g, x0, 0.35, z0, len, 0.75, 0.3, '#7a5230'); box(g, x0, 0.35, z0 + 1.0, len, 0.75, 0.3, '#7a5230');
+            box(g, x0, 0.35, z0, 0.3, 0.75, 1.3, '#5a3a1e'); box(g, x0 + len - 0.3, 0.35, z0, 0.3, 0.75, 1.3, '#5a3a1e');
+            box(g, x0 + 0.3, 0.35, z0 + 0.3, len - 0.6, 0.15 + 0.5 * level, 0.7, '#3b6fe0', 'rgba(255,255,255,0.15)');
+        }
+        function drawSmoke(g) {
+            for (var i = 0; i < 6; i++) {
+                var age = ((T * 0.28 + i / 6) % 1), p = proj(smokeAt.x + Math.sin(age * 7 + i) * 0.4, smokeAt.y + age * 4.5, smokeAt.z), s = (0.45 + age * 0.9) * VW.F / p[2];
+                g.fillStyle = 'rgba(232,232,232,' + (0.6 * (1 - age)) + ')';
+                g.fillRect(Math.round(p[0] - s / 2), Math.round(p[1] - s / 2), Math.round(s), Math.round(s));
+            }
+        }
+        // the herder lowers the bucket, pulls it up hand over hand and pours it into the trough for the livestock
+        function drawWellDyn(g) {
+            var wx = Math.floor(WELL.x) + 0.5, wz = Math.floor(WELL.z) + 0.5, ph = (T % 9) / 9, depth = 0, pour = 0;
+            if (ph < 0.28) depth = ph / 0.28; else if (ph < 0.38) depth = 1; else if (ph < 0.78) depth = 1 - (ph - 0.38) / 0.4; else if (ph < 0.94) pour = (ph - 0.78) / 0.16;
+            var pulling = ph >= 0.38 && ph < 0.78, py = 5.45, by = lerp(4.0, -2.0, ease(depth));
+            var hx = -8.1, hz = 25.4, handX = hx + 0.8, handY = 2.9 - (1 - depth) * 0 + (1 - depth) * -1.0 + (pulling ? Math.sin(T * 6) * 0.18 : 0);
+            // herder (blue deel, red sash, pointed hat)
+            var parts = [
+                [hx - 0.34, 0, hz - 0.15, 0.32, 1.0, 0.32, '#2b1b10'], [hx + 0.04, 0, hz - 0.15, 0.32, 1.0, 0.32, '#2b1b10'],
+                [hx - 0.45, 0.95, hz - 0.25, 0.9, 1.4, 0.6, '#1f4aa3'], [hx - 0.46, 1.55, hz - 0.26, 0.92, 0.25, 0.62, '#d7263d'], [hx - 0.46, 2.3, hz - 0.26, 0.92, 0.12, 0.62, '#ffd24a'],
+                [hx - 0.28, 2.4, hz - 0.18, 0.56, 0.56, 0.46, '#e0b087'],
+                [hx - 0.34, 2.9, hz - 0.22, 0.68, 0.3, 0.54, '#c1121f'], [hx - 0.2, 3.2, hz - 0.12, 0.4, 0.45, 0.34, '#c1121f'], [hx - 0.06, 3.62, hz - 0.02, 0.12, 0.12, 0.12, '#ffd900']
+            ];
+            // rope: pulley -> hands, pulley -> bucket
+            var pp = proj(wx - 0.1, py, wz + 0.1), ph1 = proj(handX, handY, hz), bk = proj(wx + 0.55, py - 0.1, wz + 0.1), bb = proj(wx + 0.55, by + 0.55, wz + 0.1);
+            g.strokeStyle = '#e0d2ab'; g.lineWidth = 2; g.beginPath(); g.moveTo(pp[0], pp[1]); g.lineTo(ph1[0], ph1[1]); g.stroke();
+            g.beginPath(); g.moveTo(bk[0], bk[1]); g.lineTo(bb[0], bb[1]); g.stroke();
+            parts.forEach(function (p) { box(g, p[0], p[1], p[2], p[3], p[4], p[5], p[6]); });
+            // arms as a few small blocks towards the hands
+            for (var q = 0; q <= 4; q++) {
+                var t = q / 4, ax = lerp(hx + 0.3, handX, t), ay = lerp(2.1, handY, t);
+                box(g, ax - 0.12, ay - 0.12, hz - 0.12, 0.24, 0.24, 0.24, q === 4 ? '#e0b087' : '#1f4aa3', null);
+            }
+            // bucket (full when it comes up) and the stream into the trough
+            box(g, wx + 0.3, by, wz - 0.15, 0.5, 0.5, 0.5, '#7a4a24');
+            if (depth < 0.9 && ph > 0.3 && pour < 1) box(g, wx + 0.34, by + 0.46, wz - 0.11, 0.42, 0.08, 0.42, '#6f9bf5', null);
+            if (pour > 0) {
+                for (var s2 = 0; s2 < 9; s2++) {
+                    var u = s2 / 8, px2 = lerp(wx + 0.8, TROUGH.x0 + 0.6, u), py2 = lerp(py - 0.5, 1.0, u * u), pz2 = lerp(wz, TROUGH.z + 0.6, u), pr = proj(px2, py2, pz2), ss = 0.18 * VW.F / pr[2];
+                    g.fillStyle = '#6f9bf5'; g.fillRect(Math.round(pr[0]), Math.round(pr[1]), Math.max(2, Math.round(ss)), Math.max(3, Math.round(ss * 1.6)));
+                }
+            }
+        }
+
+        // clouds: soft, puffy cumulus (clusters of round puffs with a flat shaded underside), drawn from pre-rendered sprites
         var clouds = [];
+        function makeCloudSprite() {
+            var cw = 380, ch = 170, c = document.createElement('canvas'); c.width = cw; c.height = ch;
+            var g = c.getContext('2d'), n = 8 + Math.floor(Math.random() * 4), i, base = 128;
+            for (i = 0; i < n; i++) {
+                var t = i / (n - 1), mid = 1 - Math.abs(t - 0.5) * 2;                          // puffs are bigger in the middle
+                var r = 26 + mid * 34 + Math.random() * 14, x = 50 + t * (cw - 100) + (Math.random() - 0.5) * 20, y = base - r * (0.55 + Math.random() * 0.35);
+                var gr = g.createRadialGradient(x - r * 0.3, y - r * 0.35, r * 0.1, x, y, r);
+                gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.7, '#f7fafd'); gr.addColorStop(1, '#e9f0f8');
+                g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill();
+            }
+            g.globalCompositeOperation = 'source-atop';                                         // a grey-blue underside, only on the cloud itself
+            var sg = g.createLinearGradient(0, base - 40, 0, base + 6); sg.addColorStop(0, 'rgba(190,205,228,0)'); sg.addColorStop(1, 'rgba(176,194,222,0.7)');
+            g.fillStyle = sg; g.fillRect(0, base - 40, cw, 60);
+            g.globalCompositeOperation = 'destination-out'; g.fillRect(0, base + 3, cw, ch);   // flat bottom
+            return c;
+        }
         function buildClouds() {
             clouds = [];
-            var cb = Math.round(clamp(w / 60, 12, 22)), i, k;
-            for (i = 0; i < 7; i++) {
-                var a = 3 + Math.floor(Math.random() * 3), rows = [[1, 0, a], [0, 1, a + 2], [1, 2, a]];
-                clouds.push({ x: Math.random() * w, y: rand(h * 0.05, h * 0.42), v: rand(5, 14), cb: cb, rows: rows });
+            for (var i = 0; i < 3; i++) {
+                var cz = rand(45, 90);
+                clouds.push({ x: -60 + i * 60 + rand(-15, 15), y: rand(15, 24) + cz * 0.1, z: cz, v: rand(0.8, 2.2), wd: rand(15, 28), spr: makeCloudSprite() });
             }
         }
         function drawClouds(day, dt) {
             if (day <= 0.02) return;
-            clouds.forEach(function (c) {
-                c.x += c.v * dt * speed; if (c.x > w + c.cb * 8) c.x = -c.cb * 8;
-                ctx.globalAlpha = day * 0.92;
-                c.rows.forEach(function (r, i) {
-                    ctx.fillStyle = i === 2 ? '#dbe7f5' : '#ffffff';
-                    ctx.fillRect(Math.round(c.x + r[0] * c.cb), Math.round(c.y + r[1] * c.cb), r[2] * c.cb, c.cb);
-                });
+            ctx.globalAlpha = day * 0.95;
+            ctx.imageSmoothingEnabled = true;
+            clouds.slice().sort(function (p, q) { return q.z - p.z; }).forEach(function (c) {
+                c.x += c.v * dt * speed; if (c.x > 100) c.x = -100;
+                var pr = proj(c.x, c.y, c.z), pw = c.wd * VW.F / pr[2], ph = pw * c.spr.height / c.spr.width;
+                if (pr[0] < -pw || pr[0] > w + pw) return;
+                ctx.drawImage(c.spr, pr[0] - pw / 2, pr[1] - ph * 0.75, pw, ph);
             });
+            ctx.imageSmoothingEnabled = false;
             ctx.globalAlpha = 1;
         }
 
@@ -684,289 +1118,49 @@
                 if (b.v > 0 && b.x > w + 30) b.x = -30; if (b.v < 0 && b.x < -30) b.x = w + 30;
                 var up = Math.sin(T * 9 + b.ph) > 0, s = b.s, y = b.y + Math.sin(T * 0.9 + b.wob) * 10;
                 ctx.globalAlpha = day;
-                ctx.fillRect(Math.round(b.x), Math.round(y), 2 * s, s);                                   // body
-                ctx.fillRect(Math.round(b.x - 2 * s), Math.round(y + (up ? -s : s)), 2 * s, s);           // wings flap up and down
+                ctx.fillRect(Math.round(b.x), Math.round(y), 2 * s, s);
+                ctx.fillRect(Math.round(b.x - 2 * s), Math.round(y + (up ? -s : s)), 2 * s, s);
                 ctx.fillRect(Math.round(b.x + 2 * s), Math.round(y + (up ? -s : s)), 2 * s, s);
             });
             ctx.globalAlpha = 1;
         }
 
-        // the blocky world at the bottom of the page: grass, trees, bushes, houses, a tower, a well, sheep and goats
-        var world = { c: null, B: 10, top: [], animals: [], river: null, well: null, chimney: null, rise: 0 };
-        function topY(x) { return world.top[clamp(Math.floor(x / world.B), 0, world.top.length - 1)] || h; }
-
-        function buildWorld() {
-            var B = clamp(Math.round(w / 100), 8, 14), U = Math.round(B * 1.4), cols = Math.ceil(w / B) + 1, g0 = Math.round(h * 0.84 / B) * B;
-            var cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(w)); cv.height = Math.max(1, Math.round(h));
-            var g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
-            var wide = cols > 80, c, r, i;
-            // left: green steppe with a ger, a well and a river; right: the Gobi with dunes and a Gobi bear
-            var dsC = Math.round(cols * (wide ? 0.6 : 0.78));
-            function sandAt(col) { if (col >= dsC + 6) return true; if (col < dsC - 6) return false; return hash(col, 0, 77) < (col - (dsC - 6)) / 12; }
-            var hoff = [], spans = [];
-            for (c = 0; c < cols; c++) {
-                var amp = clamp((c - (dsC - 6)) / 14, 0, 1);
-                hoff[c] = Math.round(Math.sin(c * 0.035 + 0.4) * 0.55 * (1 - amp) + -amp * (10 * Math.abs(Math.sin((c - dsC) * 0.07 + 0.7)) + 4 * Math.abs(Math.sin((c - dsC) * 0.17 + 1.7)) + 1.5 * Math.abs(Math.sin((c - dsC) * 0.45))));
-            }
-            function place(type, widthU, frac) {
-                var cw = Math.ceil(widthU * U / B) + 1, c0 = clamp(Math.round(cols * frac - cw / 2), 1, Math.max(1, cols - cw - 1)), mid = hoff[c0 + (cw >> 1)];
-                for (var k = c0 - 1; k <= c0 + cw; k++) if (k >= 0 && k < cols) hoff[k] = mid;
-                spans.push({ type: type, c0: c0, cw: cw });
-            }
-            if (wide) { place('ger', 11, 0.13); place('well', 16, 0.33); } else { place('ger', 10, 0.15); place('well', 14, 0.52); }
-            var rw = wide ? 8 : 0, rc0 = wide ? Math.round(cols * 0.5 - rw / 2) : -10;
-            if (rw) {
-                var bank = hoff[rc0 - 1];
-                spans.push({ type: 'river', c0: rc0, cw: rw });
-                for (c = rc0; c < rc0 + rw; c++) hoff[c] = bank + 2;
-                world.river = { x0: rc0 * B, x1: (rc0 + rw) * B };
-            } else world.river = null;
-            world.B = B; world.top = [];
-            for (c = 0; c < cols; c++) world.top[c] = g0 + hoff[c] * B;
-
-            function fr(x, y, wd, ht, col) { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(wd)), Math.max(1, Math.round(ht))); }
-
-            // far horizon: hazy bands of low land (green on the steppe side, tan over the Gobi)
-            var FAR = [{ base: g0 - B * 2.4, col: '#a9dd92', sand: '#ecdcae', ph: 0.6 }, { base: g0 - B * 1.2, col: '#86c46c', sand: '#dcc88a', ph: 2.1 }];
-            FAR.forEach(function (L, li) {
-                for (c = 0; c < cols; c++) {
-                    var hc = Math.round((Math.sin(c * 0.07 + L.ph) + Math.sin(c * 0.023 + L.ph * 2) * 1.4) * 0.5) * B * 0.45, sd = sandAt(c);
-                    fr(c * B, L.base - hc, B, g0 + B * 2 - (L.base - hc), sd ? L.sand : L.col);
-                    if (!sd && hash(c, li, 41) > 0.9) { fr(c * B + B * 0.35, L.base - hc - B * 0.9, B * 0.3, B * 0.9, '#5a8f46'); fr(c * B, L.base - hc - B * 1.8, B, B, '#4f8a3c'); }
-                }
-            });
-            var haze = g.createLinearGradient(0, g0 - B * 6, 0, g0); haze.addColorStop(0, 'rgba(225,240,255,0)'); haze.addColorStop(1, 'rgba(225,240,255,0.45)');
-            g.fillStyle = haze; g.fillRect(0, g0 - B * 6, w, B * 6);
-
-            // ground: green grass cubes, sand cubes in the Gobi
-            var GRASS = ['#5fae3a', '#58a533', '#66b840', '#53a02f'], SAND = ['#e8d08e', '#dfc27d', '#ecd699', '#d9bb74'];
-            for (c = 0; c < cols; c++) {
-                var x = c * B, inRiver = rw && c >= rc0 && c < rc0 + rw, sand = sandAt(c);
-                for (r = 0; r * B + world.top[c] < h; r++) {
-                    var y = world.top[c] + r * B, n = hash(c, r, 3), n2 = hash(c, r, 8);
-                    if (inRiver && r === 0) {
-                        fr(x, y, B, B, n < 0.5 ? '#d9c88a' : '#cdbb7c');                                                       // sandy river bed, green cubes below
-                        continue;
-                    }
-                    if (sand) {
-                        fr(x, y, B, B, SAND[Math.floor(n * 4) % 4]);
-                        fr(x + n2 * B * 0.6, y + n * B * 0.6, B * 0.26, B * 0.26, '#c9aa62');
-                        fr(x + (1 - n) * B * 0.6, y + (1 - n2) * B * 0.6, B * 0.2, B * 0.2, '#f4e3ab');
-                        if (r === 0) fr(x, y, B, Math.max(2, B * 0.3), '#f4e3ab');
-                        if (r < 3 && hoff[c] < (hoff[c + 1] === undefined ? hoff[c] : hoff[c + 1])) fr(x, y, B, B, 'rgba(150,100,40,0.14)');     // shaded side of a dune
-                        fr(x, y, B, 1, 'rgba(255,255,255,0.14)'); fr(x + B - 1, y, 1, B, 'rgba(0,0,0,0.16)'); fr(x, y + B - 1, B, 1, 'rgba(0,0,0,0.16)');
-                        continue;
-                    }
-                    fr(x, y, B, B, GRASS[Math.floor(n * 4) % 4]);
-                    fr(x + n2 * B * 0.6, y + n * B * 0.6, B * 0.28, B * 0.28, '#3f8a22');
-                    fr(x + (1 - n) * B * 0.6, y + (1 - n2) * B * 0.6, B * 0.22, B * 0.22, '#7acb52');
-                    if (r === 0) fr(x, y, B, Math.max(2, B * 0.3), '#78cf4e');
-                    fr(x, y, B, 1, 'rgba(255,255,255,0.16)'); fr(x, y, 1, B, 'rgba(255,255,255,0.1)');
-                    fr(x + B - 1, y, 1, B, 'rgba(0,0,0,0.22)'); fr(x, y + B - 1, B, 1, 'rgba(0,0,0,0.22)');
-                }
-            }
-
-            // water fills the river channel
-            for (c = rc0; c < rc0 + rw; c++) {
-                var wt = world.top[rc0 - 1] + B * 0.35;
-                fr(c * B, wt, B, world.top[c] - wt, '#3b6fe0');
-                fr(c * B, wt, B, B * 0.18, '#6f9bf5');
-                if (c % 2) fr(c * B + B * 0.2, wt + B * 0.8, B * 0.6, B * 0.18, '#5b8ff0');
-            }
-
-            var LEAF = ['#2f7d32', '#3a8f3a', '#2a6f2c', '#4aa04a'];
-            function leaves(x, y, wU, hU) {
-                for (var xx = 0; xx < wU * 2; xx++) for (var yy = 0; yy < hU * 2; yy++)
-                    fr(x + xx * U / 2, y + yy * U / 2, U / 2 + 1, U / 2 + 1, LEAF[Math.floor(Math.random() * LEAF.length)]);
-            }
-            function tree(cx, gy, tall) {
-                var tw = U * 0.9, th = tall * U;
-                fr(cx - tw / 2, gy - th, tw, th, '#6b4a2b'); fr(cx - tw / 2, gy - th, tw * 0.3, th, '#57391f');
-                var top = gy - th - U * 2.2;
-                leaves(cx - 1.5 * U, top, 3, 1); leaves(cx - 2.5 * U, top + U, 5, 2); leaves(cx - 1.5 * U, top + 3 * U, 3, 1);
-            }
-            function bush(x, gy) { leaves(x, gy - 1.4 * U, 3, 1.4); }
-            function flower(x, gy, col) { fr(x + 1, gy - 8, 2, 8, '#2f7d32'); fr(x - 1, gy - 12, 6, 5, col); fr(x + 1, gy - 10, 2, 2, '#ffd400'); }
-            function saxaul(x, gy) {                                       // the dry desert shrub of the Gobi
-                fr(x, gy - 1.7 * U, 0.35 * U, 1.7 * U, '#6b5a3a'); fr(x - 0.5 * U, gy - 2.3 * U, 0.3 * U, 1.1 * U, '#6b5a3a');
-                fr(x - 0.9 * U, gy - 2.7 * U, 1.2 * U, 0.8 * U, '#8a8a4a'); fr(x + 0.1 * U, gy - 2.3 * U, 1.1 * U, 0.8 * U, '#7a7a3e'); fr(x - 0.3 * U, gy - 3.1 * U, 1.0 * U, 0.7 * U, '#8a8a4a');
-            }
-            function rock(x, gy) { fr(x, gy - 0.9 * U, 1.4 * U, 0.9 * U, '#8a8070'); fr(x + 0.2 * U, gy - 1.3 * U, 0.8 * U, 0.5 * U, '#9a9080'); }
-
-            // the felt tent (ger): white walls and a round roof, an orange door and a stovepipe
-            function ger(x0, gy) {
-                var wd = 8 * U, wh = 3.2 * U, cxm = x0 + wd / 2, k, rows = 7;
-                for (k = 0; k < 6; k++) fr(x0, gy - wh + k * wh / 6, wd, wh / 6 + 1, k % 2 ? '#f1ecdf' : '#f6f2e7');
-                for (k = 1; k < 8; k++) fr(x0 + k * U, gy - wh, 1, wh, 'rgba(0,0,0,0.07)');
-                fr(x0, gy - wh * 0.62, wd, 3, '#6b4a2b'); fr(x0, gy - wh * 0.28, wd, 3, '#6b4a2b');            // the ropes round the wall
-                fr(x0, gy - wh, wd, U * 0.28, '#1f4aa3'); for (k = 0; k < 8; k++) fr(x0 + k * U + U * 0.35, gy - wh + U * 0.08, U * 0.3, U * 0.12, '#ffd24a');
-                for (k = 0; k < rows; k++) {
-                    var rw2 = (wd + U) * (1 - k / (rows + 0.9));
-                    fr(cxm - rw2 / 2, gy - wh - (k + 1) * U * 0.5, rw2, U * 0.5 + 1, k % 2 ? '#ece5d3' : '#f3eddc');
-                    fr(cxm - rw2 / 2, gy - wh - k * U * 0.5 - 2, rw2, 2, 'rgba(0,0,0,0.12)');
-                }
-                var topY = gy - wh - rows * U * 0.5;
-                fr(cxm - U * 0.7, topY - U * 0.35, U * 1.4, U * 0.5, '#a0522d'); fr(cxm - U * 0.25, topY - U * 0.7, U * 0.5, U * 0.4, '#6b3418');   // the crown (toono)
-                fr(cxm + 1.2 * U, topY - 0.6 * U, 0.45 * U, 2.4 * U, '#3b3b3b');                                                                  // stovepipe
-                world.chimney = { x: cxm + 1.2 * U + 0.22 * U, y: topY - 0.6 * U, U: U };
-                var dw = 1.7 * U, dh = 2.3 * U, dx = cxm - dw / 2;
-                fr(dx - 3, gy - dh - 3, dw + 6, dh + 3, '#8b2e0f'); fr(dx, gy - dh, dw, dh, '#d4501e');
-                fr(dx + dw / 2 - 1, gy - dh, 2, dh, '#8b2e0f'); fr(dx + 0.25 * U, gy - dh + 0.3 * U, 0.3 * U, 0.3 * U, '#ffd24a'); fr(dx + dw - 0.55 * U, gy - dh + 0.3 * U, 0.3 * U, 0.3 * U, '#ffd24a');
-                fr(dx + dw * 0.5 - 0.15 * U, gy - dh * 0.45, 0.3 * U, 0.3 * U, '#ffd24a');
-            }
-
-            // a herder's well: a wooden shaft with a pulley frame; the bucket, the herder and the trough are animated every frame
-            function herderWell(wx, gy) {
-                fr(wx - U, gy, 2 * U, 3.8 * U, '#1b140e');
-                fr(wx - U, gy, 0.22 * U, 3.8 * U, '#6b4a2b'); fr(wx + U - 0.22 * U, gy, 0.22 * U, 3.8 * U, '#6b4a2b');
-                fr(wx - 0.78 * U, gy + 3.1 * U, 1.56 * U, 0.7 * U, '#2f5fc4'); fr(wx - 0.78 * U, gy + 3.1 * U, 1.56 * U, 0.12 * U, '#6f9bf5');
-                fr(wx - 1.5 * U, gy - 0.9 * U, 3 * U, 0.45 * U, '#8b5a2b'); fr(wx - 1.5 * U, gy - 0.45 * U, 3 * U, 0.45 * U, '#7a4a24');
-                for (var k = 0; k < 3; k++) { fr(wx - 1.5 * U + k * U, gy - 0.9 * U, 2, 0.9 * U, '#5a3418'); }
-                function post(x1, y1, x2, y2) { var n = 16; for (var q = 0; q <= n; q++) { var t = q / n; fr(x1 + (x2 - x1) * t - 0.2 * U, y1 + (y2 - y1) * t, 0.4 * U, (y1 - y2) / n + 2, '#7a4a24'); } }
-                post(wx - 1.8 * U, gy - 0.9 * U, wx, gy - 5.4 * U); post(wx + 1.8 * U, gy - 0.9 * U, wx, gy - 5.4 * U);
-                fr(wx - 0.5 * U, gy - 5.9 * U, U, U, '#cfcfcf'); fr(wx - 0.2 * U, gy - 5.6 * U, 0.4 * U, 0.4 * U, '#555');
-                world.well = { x: wx, gy: gy, U: U };
-            }
-
-            function inSpan(col, pad) { return spans.some(function (s) { return col >= s.c0 - pad && col <= s.c0 + s.cw + pad; }); }
-            // trees and bushes on the steppe, shrubs and stones in the desert
-            for (c = 2; c < cols - 2; c += Math.round(rand(7, 13))) {
-                if (inSpan(c, 4) || sandAt(c)) continue;
-                if (Math.random() < 0.75) tree(c * B + B / 2, world.top[c], 4 + Math.floor(Math.random() * 2)); else bush(c * B, world.top[c]);
-            }
-            for (c = 1; c < cols - 1; c++) {
-                var q = hash(c, 5, 9);
-                if (sandAt(c)) {
-                    if (c > dsC + 3 && q > 0.94) saxaul(c * B, world.top[c]);
-                    else if (q < 0.05) rock(c * B, world.top[c]);
-                    continue;
-                }
-                if (inSpan(c, 1)) continue;
-                if (q > 0.93) flower(c * B + 3, world.top[c], q > 0.97 ? '#d7263d' : '#ffffff');
-                else if (q < 0.04) bush(c * B, world.top[c]);
-            }
-            var gerX0 = 0, troughX0 = 0, troughX1 = 0;
-            spans.forEach(function (s) {
-                if (s.type === 'river') return;
-                var gy = world.top[s.c0 + (s.cw >> 1)], sx = s.c0 * B;
-                if (s.type === 'ger') { gerX0 = sx + U; ger(gerX0, gy); }
-                else { var wx = sx + 5.2 * U; herderWell(wx, gy); troughX0 = wx + 2.8 * U; troughX1 = troughX0 + 7 * U; }
-            });
-
-            world.c = cv;
-            // livestock at the trough, a horse near the ger, a Gobi bear (mazaalai) in the desert
-            var mk = function (kind, reg) { return { kind: kind, region: reg, x: rand(reg[0], reg[1]), dir: Math.random() < 0.5 ? -1 : 1, face: 1, t: rand(0.5, 4), sp: rand(8, 18), ph: rand(0, 6) }; };
-            world.animals = [
-                mk('horse', [Math.max(40, gerX0 - U), gerX0 + 14 * U]),
-                mk('sheep', [troughX0 - 2 * U, troughX1 + 3 * U]), mk('sheep', [troughX0 - 2 * U, troughX1 + 3 * U]), mk('goat', [troughX0 - 2 * U, troughX1 + 3 * U]),
-                mk('bear', [(dsC + 8) * B, w - 30])
-            ];
-            world.troughX0 = troughX0;
+        // light ripples slide down the river towards the viewer; far ones are sorted in with the animals (so a camel hides them), near ones go over the near layer
+        function ripple(k) {
+            var span = 71 - ZMIN, wd = RIVER.x1 - RIVER.x0;
+            return { z: ZMIN + (((k * 3.71 - T * FLOW) % span) + span) % span, x: RIVER.x0 + 0.15 + ((k * 0.618) % 1) * (wd - 0.9), len: 0.9 + (k % 4) * 0.5 };
         }
-
-        var SHEEP = [[-2.6, -3.7, 5.2, 3, '#f2f2f2'], [-2.6, -1.3, 5.2, 0.7, '#d4d4d4'], [-2.2, -4.1, 1.4, 0.5, '#fafafa'], [0, -4.1, 1.6, 0.5, '#fafafa'],
-            [2.4, -3.4, 1.9, 1.9, '#c9ae8b'], [3.7, -2.9, 0.35, 0.35, '#222'], [2.3, -3.6, 0.5, 0.5, '#b89a76']];
-        var GOAT = [[-2.4, -3.6, 4.8, 2.9, '#c4b08f'], [-2.4, -1.4, 4.8, 0.7, '#a8946f'], [2.2, -4.4, 2, 2.1, '#b09a78'], [3.7, -3.4, 0.9, 1, '#cdbb9b'],
-            [2.5, -5.5, 0.4, 1.1, '#f0e8d8'], [3.3, -5.5, 0.4, 1.1, '#f0e8d8'], [3.9, -2.4, 0.35, 0.9, '#8d7a62'], [3.5, -4, 0.35, 0.35, '#222'], [-2.8, -3.8, 0.5, 0.9, '#a8946f']];
-        var HORSE = [[-3.2, -4.4, 6.4, 3.1, '#8b5a2b'], [-3.2, -1.6, 6.4, 0.6, '#6e4520'], [2.7, -6.4, 1.7, 3.3, '#8b5a2b'], [3.5, -6.6, 2.5, 1.6, '#7d4f24'],
-            [5.3, -5.7, 0.8, 1, '#c9a27a'], [4, -6.2, 0.3, 0.3, '#111'], [2.5, -7, 0.7, 2.2, '#3b2a18'], [-3.8, -4.3, 0.7, 2.4, '#3b2a18'], [-1.5, -4.7, 3, 0.4, '#7d4f24']];
-        var BEAR = [[-3, -3.6, 6, 3, '#6b4a2e'], [-1.8, -4.5, 3.2, 1, '#6b4a2e'], [2.7, -4.3, 2.4, 2.4, '#6b4a2e'], [4.6, -3.4, 1.1, 1.2, '#b89870'],
-            [5.4, -3.3, 0.4, 0.4, '#111'], [3.1, -4.8, 0.8, 0.6, '#5a3d22'], [4, -3.9, 0.3, 0.3, '#111'], [-3.2, -3.9, 0.7, 0.7, '#5a3d22']];
-        var KINDS = {
-            bear: { body: BEAR, legs: [-2.6, -1.6, 1.2, 2.2], lw: 0.95, lh: 1.3, col: '#5a3d22', k: 1.15 },
-            sheep: { body: SHEEP, legs: [-2.1, -1.2, 0.9, 1.8], lw: 0.55, lh: 0.8, col: '#6b6b6b', k: 1.15 },
-            goat: { body: GOAT, legs: [-2.1, -1.2, 0.9, 1.8], lw: 0.5, lh: 0.8, col: '#8d7a62', k: 1.15 },
-            horse: { body: HORSE, legs: [-2.9, -2, 1.9, 2.8], lw: 0.6, lh: 1.9, col: '#6e4520', k: 1.25 }
-        };
-        function drawAnimals(dt, rise) {
-            world.animals.forEach(function (a) {
-                var kd = KINDS[a.kind], u = Math.round(world.B * kd.k);
-                a.t -= dt;
-                if (a.t <= 0) { a.t = rand(2, 6); a.dir = Math.random() < 0.3 ? 0 : (Math.random() < 0.5 ? -1 : 1); a.sp = rand(8, 18); }
-                a.x += a.dir * a.sp * dt;
-                var lo = a.region ? a.region[0] : 20, hi = a.region ? a.region[1] : w - 20;
-                if (a.x < lo) { a.x = lo; a.dir = 1; } if (a.x > hi) { a.x = hi; a.dir = -1; }
-                var rv = world.river;
-                if (rv && a.x > rv.x0 - 14 && a.x < rv.x1 + 14) { var left = a.x < (rv.x0 + rv.x1) / 2; a.x = left ? rv.x0 - 14 : rv.x1 + 14; a.dir = left ? -1 : 1; }
-                if (a.dir) a.face = a.dir;
-                ctx.save(); ctx.translate(Math.round(a.x), Math.round(topY(a.x) + rise)); if (a.face < 0) ctx.scale(-1, 1);
-                kd.body.forEach(function (p) { ctx.fillStyle = p[4]; ctx.fillRect(Math.round(p[0] * u), Math.round(p[1] * u), Math.max(1, Math.round(p[2] * u)), Math.max(1, Math.round(p[3] * u))); });
-                var sw = a.dir ? Math.sin(T * 7 + a.ph) * 0.25 : 0;
-                kd.legs.forEach(function (lx, k) {
-                    ctx.fillStyle = kd.col;
-                    ctx.fillRect(Math.round((lx + (k % 2 ? sw : -sw)) * u), Math.round(-(kd.lh - 0.1) * u), Math.round(kd.lw * u), Math.round(kd.lh * u));
-                });
-                ctx.restore();
-            });
+        function drawRipple(g, k, base) {
+            var q = ripple(k), y = -0.27;
+            g.globalAlpha = base * clamp(0.42 * (1 - q.z / 105), 0, 1) * (0.7 + 0.3 * Math.sin(T * 3 + k));
+            quad(g, proj(q.x, y, q.z), proj(q.x + 0.7, y, q.z), proj(q.x + 0.7, y, q.z + q.len), proj(q.x, y, q.z + q.len), (k % 2) ? '#ffffff' : '#bfe0ff', null);
+            g.globalAlpha = base;
         }
-
-        // the herder draws water: lowers the bucket, pulls it up hand over hand, pours it into the trough (onggots) for the livestock
-        function drawWell() {
-            var wl = world.well;
-            if (!wl) return;
-            var U = wl.U, x = wl.x, gy = wl.gy + world.rise, py = gy - 5.4 * U;
-            var ph = (T % 9) / 9, depth = 0, pour = 0;
-            if (ph < 0.28) depth = ph / 0.28; else if (ph < 0.38) depth = 1; else if (ph < 0.78) depth = 1 - (ph - 0.38) / 0.4; else if (ph < 0.94) pour = (ph - 0.78) / 0.16;
-            var bucketY = lerp(gy - 3.2 * U, gy + 2.7 * U, ease(depth)), pulling = ph >= 0.38 && ph < 0.78;
-            var hx = x - 3.4 * U, handX = hx + 0.95 * U, handY = gy - 3.9 * U + (1 - depth) * 1.5 * U + (pulling ? Math.sin(T * 6) * 0.25 * U : 0);
-
-            // trough
-            var tx = x + 2.8 * U, tl = 7 * U, level = ph < 0.78 ? lerp(1, 0.35, ph / 0.78) : lerp(0.35, 1, clamp((ph - 0.78) / 0.16, 0, 1));
-            ctx.fillStyle = '#7a5230'; ctx.fillRect(Math.round(tx), Math.round(gy - 1.3 * U), Math.round(tl), Math.round(1.3 * U));
-            ctx.fillStyle = '#5a3a1e'; ctx.fillRect(Math.round(tx), Math.round(gy - 1.3 * U), Math.round(0.35 * U), Math.round(1.3 * U)); ctx.fillRect(Math.round(tx + tl - 0.35 * U), Math.round(gy - 1.3 * U), Math.round(0.35 * U), Math.round(1.3 * U));
-            ctx.fillStyle = '#2b1d10'; ctx.fillRect(Math.round(tx + 0.35 * U), Math.round(gy - 1.1 * U), Math.round(tl - 0.7 * U), Math.round(0.9 * U));
-            ctx.fillStyle = '#3b6fe0'; var wh = 0.9 * U * level; ctx.fillRect(Math.round(tx + 0.35 * U), Math.round(gy - 0.2 * U - wh), Math.round(tl - 0.7 * U), Math.round(wh));
-            ctx.fillStyle = '#6f9bf5'; ctx.fillRect(Math.round(tx + 0.35 * U), Math.round(gy - 0.2 * U - wh), Math.round(tl - 0.7 * U), 2);
-            ctx.fillStyle = '#5a3a1e'; ctx.fillRect(Math.round(tx + 0.6 * U), Math.round(gy), Math.round(0.5 * U), Math.round(0.35 * U)); ctx.fillRect(Math.round(tx + tl - 1.1 * U), Math.round(gy), Math.round(0.5 * U), Math.round(0.35 * U));
-
-            // ropes
-            ctx.strokeStyle = '#d9c9a0'; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(x - 0.3 * U, py); ctx.lineTo(handX, handY); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(x + 0.2 * U, py); ctx.lineTo(x + 0.2 * U, bucketY); ctx.stroke();
-            // bucket (full when it comes up), and the stream it pours towards the trough
-            var bx = x + 0.2 * U - 0.45 * U;
-            ctx.fillStyle = '#7a4a24'; ctx.fillRect(Math.round(bx), Math.round(bucketY), Math.round(0.9 * U), Math.round(0.9 * U));
-            ctx.fillStyle = '#4a2a12'; ctx.fillRect(Math.round(bx), Math.round(bucketY + 0.3 * U), Math.round(0.9 * U), Math.round(0.12 * U));
-            if (depth < 0.9 && pour < 1 && ph > 0.3) { ctx.fillStyle = '#6f9bf5'; ctx.fillRect(Math.round(bx + 3), Math.round(bucketY), Math.round(0.9 * U - 6), 3); }
-            if (pour > 0) {
-                ctx.fillStyle = '#6f9bf5';
-                for (var k = 0; k < 9; k++) ctx.fillRect(Math.round(bx + 0.9 * U + k * 0.27 * U), Math.round(bucketY + 0.3 * U + k * k * 0.07 * U), 3, 6);
-            }
-
-            // the herder in a blue deel, red sash and a pointed hat, arms on the rope
-            var q = function (dx, dy, wd, ht, col) { ctx.fillStyle = col; ctx.fillRect(Math.round(hx + dx * U), Math.round(gy + dy * U), Math.max(1, Math.round(wd * U)), Math.max(1, Math.round(ht * U))); };
-            q(-0.45, -0.5, 0.4, 0.5, '#2b1b10'); q(0.05, -0.5, 0.4, 0.5, '#2b1b10');
-            q(-0.55, -2.8, 1.1, 2.4, '#1f4aa3'); q(-0.55, -1.7, 1.1, 0.28, '#d7263d'); q(-0.55, -2.8, 1.1, 0.18, '#ffd24a');
-            q(-0.4, -3.6, 0.8, 0.8, '#e0b087'); q(0.2, -3.35, 0.15, 0.15, '#111');
-            q(-0.55, -4.05, 1.1, 0.5, '#c1121f'); q(-0.3, -4.6, 0.6, 0.6, '#c1121f'); q(-0.1, -4.85, 0.2, 0.25, '#ffd900');
-            ctx.strokeStyle = '#1f4aa3'; ctx.lineWidth = Math.max(2, 0.38 * U);
-            ctx.beginPath(); ctx.moveTo(hx + 0.3 * U, gy - 2.6 * U); ctx.lineTo(handX, handY); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(hx + 0.3 * U, gy - 2.5 * U); ctx.lineTo(handX - 0.1 * U, handY + 0.8 * U); ctx.stroke();
-            ctx.fillStyle = '#e0b087'; ctx.fillRect(Math.round(handX - 0.2 * U), Math.round(handY - 0.2 * U), Math.round(0.4 * U), Math.round(0.4 * U));
-            ctx.fillRect(Math.round(handX - 0.3 * U), Math.round(handY + 0.6 * U), Math.round(0.4 * U), Math.round(0.4 * U));
+        function drawRiverFlow(g) {
+            var base = sstep(0.4, 0.56, prog);
+            for (var k = 0; k < 90; k++) if (ripple(k).z < ZSPLIT) drawRipple(g, k, base);
+            g.globalAlpha = base;
         }
-
-        // smoke curling out of the ger's stovepipe
-        function drawSmoke() {
-            var ch = world.chimney;
-            if (!ch) return;
-            for (var i = 0; i < 6; i++) {
-                var age = ((T * 0.28 + i / 6) % 1), s = ch.U * (0.35 + age * 0.7);
-                ctx.globalAlpha *= 1;
-                ctx.fillStyle = 'rgba(225,225,225,' + (0.55 * (1 - age)) + ')';
-                ctx.fillRect(Math.round(ch.x + Math.sin(age * 7 + i) * ch.U * 0.5 - s / 2), Math.round(ch.y + world.rise - age * 4.2 * ch.U), Math.round(s), Math.round(s));
-            }
+        function drawFarRipples(g) {                                         // far ripples go on a scratch canvas, standing things are cut out of it, then it is laid over the ground
+            var t = world.tmp, tg = t.getContext('2d'), k;
+            tg.setTransform(1, 0, 0, 1, 0, 0); tg.globalCompositeOperation = 'source-over'; tg.globalAlpha = 1; tg.clearRect(0, 0, t.width, t.height);
+            for (k = 0; k < 90; k++) if (ripple(k).z >= ZSPLIT) drawRipple(tg, k, 1);
+            tg.globalAlpha = 1; tg.globalCompositeOperation = 'destination-out'; tg.drawImage(world.mask, 0, 0); tg.globalCompositeOperation = 'source-over';
+            g.drawImage(t, 0, 0);
         }
 
         function drawWorld(day, dt) {
-            if (!world.c || prog < 0.36) return;
+            if (!world.far || prog < 0.36) return;
             var rise = (1 - sstep(0.36, 0.62, prog)) * h * 0.22;
-            ctx.globalAlpha = sstep(0.4, 0.56, prog);
-            ctx.drawImage(world.c, 0, Math.round(rise), w, h);
             world.rise = rise;
-            drawAnimals(dt, rise);
-            drawWell();
-            drawSmoke();
+            ctx.globalAlpha = sstep(0.4, 0.56, prog);
+            ctx.save(); ctx.translate(0, rise);
+            ctx.drawImage(world.far, 0, 0);
+            drawFarRipples(ctx);
+            entList(dt).forEach(function (e) { e.f(ctx); });
+            ctx.drawImage(world.near, 0, 0);
+            drawRiverFlow(ctx);
+            ctx.restore();
             ctx.globalAlpha = 1;
         }
 
@@ -1089,7 +1283,7 @@
             }
 
             // the descent: the Earth rises from below, then the sky turns blue and the blocky world appears. The sun stays.
-            drawEarth(clamp((prog - 0.06) / 0.28, 0, 1), day);
+            drawBlackHole(clamp((prog - 0.06) / 0.14, 0, 1), day);
             drawSky(day);
             drawSunAndSparks(dt);
             drawClouds(day, dt);
@@ -1853,20 +2047,35 @@
         });
 
         // arriving at the chapter: the shape explodes into cards
-        // scrolling down to the middle of the screen explodes the chapter after a moment; scrolling back up past it folds it again
-        if ('IntersectionObserver' in window) {
-            var autoTimer = 0;
-            var io = new IntersectionObserver(function (es) {
-                var en = es[es.length - 1];
-                clearTimeout(autoTimer);
-                if (en.isIntersecting) {
-                    autoTimer = setTimeout(function () { if (state !== 'open') setState('open'); }, 350);
-                } else if (en.rootBounds && en.boundingClientRect.top > en.rootBounds.top + en.rootBounds.height / 2) {
-                    autoTimer = setTimeout(function () { if (state !== 'shape') setState('shape'); }, 600);
+        // Scroll watcher. When the shape (not the section) reaches the middle of the screen it is held for about a second
+        // and a half so you can see it, then it explodes. Scrolling back up past that line folds it again at once.
+        var scrollHost = sec.closest('.rc-app'), reachedPrev = false, holdTimer = 0, holding = false;
+        function reachedMiddle() {
+            var ar = scrollHost.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+            return { ay: sr.top - ar.top + CH() / 2, mid: ar.height * 0.5 };
+        }
+        function stopHold() { clearTimeout(holdTimer); holding = false; hub.classList.remove('rc-charging'); updateBtn(); }
+        function watchScroll() {
+            var m = reachedMiddle(), reached = m.ay <= m.mid;
+            if (reached && !reachedPrev) {
+                reachedPrev = true;
+                if (state !== 'open') {
+                    holding = true; hub.classList.add('rc-charging'); hubHint.textContent = 'exploding…';
+                    clearTimeout(holdTimer);
+                    holdTimer = setTimeout(function () {
+                        var m2 = reachedMiddle();
+                        stopHold();
+                        if (m2.ay <= m2.mid + 40 && state !== 'open') setState('open');
+                    }, 1500);
                 }
-            }, { root: sec.closest('.rc-app'), rootMargin: '-46% 0px -46% 0px', threshold: 0 });
-            io.observe(sec);
-        } else setState('open');
+            } else if (!reached && reachedPrev && m.ay > m.mid + 30) {
+                reachedPrev = false;
+                stopHold();
+                if (state !== 'shape') setState('shape');
+            }
+        }
+        scrollHost.addEventListener('scroll', watchScroll, { passive: true });
+        setTimeout(watchScroll, 300);
 
         var api = {
             open: function () { if (state !== 'open') setState('open'); },

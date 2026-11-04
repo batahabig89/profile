@@ -1,5 +1,5 @@
 /* Keep ?v= in sync with index.html (cache-bust on GitHub Pages) */
-var ASSET_VER = '58';
+var ASSET_VER = '102';
 
 // Selectable page templates. "code" is the built-in editor look; others load their own CSS/JS
 // and register a renderer on window.ProfileTemplates[name].
@@ -22,7 +22,7 @@ var TEMPLATES = {
     }
 };
 // Renamed when the default template changes, so earlier saved choices don't hide the new default
-var TEMPLATE_STORAGE_KEY = 'profileTemplate.v2';
+var TEMPLATE_STORAGE_KEY = 'profileTemplate.v3';
 
 function getSelectedTemplate() {
     let name = new URLSearchParams(location.search).get('template');
@@ -33,7 +33,7 @@ function getSelectedTemplate() {
             /* storage blocked */
         }
     }
-    return TEMPLATES[name] ? name : 'chess-halloween';
+    return TEMPLATES[name] ? name : 'rubik';
 }
 
 var ACTIVE_TEMPLATE = getSelectedTemplate();

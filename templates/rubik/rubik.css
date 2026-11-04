@@ -1,4 +1,4 @@
-@import url('fonts/fonts.css?v=58');
+@import url('fonts/fonts.css?v=102');
 
 /* Rubik template — Minecraft look: blocky buttons, pixel fonts, a square sun and block planets */
 
@@ -39,7 +39,7 @@ html[data-template="rubik"] #templateRoot {
     -webkit-user-select: none;
     user-select: none;
 }
-.rc-page { max-width: 1280px; margin: 0 auto; padding: 0 28px 160px; }
+.rc-page { max-width: 1280px; margin: 0 auto; padding: 0 28px 78px; }
 
 /* ---------- Minecraft button ---------- */
 .rc-mc {
@@ -428,11 +428,11 @@ html[data-template="rubik"] #templateRoot {
 .rc-item-value { margin-top: 8px; font-size: 22px; }
 .rc-item-value a { color: #fff; text-decoration: none; }
 
-.rc-foot { margin-top: 70px; text-align: center; font-size: 18px; color: #6f7ba3; }
+.rc-foot { margin-top: 40px; text-align: center; font-size: 18px; color: #6f7ba3; }
 
 /* ---------- phones ---------- */
 @media (max-width: 900px) {
-    .rc-page { padding: 0 16px 160px; }
+    .rc-page { padding: 0 16px 40px; }
     .rc-nav { padding: 10px 12px 10px 58px; }
     .rc-brand { display: none; }
     .rc-legend { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; scrollbar-width: none; padding: 4px 4px 6px; }
@@ -491,6 +491,23 @@ html[data-template="rubik"] #templateRoot {
     .rc-hstatus { font-size: 17px; }
     .rc-hhint { font-size: 14px; }
 }
+
+/* the chapter header is a small square block (icon, title, short note, toggle) instead of a long bar */
+.rc-sec-head {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: start;
+    align-content: start;
+    gap: 10px;
+    width: 220px;
+    min-height: 220px;
+    padding: 14px !important;
+    border-top: 6px solid var(--c);
+}
+.rc-sec-head > div { min-width: 0; flex: none; }
+.rc-sec-head h2 { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
+.rc-sec-head p { margin: 8px 0 0; font-size: 16px; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.rc-sec-head .rc-xbtn { align-self: end; }
 
 /* readable on the bright sky at the bottom of the page */
 .rc-sec-head, .rc-foot {
@@ -566,4 +583,30 @@ html[data-template="rubik"] .template-panel {
     box-shadow: inset -3px -3px 0 #1b1b1b, inset 3px 3px 0 #6b6b6b, 0 0 0 3px #000;
     color: #fff;
     font-family: 'Press Start 2P', monospace;
+}
+
+/* the centre block pulses while the chapter is about to explode */
+.rc-stitle.rc-charging { animation: rcCharge 0.5s ease-in-out infinite alternate; }
+@keyframes rcCharge { from { filter: brightness(1); transform: scale(1); } to { filter: brightness(1.35); transform: scale(1.06); } }
+
+/* phones: the exploded cards sit two to a row, a little smaller */
+@media (max-width: 700px) {
+    .rc-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 6px 0 10px; }
+    .rc-flowcard { min-height: 60px; }
+    .rc-hubslot { min-height: 96px; }
+    .rc-item { padding: 8px 9px; }
+    .rc-item-head { gap: 6px; }
+    .rc-item-ico { font-size: 18px; }
+    .rc-item-head strong { font-size: 17px; word-break: break-word; }
+    .rc-item-head span:not(.rc-item-ico) { font-size: 14px; }
+    .rc-item time { font-size: 15px; margin-top: 4px; }
+    .rc-item p, .rc-item ul { font-size: 15px; margin-top: 5px; }
+    .rc-item ul { padding-left: 14px; }
+    .rc-item .rc-chips { margin-top: 6px; gap: 4px; }
+    .rc-item .rc-chip { font-size: 13px; padding: 1px 6px; margin: 1px; }
+    .rc-item-value { font-size: 16px; word-break: break-all; }
+    .rc-stitle b { font-size: 8px; }
+    .rc-stitle span { font-size: 22px; }
+    .rc-stitle small { font-size: 13px; }
+    .rc-tcard { border-left-width: 5px; }
 }
