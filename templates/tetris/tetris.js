@@ -2200,11 +2200,12 @@
         // ----- a classic flying saucer hovering behind the game cabinet: a smooth gun-metal disc that
         //       spins on its axis, a tinted glass dome, blinking green rim lights and a tractor beam -----
         var UFO = { x: 60, y: 9, z: -8, pulse: 0, motes: [], moteT: 0, spin: 0 };
-        var UB = 3.2, UFO_RIM = 7.6, UFO_BEAM_LEN = 34;
+        var UB = 1.6, UFO_RIM = 7.6, UFO_BEAM_LEN = 34;
 
         // Put the saucer's middle on a screen point (the centre of the game cabinet), whatever the island's scale
         function placeUfo(spot) {
             var tx = spot ? spot.x : w * 0.75, ty = Math.min(spot ? spot.y : h * 0.5, h * 0.6);
+            if (!sceneRect) { tx = w * 0.6; ty = h * 0.3; }  // phone/tablet: hover in the open sky above the volcano
             UFO.z = -8;
             UFO.x = (tx - ox) / A + UFO.z;
             UFO.y = (oy + (UFO.x + UFO.z) * B - ty) / s;
