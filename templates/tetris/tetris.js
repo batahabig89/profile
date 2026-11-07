@@ -629,6 +629,10 @@
                 '<a class="tx-scroll" href="#tx-profile">▼ SCROLL TO SEE STAGES</a>' +
             '</div>';
 
+        var langs = Object.keys(spoken).map(function (k) {
+            return '<span class="tx-chip">' + esc(k) + ' · <b>' + esc(spoken[k]) + '</b></span>';
+        }).join('') + (info.vehicleLicense ? '<span class="tx-chip">🚗 Driver license</span>' : '');
+
         var profile =
             '<section class="tx-profile" id="tx-profile">' +
                 '<div class="tx-profile-main">' +
@@ -642,6 +646,7 @@
                 '<div class="tx-profile-side">' +
                 '<div class="tx-stats">' + stats + '</div>' +
                 '<div class="tx-contact">' + contact + '</div>' +
+                (langs ? '<div class="tx-langs">' + langs + '</div>' : '') +
                 '</div>' +
             '</section>';
 
@@ -775,10 +780,6 @@
             '</article>';
         })).join('');
 
-        var langs = Object.keys(spoken).map(function (k) {
-            return '<span class="tx-chip">' + esc(k) + ' · <b>' + esc(spoken[k]) + '</b></span>';
-        }).join('') + (info.vehicleLicense ? '<span class="tx-chip">🚗 Driver license</span>' : '');
-
         var shownName = info.nickname || String(info.name || '').split(/\s+/)[0];
 
         return '<div class="tx-root">' +
@@ -796,13 +797,12 @@
                     '<div class="tx-grid tx-grid-skills">' + matrix + '</div></section>' +
                 '<section class="tx-stage" id="tx-edu">' + stageHead(4, 'Save files', 'L', 'Education & certifications') +
                     '<div class="tx-grid">' + saves + '</div></section>' +
-                '<section class="tx-stage tx-continue" id="tx-contact">' +
+                '<div class="tx-sky" aria-hidden="true"><span>▲ drag the UFO ▲</span></div>' +
+                '<section class="tx-continue" id="tx-contact">' +
                     '<div class="tx-continue-box">' +
                         '<p class="tx-continue-q">CONTINUE?</p>' +
                         '<div class="tx-count" aria-hidden="true">9</div>' +
-                        '<p class="tx-continue-sub">Insert coin — get in touch</p>' +
-                        '<div class="tx-contact tx-contact-big">' + contact + '</div>' +
-                        (langs ? '<div class="tx-langs">' + langs + '</div>' : '') +
+                        '<a class="tx-continue-sub" href="#top">▲ Insert coin</a>' +
                     '</div>' +
                 '</section>' +
                 '<footer class="tx-foot">© ' + new Date().getFullYear() + ' ' + esc(shownName) + ' · <span data-k="footBest">HI-SCORE 0</span></footer>' +
@@ -963,6 +963,7 @@
         });
         var resizeT;
         window.addEventListener('resize', function () { clearTimeout(resizeT); resizeT = setTimeout(layout, 120); });
+        initUfoDrag(el, volcano);
 
         // ---------- drawing ----------
         function drawBoard(now) {
@@ -2199,7 +2200,14 @@
 
         // ----- a classic flying saucer hovering behind the game cabinet: a smooth gun-metal disc that
         //       spins on its axis, a tinted glass dome, blinking green rim lights and a tractor beam -----
-        var UFO = { x: 60, y: 9, z: -8, pulse: 0, motes: [], moteT: 0, spin: 0 };
+        var UFO = {
+            x: 60, y: 9, z: -8, pulse: 0, motes: [], moteT: 0, spin: 0,
+            dx: 0, dy: 0,                       // screen offset the visitor dragged it by
+            sx: 0, sy: 0, rx: 0, ry: 0,         // last drawn centre and rim radii (hit testing)
+            held: false, gx: 0, gy: 0,          // grab point relative to the centre
+            vx: 0, vy: 0, lastT: 0,             // drag velocity (px/s, smoothed)
+            tilt: 0, tiltV: 0, pitch: 0, pitchV: 0
+        };
         var UB = 1.6, UFO_RIM = 7.6, UFO_BEAM_LEN = 34;
 
         // Put the saucer's middle on a screen point (the centre of the game cabinet), whatever the island's scale
@@ -2210,13 +2218,44 @@
             UFO.x = (tx - ox) / A + UFO.z;
             UFO.y = (oy + (UFO.x + UFO.z) * B - ty) / s;
             UFO.motes = [];
+            UFO.dx = UFO.dy = 0;
         }
+
+        function ufoHit(x, y) {
+            if (reduceMotion || !UFO.rx) return false;
+            var nx = (x - UFO.sx) / (UFO.rx * 1.08), ny = (y - (UFO.sy - UFO.ry * 0.25)) / (UFO.ry * 1.6);
+            return nx * nx + ny * ny <= 1;
+        }
+        function ufoGrab(x, y) {
+            UFO.held = true; UFO.gx = x - UFO.sx; UFO.gy = y - UFO.sy;
+            UFO.vx = UFO.vy = 0; UFO.lastT = performance.now();
+            UFO.pulse = Math.max(UFO.pulse, 0.6);
+        }
+        function ufoDrag(x, y) {
+            var now = performance.now(), dt = Math.max(8, now - UFO.lastT) / 1000;
+            var nx = Math.max(UFO.rx * 0.6, Math.min(w - UFO.rx * 0.6, x - UFO.gx));
+            var ny = Math.max(UFO.ry * 2, Math.min(h - UFO.ry, y - UFO.gy));
+            var mx = nx - UFO.sx, my = ny - UFO.sy;
+            UFO.vx = UFO.vx * 0.6 + (mx / dt) * 0.4;
+            UFO.vy = UFO.vy * 0.6 + (my / dt) * 0.4;
+            UFO.dx += mx; UFO.dy += my;
+            UFO.sx = nx; UFO.sy = ny;
+            UFO.lastT = now;
+        }
+        function ufoRelease() { UFO.held = false; }
 
         function drawUfo() {
             var bob = Math.sin(time * 1.1) * 0.6, pulse = UFO.pulse, rot = UFO.spin, i, g;
-            var c = P(UFO.x, UFO.y + bob, UFO.z), cx = c[0], cy = c[1];
+            var c = P(UFO.x, UFO.y + bob, UFO.z), cx = c[0] + UFO.dx, cy = c[1] + UFO.dy;
             var rx = Math.SQRT2 * UFO_RIM * UB * A, ry = rx * (B / A), t = rx * 0.07;   // rim ellipse, rim thickness
             var GREEN = '77,255,122';
+            UFO.sx = cx; UFO.sy = cy; UFO.rx = rx; UFO.ry = ry;
+            ry *= Math.max(0.55, 1 + UFO.pitch);                // nosing forward/back while flung shows more or less of the top
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(Math.sin(time * 0.9) * 0.035 + UFO.tilt);   // a lazy wobble, plus banking when dragged
+            ctx.translate(-cx, -cy);
 
             // tractor beam
             var r1 = rx * 0.28, r2 = rx * (0.75 + pulse * 0.2), L = UFO_BEAM_LEN * UB * 0.5 * s, by = cy + rx * 0.16;
@@ -2241,11 +2280,6 @@
                 ctx.fillRect(cx + m.ox * r2 - q / 2, by + L * (1 - m.u) - q / 2, q, q);
             });
             ctx.globalCompositeOperation = 'source-over';
-
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.rotate(Math.sin(time * 0.9) * 0.035);          // a lazy wobble
-            ctx.translate(-cx, -cy);
 
             // underside bulge and its green glow
             g = ctx.createLinearGradient(cx - rx * 0.6, 0, cx + rx * 0.6, 0);
@@ -2358,7 +2392,15 @@
 
         function updateUfo(dt) {
             UFO.pulse = Math.max(0, UFO.pulse - dt * 0.9);
-            UFO.spin += dt * (1.1 + UFO.pulse * 2.5);           // spins on its axis, faster when excited
+            // banking: lean into the drag direction, then rock back and forth on springs after letting go
+            if (!UFO.held) { UFO.vx *= Math.pow(0.02, dt); UFO.vy *= Math.pow(0.02, dt); }
+            var tTilt = Math.max(-0.55, Math.min(0.55, UFO.vx * 0.0011));
+            var tPitch = Math.max(-0.35, Math.min(0.35, UFO.vy * 0.0007));
+            UFO.tiltV += ((tTilt - UFO.tilt) * 70 - UFO.tiltV * 4.5) * dt;
+            UFO.tilt += UFO.tiltV * dt;
+            UFO.pitchV += ((tPitch - UFO.pitch) * 60 - UFO.pitchV * 4) * dt;
+            UFO.pitch += UFO.pitchV * dt;
+            UFO.spin += dt * (1.1 + UFO.pulse * 2.5 + Math.min(4, Math.abs(UFO.vx) * 0.004));           // spins on its axis, faster when excited
             UFO.moteT -= dt;
             while (UFO.moteT <= 0) {
                 UFO.moteT += UFO.pulse > 0.2 ? 0.02 : 0.08;
@@ -2537,6 +2579,7 @@
         window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(size, 160); });
 
         return {
+            ufoHit: ufoHit, ufoGrab: ufoGrab, ufoDrag: ufoDrag, ufoRelease: ufoRelease,
             tick: function (dt) {
                 if (reduceMotion) return;
                 acc += dt;
@@ -2547,7 +2590,9 @@
                 lavaT += step;
                 if (lavaT >= 0.11) { lavaT = 0; tickN++; renderLava(); }
                 // fade the scene a little once the visitor scrolls into the content
-                var op = Math.round((1 - Math.min(0.25, Math.max(0, window.scrollY - h) / (h * 2))) * 100) / 100;   // stays fully clear over the hero
+                // ...and clear again at the open sky at the bottom of the page
+                var toEnd = document.documentElement.scrollHeight - (window.scrollY + h);
+                var op = Math.round((1 - Math.min(0.25, Math.max(0, window.scrollY - h) / (h * 2), Math.max(0, toEnd) / (h * 2))) * 100) / 100;
                 if (op !== lastOpacity) { cv.style.opacity = op; lastOpacity = op; }
                 draw();
             },
@@ -2734,6 +2779,41 @@
             io.observe(stack);
         }
         show(0);
+    }
+
+    // Grab the flying saucer wherever the page leaves the sky uncovered and fling it around (mouse or touch)
+    function initUfoDrag(el, volcano) {
+        var held = null;
+        function inSky(t) {
+            return t === el || (t.matches && t.matches('.tx-root, .tx-page, .tx-hero, .tx-stage, .tx-sky, .tx-sky span, .tx-continue, .tx-player'));
+        }
+        function canGrab(e) { return inSky(e.target) && volcano.ufoHit(e.clientX, e.clientY); }
+        el.addEventListener('touchstart', function (e) {
+            var t = e.touches[0];
+            if (e.touches.length === 1 && inSky(e.target) && volcano.ufoHit(t.clientX, t.clientY)) e.preventDefault();   // no page scroll while holding it
+        }, { passive: false });
+        el.addEventListener('pointerdown', function (e) {
+            if (held || (e.pointerType === 'mouse' && e.button !== 0) || !canGrab(e)) return;
+            e.preventDefault();
+            held = e.pointerId;
+            volcano.ufoGrab(e.clientX, e.clientY);
+            el.classList.add('tx-ufo-held');
+        });
+        window.addEventListener('pointermove', function (e) {
+            if (held !== null) {
+                if (e.pointerId === held) volcano.ufoDrag(e.clientX, e.clientY);
+                return;
+            }
+            if (e.pointerType === 'mouse') el.classList.toggle('tx-ufo-hover', canGrab(e));
+        });
+        function release(e) {
+            if (held === null || e.pointerId !== held) return;
+            held = null;
+            volcano.ufoRelease();
+            el.classList.remove('tx-ufo-held');
+        }
+        window.addEventListener('pointerup', release);
+        window.addEventListener('pointercancel', release);
     }
 
     // "CONTINUE? 9..0" countdown in the contact stage

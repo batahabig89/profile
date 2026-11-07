@@ -876,39 +876,52 @@ kbd {
     border: 1px dashed color-mix(in srgb, var(--c) 60%, transparent);
 }
 
-/* continue? */
-.tx-continue { padding-top: 80px; }
+/* open sky at the end of the page: the island and the UFO show through, then a small CONTINUE? bar */
+.tx-sky {
+    height: 78vh;
+    min-height: 420px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 12px;
+}
+.tx-sky span { font: 8px/1 var(--tx-pixel); color: rgba(119, 255, 150, 0.55); letter-spacing: 1px; }
+@media (hover: hover) { .tx-sky span { display: none; } }
+.tx-root.tx-ufo-hover { cursor: grab; }
+.tx-root.tx-ufo-held, .tx-root.tx-ufo-held * { cursor: grabbing; user-select: none; }
+
+.tx-continue { display: flex; justify-content: center; }
 .tx-continue-box {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 36px 24px;
-    text-align: center;
-    background: rgba(7, 5, 26, 0.82);
-    border: 3px solid var(--tx-pink);
-    box-shadow: 0 0 40px rgba(255, 63, 164, 0.35), inset 0 0 40px rgba(255, 63, 164, 0.1);
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 18px;
+    background: rgba(7, 5, 26, 0.8);
+    border: 2px solid var(--tx-pink);
+    box-shadow: 0 0 18px rgba(255, 63, 164, 0.3);
 }
 .tx-continue-q {
-    margin: 0 0 12px;
-    font: clamp(20px, 4vw, 34px)/1.2 var(--tx-pixel);
+    margin: 0;
+    font: 12px/1 var(--tx-pixel);
     color: var(--tx-pink);
-    text-shadow: 0 0 18px rgba(255, 63, 164, 0.7);
+    text-shadow: 0 0 10px rgba(255, 63, 164, 0.7);
 }
 .tx-count {
-    font: clamp(64px, 12vw, 110px)/1 var(--tx-pixel);
+    min-width: 1.2em;
+    text-align: center;
+    font: 20px/1 var(--tx-pixel);
     color: var(--tx-yellow);
-    text-shadow: 6px 6px 0 #a01e5e, 0 0 30px rgba(255, 210, 63, 0.5);
-    margin: 10px 0 16px;
+    text-shadow: 2px 2px 0 #a01e5e, 0 0 14px rgba(255, 210, 63, 0.5);
 }
 .tx-count.tx-tick { animation: txTick 1s ease-out; }
 @keyframes txTick { 0% { transform: scale(1.3); } 25% { transform: scale(1); } }
-.tx-continue-sub { font: 10px/1.6 var(--tx-pixel); color: var(--tx-cyan); margin: 0 0 22px; }
-.tx-contact-big { justify-content: center; }
-.tx-contact-big .tx-chip { font-size: 16px; padding: 10px 16px; }
-.tx-langs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 14px; }
+.tx-continue-sub { font: 8px/1 var(--tx-pixel); color: var(--tx-cyan); text-decoration: none; }
+.tx-continue-sub:hover { color: #fff; }
+.tx-langs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .tx-langs b { color: var(--tx-yellow); font-weight: 600; }
 
 .tx-foot {
-    margin-top: 56px;
+    margin-top: 14px;
     text-align: center;
     font: 9px/1.8 var(--tx-pixel);
     color: var(--tx-muted);
@@ -931,7 +944,7 @@ kbd {
 
 @media (max-width: 640px) {
     html[data-template="tetris"] body { --tx-side: 74px; font-size: 15px; }
-    .tx-page { padding: 0 12px 80px; }
+    .tx-page { padding: 0 12px 20px; }
     .tx-id { gap: 14px; }
     .tx-avatar { width: 64px; height: 64px; padding: 4px; }
     .tx-name { font-size: 24px; }
