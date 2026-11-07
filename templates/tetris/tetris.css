@@ -462,40 +462,6 @@ kbd {
 .tx-pad [data-pad="soft"] { grid-area: soft; }
 .tx-pad [data-pad="right"] { grid-area: right; }
 
-/* loot toasts */
-.tx-toasts {
-    position: fixed;
-    right: 18px;
-    bottom: 76px;
-    z-index: 1500;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: min(300px, calc(100vw - 32px));
-    pointer-events: none;
-}
-.tx-toast {
-    pointer-events: auto;
-    display: grid;
-    gap: 3px;
-    text-align: left;
-    padding: 10px 14px;
-    color: var(--tx-text);
-    font-family: inherit;
-    background: rgba(7, 5, 26, 0.95);
-    border: 2px solid var(--tx-yellow);
-    box-shadow: 0 0 22px rgba(255, 210, 63, 0.35), 0 10px 24px rgba(0, 0, 0, 0.5);
-    cursor: pointer;
-    animation: txToastIn 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
-    transition: opacity 0.35s, transform 0.35s;
-}
-.tx-toast.tx-out { opacity: 0; transform: translateX(30px); }
-.tx-toast-kind { font: 8px/1 var(--tx-pixel); color: var(--tx-yellow); }
-.tx-toast b { font-size: 15px; }
-.tx-toast small { color: var(--tx-muted); font-size: 12px; }
-.tx-toast em { font: normal 8px/1 var(--tx-pixel); color: var(--tx-cyan); justify-self: end; }
-@keyframes txToastIn { from { opacity: 0; transform: translateY(24px) scale(0.9); } }
-
 /* ---------- stages ---------- */
 .tx-stage { padding: 64px 0 8px; scroll-margin-top: 20px; }
 
@@ -986,7 +952,6 @@ kbd {
     .tx-popline b { font-size: 12px; }
     .tx-stage { padding-top: 48px; }
     .tx-grid, .tx-grid-skills { grid-template-columns: minmax(0, 1fr); }
-    .tx-toasts { top: calc(56px + env(safe-area-inset-top)); bottom: auto; right: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

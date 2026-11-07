@@ -920,38 +920,15 @@
             setTimeout(function () { d.remove(); }, 1300);
         }
 
-        // ---------- loot toasts ----------
-        var toastWrap = document.createElement('div');
-        toastWrap.className = 'tx-toasts';
-        el.appendChild(toastWrap);
+        // ---------- unlocks: each cleared line marks one profile item (★ badge + counter), no pop-up ----------
         function unlockNext(delay) {
             if (!loot.length) return;
-            var idx = lootOrder[lootGot % loot.length];
-            var item = loot[idx];
+            var item = loot[lootOrder[lootGot % loot.length]];
             var firstTime = lootGot < loot.length;
             lootGot++;
             setTimeout(function () {
                 var target = document.getElementById(item.anchor);
                 if (target && firstTime) target.classList.add('tx-got');
-                var t = document.createElement('button');
-                t.type = 'button';
-                t.className = 'tx-toast';
-                t.innerHTML = '<span class="tx-toast-kind">' + item.kind + ' UNLOCKED</span><b>' + esc(item.title) + '</b>' +
-                    (item.sub ? '<small>' + esc(item.sub) + '</small>' : '') + '<em>VIEW ▸</em>';
-                t.addEventListener('click', function () {
-                    if (mode === 'playing') pause();
-                    if (target) {
-                        target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
-                        target.classList.remove('tx-flash');
-                        void target.offsetWidth;
-                        target.classList.add('tx-flash');
-                        if (target.classList.contains('tx-band')) target.click();
-                    }
-                    t.remove();
-                });
-                toastWrap.appendChild(t);
-                while (toastWrap.children.length > 3) toastWrap.firstChild.remove();
-                setTimeout(function () { t.classList.add('tx-out'); setTimeout(function () { t.remove(); }, 400); }, 4200);
                 updateHud();
             }, delay);
         }
