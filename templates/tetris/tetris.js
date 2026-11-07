@@ -980,6 +980,9 @@
             var head = el.querySelector('.tx-player').getBoundingClientRect();
             var top = Math.min(head.bottom + window.scrollY + 16, window.innerHeight * 0.45);
             return { x: 8, y: top, w: Math.max(320, cab.left - 28), h: window.innerHeight - top };
+        }, function () {
+            var cab = el.querySelector('.tx-cabinet').getBoundingClientRect();
+            return { x: cab.left + cab.width / 2, y: cab.top + window.scrollY + cab.height / 2 };
         });
         var resizeT;
         window.addEventListener('resize', function () { clearTimeout(resizeT); resizeT = setTimeout(layout, 120); });
@@ -1422,6 +1425,11 @@
         T.snow_side = makeTex(rnd, function (x, y, r) { return y < snowEdge[x] ? pick(['#f4f6fb', '#e8ecf5', '#ffffff'], r) : pick(STONE, r); });
         T.sand = makeTex(rnd, function (x, y, r) { return pick(['#dbcf8e', '#d2c47f', '#e4d89c', '#c9ba74'], r); });
         T.path = makeTex(rnd, function (x, y, r) { return pick(['#9b7d4a', '#a88a55', '#8c6f3f', '#b0925c'], r); });
+        // Minecraft-style ship materials: black oak hull planks, deck planks, dark wool, bronze
+        T.hull = makeTex(rnd, function (x, y, r) { return y % 4 === 3 ? '#121010' : ((x + (y >> 2) * 6) % 9 === 0 ? '#171414' : pick(['#2a2524', '#302a28', '#252120', '#342e2b'], r)); });
+        T.deck = makeTex(rnd, function (x, y, r) { return y % 4 === 3 ? '#2e2418' : ((x + (y >> 2) * 5) % 8 === 0 ? '#3a2d1f' : pick(['#5b4632', '#544130', '#4a3929', '#614b35'], r)); });
+        T.wool = makeTex(rnd, function (x, y, r) { var b = ((x >> 1) + (y >> 1)) % 2 ? 6 : -6, v = 62 + b + Math.round((r - 0.5) * 14); return 'rgb(' + v + ',' + (v - 3) + ',' + (v - 6) + ')'; });
+        T.bronze = makeTex(rnd, function (x, y, r) { return x === 0 || y === 0 ? '#c79a52' : (x === 15 || y === 15 ? '#6e5228' : pick(['#9a7440', '#8e6a3a', '#a57d46'], r)); });
         T.planks = makeTex(rnd, function (x, y, r) { return y % 4 === 3 ? '#5e4422' : ((x + (y >> 2) * 5) % 8 === 0 ? '#6e5029' : pick(['#a07a45', '#9a7442', '#a9824c'], r)); });
         // Tetris-coloured blocks with the same bevel as the game pieces
         TYPES.forEach(function (tp) {
@@ -1646,16 +1654,16 @@
         return { hm: hm, cubes: cubes, animCubes: animCubes, river: river };
     }
 
-    function initVolcano(cv, reduceMotion, getRect) {
+    function initVolcano(cv, reduceMotion, getRect, getShipSpot) {
         if (!cv || !cv.getContext) return null;
         var T = buildTextures(), world = buildWorld();
         var dpr = Math.min(window.devicePixelRatio || 1, 2);          // full sharpness on retina screens
         var ctx = cv.getContext('2d');
         function layer() { return document.createElement('canvas').getContext('2d'); }
-        var S = layer(), M = layer(), L = layer();          // static terrain, lava visibility mask, animated lava
+        var S = layer(), M = layer(), L = layer(), SH = layer();   // static terrain, lava mask, animated lava, cached ship
         var w = 0, h = 0, s = 10, A = 8.66, B = 5, ox = 0, oy = 0, lastRect = '', sceneRect = null;
         var acc = 0, time = 0, lavaT = 0, tickN = 0, flash = 0, shake = 0, lastOpacity = -1;
-        var bombs = [], embers = [], smoke = [], rings = [], smokeT = 0, emberT = 0, riverT = 0, spitT = 2, fountain = 0, fountainPower = 1, fountainBig = false;
+        var gwaves = [], bombs = [], embers = [], smoke = [], rings = [], smokeT = 0, emberT = 0, riverT = 0, spitT = 2, fountain = 0, fountainPower = 1, fountainBig = false;
         var clouds = makeClouds();
 
         function P(x, y, z) { return [ox + (x - z) * A, oy + (x + z) * B - y * s]; }
@@ -1698,12 +1706,13 @@
 
         function size() {
             var nw = window.innerWidth, nh = window.innerHeight;
-            var rect = getRect ? getRect() : null, rectKey = rect ? [rect.x, rect.y, rect.w, rect.h].map(Math.round).join(',') : '';
+            var rect = getRect ? getRect() : null, spot = getShipSpot ? getShipSpot() : null;
+            var rectKey = (rect ? [rect.x, rect.y, rect.w, rect.h].map(Math.round).join(',') : '') + '|' + (spot ? Math.round(spot.x) + ',' + Math.round(spot.y) : '');
             if (w && nw === w && Math.abs(nh - h) < 120 && rectKey === lastRect) return;   // ignore mobile URL-bar jiggle
             w = nw; h = nh; lastRect = rectKey; sceneRect = rect;
             cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
             cv.style.width = w + 'px'; cv.style.height = h + 'px';
-            [S, M, L].forEach(function (g) { g.canvas.width = cv.width; g.canvas.height = cv.height; });
+            [S, M, L, SH].forEach(function (g) { g.canvas.width = cv.width; g.canvas.height = cv.height; });
             [ctx, S, M, L].forEach(function (g) { g.imageSmoothingEnabled = false; });
             if (rect) {
                 // Desktop: the whole island fits in the free space left of the game cabinet
@@ -1718,9 +1727,22 @@
                 ox = w / 2;
                 oy = h * 0.97 - (VW + VD) * B - VDEPTH * s;
             }
+            placeShip(spot);
+            renderShipLayer();
             renderStatic();
             renderLava();
             draw();
+        }
+
+        // Put the galleon's middle on a screen point (the centre of the game cabinet), whatever the island's scale
+        function placeShip(spot) {
+            var tx = spot ? spot.x : w * 0.75, ty = Math.min(spot ? spot.y : h * 0.5, h * 0.6);
+            var cx = 2.8 * SS, cy = 9 * SS;               // middle of the ship model
+            SHIP.z = -8;
+            var X = (tx - ox) / A + SHIP.z;               // world x of the ship's middle
+            SHIP.x = X - cx;
+            SHIP.y = (oy + (X + SHIP.z) * B - ty) / s - cy;
+            SHIP.trail = [];
         }
 
         function renderStatic() {
@@ -1835,15 +1857,15 @@
 
         // ---------- physics around the island: spacetime, a wormhole, strings, an atom,
         //            and a space-yak teleporting between two quantum portals ----------
-        var WH = { x: -7.5, y: VPEAK + 6, z: 17.5 };          // wormhole, up in space
-        var PORTAL_A = { x: 2, y: VPEAK + 3, z: 13 };        // portal on a floating asteroid
+        var WH = { x: -5, y: 10, z: 29 };                    // wormhole, out to the left of the island
+        var PORTAL_A = { x: 4, y: 12, z: 24 };               // portal on an asteroid floating above the west mountain
         var PORTAL_B = { x: 36, y: 1, z: 28.5 };             // portal on the plaza at the volcano's foot
         var STRINGS = [
-            { x: 20, y: VPEAK + 9, z: -4, r: 3.2, n: 5, c: [45, 226, 230], sp: 1.3, label: 'STRING THEORY' },
-            { x: -10, y: 4, z: 30, r: 2.6, n: 3, c: [255, 63, 164], sp: 1.7 },
-            { open: true, a: [46, 12, 4], b: [50, 8, 12], n: 3, c: [255, 210, 63], sp: 2.1 }
+            { x: 18, y: 20, z: 8, r: 3.2, n: 5, c: [45, 226, 230], sp: 1.3, label: 'STRING THEORY' },
+            { x: -2, y: 6, z: 38, r: 2.6, n: 3, c: [255, 63, 164], sp: 1.7 },
+            { open: true, a: [-7, 14, 23], b: [-3, 16, 19], n: 3, c: [255, 210, 63], sp: 2.1 }
         ];
-        var ATOM = { x: 40, y: VPEAK + 3, z: -6 };
+        var ATOM = { x: 30, y: 20, z: 2 };
         var YS = 2.3;                                         // yak model scale
         // Yak timeline (seconds): open A, walk in, dissolve, travel, appear at B, walk out,
         // look around, walk back, dissolve, travel, appear at A, walk out, turn around
@@ -1865,11 +1887,21 @@
 
         function drawSpacetime() {
             var cx0 = VW / 2, cz0 = VD / 2, base = -VDEPTH - 7, amp = 0.35 + Math.min(1.2, flash * 0.6);
+            var deepen = Math.min(4, flash * 2);                // the well sags deeper while the volcano blows
             function gy(x, z) {
-                var r = Math.hypot(x - cx0, z - cz0);
-                return base - 10 / (1 + (r / 11) * (r / 11)) + amp * Math.sin(r * 0.55 - time * 2) / (1 + r * 0.04);
+                var r = Math.hypot(x - cx0, z - cz0), y = base - (10 + deepen) / (1 + (r / 11) * (r / 11)) + amp * Math.sin(r * 0.55 - time * 2) / (1 + r * 0.04);
+                if (gwaves.length) {
+                    var rv = Math.hypot(x - VCX, z - VCZ);
+                    gwaves.forEach(function (gw) {               // gravitational-wave fronts racing out from the crater
+                        var front = rv - gw.age * 16, fade = Math.max(0, 1 - gw.age / 4.5);
+                        y += gw.amp * fade * Math.exp(-front * front / 30) * Math.cos(front * 0.8);
+                    });
+                }
+                return y;
             }
-            ctx.strokeStyle = 'rgba(120,140,255,0.22)';
+            var energy = 0;
+            gwaves.forEach(function (gw) { energy += gw.amp * Math.max(0, 1 - gw.age / 4.5); });
+            ctx.strokeStyle = 'rgba(' + Math.round(120 + Math.min(135, energy * 25)) + ',140,255,' + Math.min(0.6, 0.22 + energy * 0.06) + ')';
             ctx.lineWidth = 1;
             for (var dir = 0; dir < 2; dir++) {
                 for (var i = -20; i <= VW + 20; i += 4) {
@@ -2149,11 +2181,13 @@
         function drawQuantum() {
             var q = qState(), bobA = Math.sin(time * 0.9) * 0.35;
             var pa = P(PORTAL_A.x, PORTAL_A.y + bobA + 1.45 * YS, PORTAL_A.z), pb = P(PORTAL_B.x, PORTAL_B.y + 1.45 * YS, PORTAL_B.z), pw = P(WH.x, WH.y, WH.z);
-            var ctl = [2 * pw[0] - (pa[0] + pb[0]) / 2, 2 * pw[1] - (pa[1] + pb[1]) / 2];
-            function bez(u) {
+            var c1 = [(pa[0] + pw[0]) / 2, Math.min(pa[1], pw[1]) - 4 * s];
+            var c2 = [(pw[0] + pb[0]) / 2, Math.max(pw[1], pb[1]) + 2 * s];
+            function quad(a, c, b, u) {
                 var v = 1 - u;
-                return [v * v * pa[0] + 2 * v * u * ctl[0] + u * u * pb[0], v * v * pa[1] + 2 * v * u * ctl[1] + u * u * pb[1]];
+                return [v * v * a[0] + 2 * v * u * c[0] + u * u * b[0], v * v * a[1] + 2 * v * u * c[1] + u * u * b[1]];
             }
+            function bez(u) { return u < 0.5 ? quad(pa, c1, pw, u * 2) : quad(pw, c2, pb, u * 2 - 1); }
             var transit = q.ph === 3 || q.ph === 9, j, p;
             // entangled portals: a faint dashed link, bright and wavy while the yak is in transit
             ctx.save();
@@ -2201,6 +2235,308 @@
             if (st && st.x === PORTAL_A.x) drawYakQuantum(st);
             drawPortal(PORTAL_B, 0, portalOpen('B', q), '255,63,164');
             if (st && st.x === PORTAL_B.x) drawYakQuantum(st);
+        }
+
+        // ----- an old-world galleon anchored in space off the island's right side: three masts,
+        //       square sails, a carved bow and a lit stern castle, plus (being a space ship)
+        //       two idling jet thrusters under the stern. Bow points +x. -----
+        var SHIP = { x: 60, y: 9, z: -8, trail: [], trailT: 0, fx: [], shotT: 3, queue: [] };
+        var SS = 2.4;                                          // twice the earlier size; it sits behind the game cabinet
+        var WD = [30, 27, 28], WM = [44, 39, 38], WL = [86, 68, 52], GOLD = [150, 112, 58], BLK = [12, 10, 10];   // black pirate hull, bronze trim
+        var WIN = [255, 190, 90], METAL = [90, 96, 120], CYAN = [45, 226, 230], GUN = [62, 66, 74];
+        var HULL = [                                           // [cx, cy, cz, hx, hy, hz, rgb] drawn bottom-up, stern to bow
+            [-10.4, 1.6, 1.2, 0.8, 0.5, 0.5, METAL], [-10.4, 1.6, -1.2, 0.8, 0.5, 0.5, METAL],   // thrusters
+            [-11.25, 1.6, 1.2, 0.06, 0.55, 0.55, CYAN], [-11.25, 1.6, -1.2, 0.06, 0.55, 0.55, CYAN],
+            [0, 0.5, 0, 9, 0.5, 1.2, WD],                      // keel
+            [0.5, 1.4, 0, 10, 0.5, 2.0, WD],
+            [0.5, 2.4, 0, 10.5, 0.55, 2.6, WM],
+            [0, 3.4, 0, 10.5, 0.5, 2.9, WM],
+            [-11.3, 4.4, 0, 0.3, 1.2, 2.4, WD],                // transom
+            [-8.6, 4.6, 0, 2.6, 0.75, 2.85, WM],               // stern castle
+            [-9.2, 5.9, 0, 2.0, 0.55, 2.5, WM],
+            [11.3, 2.9, 0, 1.0, 0.6, 2.0, WM],                 // bow
+            [12.5, 3.3, 0, 0.7, 0.35, 1.2, WM],                // beakhead
+            [13.3, 3.6, 0, 0.35, 0.35, 0.35, GOLD],            // figurehead
+            [8.0, 4.4, 0, 2.6, 0.5, 2.7, WM]                   // forecastle
+        ];
+        var DETAIL = [                                         // trim drawn over the hull
+            [0, 2.95, 0, 10.55, 0.08, 2.95, GOLD],             // wales
+            [0, 3.78, 0, 10.55, 0.06, 2.95, BLK],
+            [-0.5, 4.05, 2.8, 8.0, 0.18, 0.08, WL], [-0.5, 4.05, -2.8, 8.0, 0.18, 0.08, WL],
+            [8.0, 4.95, 0, 2.6, 0.06, 2.75, GOLD],
+            [-8.6, 5.38, 0, 2.6, 0.05, 2.9, GOLD], [-9.2, 6.48, 0, 2.0, 0.05, 2.55, GOLD],
+            [-10.6, 6.9, 1.6, 0.12, 0.4, 0.12, GOLD], [-10.6, 6.9, -1.6, 0.12, 0.4, 0.12, GOLD]
+        ];
+        var CANNONS = [];                                      // muzzle positions, for firing
+        for (var gp = -3; gp <= 3; gp++) {                     // lower gun deck
+            DETAIL.push([gp * 2.4, 2.45, 2.63, 0.36, 0.28, 0.05, BLK]);
+            DETAIL.push([gp * 2.4, 2.84, 2.78, 0.38, 0.05, 0.16, WM]);          // open port lid
+            DETAIL.push([gp * 2.4, 2.45, 3.05, 0.14, 0.14, 0.45, GUN]);         // barrel
+            CANNONS.push([gp * 2.4, 2.45, 3.55]);
+        }
+        for (var gu = -2; gu <= 3; gu++) {                     // upper gun deck
+            var ux = gu * 2.4 - 1.2;
+            DETAIL.push([ux, 3.45, 2.93, 0.3, 0.22, 0.04, BLK]);
+            DETAIL.push([ux, 3.45, 3.3, 0.12, 0.12, 0.38, GUN]);
+            CANNONS.push([ux, 3.45, 3.72]);
+        }
+        DETAIL.push([-8.6, 5.0, 2.95, 0.12, 0.12, 0.35, GUN]); CANNONS.push([-8.6, 5.0, 3.35]);   // stern chaser
+        for (var sw = 0; sw < 3; sw++) DETAIL.push([-10.2 + sw * 1.1, 4.75, 2.87, 0.28, 0.28, 0.04, WIN]); // stern windows
+        var RIG = [                                            // depth-sorted together with the sails
+            [7.5, 10, 0, 0.18, 6.0, 0.18, WL], [0.5, 11.5, 0, 0.22, 8.0, 0.22, WL], [-7.0, 9.6, 0, 0.16, 4.4, 0.16, WL],   // masts
+            [7.5, 8.5, 0, 0.12, 0.12, 3.6, WM], [7.5, 12.5, 0, 0.1, 0.1, 2.8, WM],          // yards
+            [0.5, 9.0, 0, 0.13, 0.13, 4.2, WM], [0.5, 14.5, 0, 0.11, 0.11, 3.2, WM], [0.5, 17.2, 0, 0.09, 0.09, 2.2, WM],
+            [7.5, 11.6, 0, 0.7, 0.12, 0.7, WM], [0.5, 13.3, 0, 0.8, 0.12, 0.8, WM],         // fighting tops
+            [13.8, 4.3, 0, 0.8, 0.12, 0.12, WL], [15.3, 4.8, 0, 0.8, 0.1, 0.1, WL], [16.6, 5.3, 0, 0.6, 0.09, 0.09, WL]   // bowsprit
+        ];
+        var SAILS = [                                          // [x, z0, z1, y0, y1, bulge, banded row]
+            [7.75, -3.4, 3.4, 4.9, 8.3, 0.9, -1], [7.75, -2.6, 2.6, 8.8, 12.3, 0.7, -1],
+            [0.75, -4.0, 4.0, 5.0, 8.8, 1.1, -1], [0.75, -3.0, 3.0, 9.3, 14.2, 0.9, -1], [0.75, -2.0, 2.0, 14.7, 17.0, 0.5, -1]
+        ];
+        var TRI = [                                            // lateen mizzen and jib, in the centre plane
+            [[-4.3, 6.0], [-9.6, 6.0], [-6.8, 13.5]],
+            [[17.0, 5.5], [7.7, 14.5], [8.6, 5.2]]
+        ];
+        var STAYS = [[[7.5, 16, 0], [17.0, 5.4, 0]], [[0.5, 19.5, 0], [7.5, 16, 0]], [[-7, 14, 0], [0.5, 19.5, 0]], [[-7, 14, 0], [-11, 6.5, 0]]];
+        [[7.5, 16], [0.5, 19.5], [-7, 14]].forEach(function (m) {
+            [-2.8, 2.8].forEach(function (zz) { STAYS.push([[m[0], m[1], 0], [m[0] - 1.6, 4.1, zz]]); });
+        });
+
+        function shipWorld(lx, ly, lz, bob) { return [SHIP.x + lx * SS, SHIP.y + bob + ly * SS, SHIP.z + lz * SS]; }
+        function col(c, f) { return 'rgb(' + Math.min(255, Math.round(c[0] * f)) + ',' + Math.min(255, Math.round(c[1] * f)) + ',' + Math.min(255, Math.round(c[2] * f)) + ')'; }
+        function quadPath(pts) {
+            ctx.beginPath();
+            pts.forEach(function (p3, i) { var p = P(p3[0], p3[1], p3[2]); if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); });
+            ctx.closePath();
+        }
+
+        // ----- the ship's body is built from textured Minecraft-style blocks and cached in its own layer
+        //       (redrawn only on resize); flags, flames and cannon fire stay live on top -----
+        var SVX = 0.6;                                         // sail voxel size, ship units
+        function texBoxOn(g, a, z, patTop, patSide, flat) {
+            // a = world min corner, z = world max corner; patterns tile one texture per world block
+            var dx = z[0] - a[0], dy = z[1] - a[1], dz = z[2] - a[2], k = dpr / 16, o, e = 0.4;
+            function face(o, u, v, lu, lv, pat, shadeA) {
+                g.setTransform(u[0] * k, u[1] * k, v[0] * k, v[1] * k, o[0] * dpr, o[1] * dpr);
+                g.fillStyle = pat || flat;
+                g.fillRect(-e, -e, lu * 16 + e * 2, lv * 16 + e * 2);
+                if (shadeA) { g.fillStyle = 'rgba(0,0,0,' + shadeA + ')'; g.fillRect(-e, -e, lu * 16 + e * 2, lv * 16 + e * 2); }
+            }
+            var X = [A, B], Z = [-A, B], D = [0, s];
+            face(P(a[0], z[1], a[2]), X, Z, dx, dz, patTop, 0);
+            face(P(z[0], z[1], a[2]), Z, D, dz, dy, patSide, 0.2);
+            face(P(a[0], z[1], z[2]), X, D, dx, dy, patSide, 0.38);
+        }
+
+        function renderShipLayer() {
+            var g = SH, pat = {};
+            g.setTransform(1, 0, 0, 1, 0, 0);
+            g.globalCompositeOperation = 'source-over';
+            g.clearRect(0, 0, g.canvas.width, g.canvas.height);
+            g.imageSmoothingEnabled = false;
+            ['hull', 'deck', 'wool', 'spruce_log', 'log_top', 'bronze'].forEach(function (n) { pat[n] = g.createPattern(T[n], 'repeat'); });
+            function lb(b) {                                   // local box -> world corners
+                return [shipWorld(b[0] - b[3], b[1] - b[4], b[2] - b[5], 0), shipWorld(b[0] + b[3], b[1] + b[4], b[2] + b[5], 0)];
+            }
+            function flatCol(c) { return 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')'; }
+
+            HULL.forEach(function (b) {
+                var w2 = lb(b), metal = b[6] === METAL || b[6] === CYAN || b[6] === GOLD;
+                texBoxOn(g, w2[0], w2[1], metal ? null : pat.deck, metal ? null : pat.hull, flatCol(b[6]));
+            });
+            DETAIL.forEach(function (b) {
+                var w2 = lb(b), wood = b[6] === WM || b[6] === WL;
+                texBoxOn(g, w2[0], w2[1], b[6] === GOLD ? pat.bronze : (wood ? pat.deck : null), b[6] === GOLD ? pat.bronze : (wood ? pat.hull : null), flatCol(b[6]));
+            });
+
+            g.setTransform(dpr, 0, 0, dpr, 0, 0);              // rigging lines behind the sails
+            g.strokeStyle = 'rgba(40,28,18,0.8)';
+            g.lineWidth = 1;
+            STAYS.forEach(function (st) {
+                var p1 = P.apply(null, shipWorld(st[0][0], st[0][1], st[0][2], 0)), p2 = P.apply(null, shipWorld(st[1][0], st[1][1], st[1][2], 0));
+                g.beginPath(); g.moveTo(p1[0], p1[1]); g.lineTo(p2[0], p2[1]); g.stroke();
+            });
+
+            // masts, yards and sails as blocks, painted back to front
+            var items = [];
+            function addBox(b, pt, ps) {
+                var w2 = lb(b), c = (w2[0][0] + w2[1][0] + w2[0][1] + w2[1][1] + w2[0][2] + w2[1][2]) / 2;
+                items.push({ d: c, a: w2[0], z: w2[1], pt: pt, ps: ps });
+            }
+            RIG.forEach(function (b) {                         // cut long spars into block-sized pieces so they sort correctly
+                var axis = b[3] >= b[4] && b[3] >= b[5] ? 0 : (b[4] >= b[5] ? 1 : 2), len = b[3 + axis] * 2, n = Math.max(1, Math.ceil(len / 0.9));
+                var flatTop = b[4] < 0.2 && b[3] > 0.5 && b[5] > 0.5;
+                for (var i = 0; i < n; i++) {
+                    var seg = b.slice();
+                    seg[axis] = b[axis] - b[3 + axis] + (i + 0.5) * len / n;
+                    seg[3 + axis] = len / n / 2;
+                    addBox(seg, flatTop ? pat.deck : (axis === 1 ? pat.log_top : pat.spruce_log), flatTop ? pat.hull : pat.spruce_log);
+                }
+            });
+            SAILS.forEach(function (sl, si) {                  // square sails: a stepped, billowing wall of wool blocks
+                var nz = Math.round((sl[2] - sl[1]) / SVX), ny = Math.round((sl[4] - sl[3]) / SVX);
+                var hz = (sl[2] - sl[1]) / nz, hy = (sl[4] - sl[3]) / ny;
+                for (var i = 0; i < nz; i++) {
+                    for (var j = 0; j < ny; j++) {
+                        if (j === 0 && (i * 7 + si * 3) % 4 === 0) continue;                  // ragged foot
+                        if ((i * 5 + j * 3 + si * 7) % 23 === 0 && j > 0 && j < ny - 1) continue;   // shot-through holes
+                        var u = (i + 0.5) / nz, v = (j + 0.5) / ny;
+                        var off = Math.round(sl[5] * Math.sin(Math.PI * u) * Math.sin(Math.PI * v) / (SVX * 0.5)) * SVX * 0.5;
+                        addBox([sl[0] + off, sl[3] + (j + 0.5) * hy, sl[1] + (i + 0.5) * hz, SVX * 0.25, hy / 2, hz / 2], pat.wool, pat.wool);
+                    }
+                }
+            });
+            TRI.forEach(function (tr) {                        // lateen and jib, voxelised in the centre plane
+                var xs = tr.map(function (p) { return p[0]; }), ys = tr.map(function (p) { return p[1]; });
+                var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+                function side(p, a, b) { return (p[0] - b[0]) * (a[1] - b[1]) - (a[0] - b[0]) * (p[1] - b[1]); }
+                for (var x = x0; x < x1; x += SVX) {
+                    for (var y = y0; y < y1; y += SVX) {
+                        var c = [x + SVX / 2, y + SVX / 2], d1 = side(c, tr[0], tr[1]), d2 = side(c, tr[1], tr[2]), d3 = side(c, tr[2], tr[0]);
+                        if ((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0)) continue;
+                        addBox([c[0], c[1], 0, SVX / 2, SVX / 2, SVX * 0.25], pat.wool, pat.wool);
+                    }
+                }
+            });
+            items.sort(function (p, q) { return p.d - q.d; });
+            items.forEach(function (it) { texBoxOn(g, it.a, it.z, it.pt, it.ps, '#444'); });
+
+            // same moonlit tint as the island
+            g.setTransform(1, 0, 0, 1, 0, 0);
+            g.globalCompositeOperation = 'source-atop';
+            g.fillStyle = 'rgba(28,12,70,0.16)';
+            g.fillRect(0, 0, g.canvas.width, g.canvas.height);
+            g.globalCompositeOperation = 'source-over';
+        }
+
+        function drawShip() {
+            var bob = Math.sin(time * 0.8) * 0.25, i, j;
+            // idling thruster flames + a slow exhaust drift (under the hull)
+            ctx.globalCompositeOperation = 'lighter';
+            SHIP.trail.forEach(function (tp) {
+                var p = P(tp.x, tp.y, tp.z), k = tp.age / tp.max, q = Math.max(1.5, s * 0.3 * SS * (1 + k));
+                ctx.fillStyle = k < 0.3 ? 'rgba(200,250,255,' + (0.8 - k) + ')' : 'rgba(120,90,255,' + (1 - k) * 0.6 + ')';
+                ctx.fillRect(p[0] - q / 2, p[1] - q / 2, q, q);
+            });
+            [-1.2, 1.2].forEach(function (lz, n) {
+                var base = P.apply(null, shipWorld(-11.35, 1.6, lz, bob));
+                var tip = P.apply(null, shipWorld(-11.35 - (1.6 + 0.4 * Math.sin(time * 27 + n * 2)), 1.6, lz, bob));
+                var g = ctx.createLinearGradient(base[0], base[1], tip[0], tip[1]);
+                g.addColorStop(0, 'rgba(255,255,255,0.9)');
+                g.addColorStop(0.4, 'rgba(45,226,230,0.75)');
+                g.addColorStop(1, 'rgba(45,120,255,0)');
+                ctx.strokeStyle = g;
+                ctx.lineCap = 'round';
+                ctx.lineWidth = Math.max(2.5, s * 0.8 * SS);
+                ctx.beginPath(); ctx.moveTo(base[0], base[1]); ctx.lineTo(tip[0], tip[1]); ctx.stroke();
+            });
+            ctx.lineCap = 'butt';
+            ctx.globalCompositeOperation = 'source-over';
+
+            var tf = ctx.getTransform();                        // the cached ship, bobbing gently
+            ctx.setTransform(1, 0, 0, 1, tf.e, tf.f - bob * s * dpr);
+            ctx.drawImage(SH.canvas, 0, 0);
+            ctx.setTransform(tf);
+
+            var items = [];
+            var SKULL = ['.......', '..WWW..', '.WBWBW.', '..WWW..', '.W.W.W.', 'W.....W'];
+            (function () {                                    // skull-and-crossbones flag, waving
+                var FW = 7, FH = 6, len = 3.2, hgt = 2.1, fx0 = 0.5, fy0 = 19.6;
+                function fp(a, b) {
+                    var wave = Math.sin(time * 5 - a * 0.9) * 0.18 * (a / FW);
+                    return shipWorld(fx0 - len * a / FW, fy0 + hgt * (1 - b / FH) + wave * 0.3, wave, bob);
+                }
+                for (var a = 0; a < FW; a++) {
+                    for (var b = 0; b < FH; b++) {
+                        (function (pts, c) {
+                            items.push({ d: 1e9, draw: function () { ctx.fillStyle = c; quadPath(pts); ctx.fill(); } });
+                        })([fp(a, b), fp(a + 1, b), fp(a + 1, b + 1), fp(a, b + 1)], SKULL[b][a] === 'W' ? '#e8e2d0' : '#0b0909');
+                    }
+                }
+            })();
+            [[7.5, 16, 1.6, [20, 18, 18]], [-7, 14, 1.4, [120, 20, 20]]].forEach(function (f, k) {
+                var fl = Math.sin(time * 6 + k) * 0.35;      // pennants
+                var pts = [shipWorld(f[0], f[1], 0, bob), shipWorld(f[0], f[1] + 0.7, 0, bob), shipWorld(f[0] - f[2], f[1] + 0.35 + fl, 0, bob)];
+                items.push({ d: 1e9, draw: function () { ctx.fillStyle = col(f[3], 1); quadPath(pts); ctx.fill(); } });
+            });
+            items.sort(function (p, q) { return p.d - q.d; });
+            items.forEach(function (it) { it.draw(); });
+
+            // cannon smoke, cannonballs and muzzle flashes
+            SHIP.fx.forEach(function (f) {
+                if (f.k === 'smoke') {
+                    ctx.globalAlpha = Math.max(0, 0.55 * (1 - f.age / f.max));
+                    cube(f.x, f.y, f.z, f.sz * SS * 0.6, '#b9b4ad', '#98938d', '#7c7873');
+                    ctx.globalAlpha = 1;
+                } else if (f.k === 'ball') {
+                    var bp = P(f.x, f.y, f.z), bq = Math.max(2, s * 0.32 * SS);
+                    ctx.fillStyle = '#111';
+                    ctx.fillRect(bp[0] - bq / 2, bp[1] - bq / 2, bq, bq);
+                }
+            });
+            ctx.globalCompositeOperation = 'lighter';
+            SHIP.fx.forEach(function (f) {
+                if (f.k !== 'flash') return;
+                var p = P(f.x, f.y, f.z), r = s * 1.6 * SS * (1 - f.age / f.max * 0.5);
+                var g = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], r);
+                g.addColorStop(0, 'rgba(255,250,210,0.95)');
+                g.addColorStop(0.4, 'rgba(255,160,40,0.7)');
+                g.addColorStop(1, 'rgba(255,90,20,0)');
+                ctx.fillStyle = g;
+                ctx.fillRect(p[0] - r, p[1] - r, r * 2, r * 2);
+            });
+            ctx.globalCompositeOperation = 'source-over';
+
+            // warm glow from the stern windows and lanterns
+            ctx.globalCompositeOperation = 'lighter';
+            [[-10.6, 7.4, 1.6], [-10.6, 7.4, -1.6], [-9.1, 4.75, 2.9], [-10.2, 4.75, 2.9], [-8.0, 4.75, 2.9]].forEach(function (l, k) {
+                var p = P.apply(null, shipWorld(l[0], l[1], l[2], bob)), r = Math.max(4, s * 0.9);
+                var g = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], r);
+                g.addColorStop(0, 'rgba(255,210,110,' + (0.55 + 0.2 * Math.sin(time * 4 + k)) + ')');
+                g.addColorStop(1, 'rgba(255,160,60,0)');
+                ctx.fillStyle = g;
+                ctx.fillRect(p[0] - r, p[1] - r, r * 2, r * 2);
+            });
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        function fireCannon(idx) {
+            var bob = Math.sin(time * 0.8) * 0.25, m = CANNONS[idx], tip = shipWorld(m[0], m[1], m[2], bob), i;
+            SHIP.fx.push({ k: 'flash', x: tip[0], y: tip[1], z: tip[2], age: 0, max: 0.14 });
+            for (i = 0; i < 6; i++) {
+                SHIP.fx.push({ k: 'smoke', x: tip[0], y: tip[1], z: tip[2], vx: (Math.random() - 0.5) * 1.2, vy: 0.4 + Math.random() * 0.8,
+                    vz: 2 + Math.random() * 3, sz: 0.6 + Math.random() * 0.6, age: 0, max: 1.6 + Math.random() });
+            }
+            SHIP.fx.push({ k: 'ball', x: tip[0], y: tip[1], z: tip[2], vx: (Math.random() - 0.5) * 2, vy: 2 + Math.random() * 2, vz: 22 + Math.random() * 6, age: 0, max: 3 });
+        }
+        function shipBroadside() {                            // every gun, rippling bow to stern
+            CANNONS.forEach(function (_, i) { SHIP.queue.push({ t: i * 0.07 + Math.random() * 0.04, i: i }); });
+        }
+
+        function updateShip(dt) {
+            var bob = Math.sin(time * 0.8) * 0.25;
+            SHIP.shotT -= dt;
+            if (SHIP.shotT <= 0) { SHIP.shotT = 2.5 + Math.random() * 4; fireCannon(Math.floor(Math.random() * CANNONS.length)); }
+            SHIP.queue = SHIP.queue.filter(function (q) { q.t -= dt; if (q.t <= 0) { fireCannon(q.i); return false; } return true; });
+            SHIP.fx = SHIP.fx.filter(function (f) {
+                f.age += dt;
+                if (f.k === 'smoke') { f.x += f.vx * dt; f.y += f.vy * dt; f.z += f.vz * dt; f.vz *= Math.pow(0.4, dt); f.sz += dt * 0.9; }
+                if (f.k === 'ball') { f.vy -= 5 * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.z += f.vz * dt; }
+                return f.age < f.max;
+            });
+            if (SHIP.fx.length > 400) SHIP.fx.splice(0, SHIP.fx.length - 400);
+            SHIP.trailT -= dt;
+            while (SHIP.trailT <= 0) {
+                SHIP.trailT += 0.06;
+                [-1.2, 1.2].forEach(function (lz) {
+                    var b = shipWorld(-12.2, 1.6, lz, bob);
+                    SHIP.trail.push({ x: b[0], y: b[1], z: b[2], vx: -2.2 + (Math.random() - 0.5), vy: (Math.random() - 0.5) * 0.6, vz: (Math.random() - 0.5) * 0.6, age: 0, max: 1 + Math.random() * 0.6 });
+                });
+            }
+            SHIP.trail = SHIP.trail.filter(function (tp) {
+                tp.age += dt; tp.x += tp.vx * dt; tp.y += tp.vy * dt; tp.z += tp.vz * dt;
+                return tp.age < tp.max;
+            });
         }
 
         function draw() {
@@ -2257,6 +2593,7 @@
             ctx.globalAlpha = 1;
             ctx.globalCompositeOperation = 'source-over';
             drawQuantum();
+            drawShip();
 
             smoke.forEach(function (p) {
                 ctx.globalAlpha = Math.max(0, 0.5 * (1 - p.age / p.max));
@@ -2314,6 +2651,8 @@
 
         function update(dt) {
             time += dt;
+            updateShip(dt);
+            gwaves = gwaves.filter(function (gw) { gw.age += dt; return gw.age < 4.5; });
             flash *= Math.pow(0.18, dt);
             shake *= Math.pow(0.04, dt);
             if (shake < 0.3) shake = 0;
@@ -2389,6 +2728,8 @@
             erupt: function (lines, big) {
                 if (reduceMotion) return;
                 var i;
+                gwaves.push({ age: 0, amp: big ? 2.4 + lines * 0.9 : 1.6 + lines * 0.4 });
+                if (lines >= 4 && big) gwaves.push({ age: -0.35, amp: 3.5 });
                 if (!big) {
                     spawnBombs(Math.round(12 * lines), 0.8 + lines * 0.15);
                     fountain = Math.max(fountain, (0.35 + 0.25 * lines) * 0.6);
@@ -2404,6 +2745,7 @@
                 }
                 var p = 1, tetris = lines >= 4;
                 fountainBig = true;
+                shipBroadside();
                 spawnBombs(Math.round((big ? 70 : 30) * lines), 1.5 + lines * 0.3, true);
                 fountain = Math.max(fountain, (0.9 + 0.45 * lines) * p);
                 fountainPower = tetris ? 3 : 1.4 + lines * 0.35;

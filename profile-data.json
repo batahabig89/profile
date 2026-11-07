@@ -66,22 +66,20 @@
   ],
   "experience": [
     {
-      "company": "Free lance software engineer",
+      "company": "Golomt Bank",
       "duration": {
-        "start": "2025-10",
+        "start": "2025-9",
         "end": "Present"
       },
-      "role": "Developer",
+      "role": "Senior Software Engineer",
       "type": "Full-time",
-      "description": [
-        "IOT company - Public transport system - UBCARD"
-      ]
+      "description": []
     },
     {
       "company": "Egune LLC",
       "duration": {
         "start": "2025-2",
-        "end": "20225-9"
+        "end": "2025-9"
       },
       "role": "Robot engineer",
       "type": "Full-time",
