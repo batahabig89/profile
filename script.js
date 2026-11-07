@@ -1,5 +1,5 @@
 /* Keep ?v= in sync with index.html (cache-bust on GitHub Pages) */
-var ASSET_VER = '126';
+var ASSET_VER = '134';
 
 // Selectable page templates. "code" is the built-in editor look; others load their own CSS/JS
 // and register a renderer on window.ProfileTemplates[name].
@@ -197,6 +197,7 @@ async function renderProfile(data) {
     }
     renderLeftPanel(data);
     renderRightPanel(data);
+    if (typeof window.initCppEditor === 'function') window.initCppEditor(data, document.getElementById('cppPanel'));
     initNameReveal(document.querySelector('.container'));
     updatePageTitle(data);
 }
@@ -275,7 +276,7 @@ function renderLeftPanel(data) {
     const leftPanel = document.getElementById('leftPanel');
     leftPanel.innerHTML = `
         <div class="profile-section">
-            <img src="${profileImageSrc(data.personalInfo.profileImage)}" alt="Profile Photo" class="profile-img">
+            <img src="${profileImageSrc('assets/anonymous-hoodie.svg')}" alt="Anonymous hacker in a hoodie" class="profile-img">
             <div class="username">
                 <span class="keyword">public</span> ${nameRevealMarkup(data.personalInfo, true)}
             </div>
@@ -364,7 +365,7 @@ function renderRightPanel(data) {
 
     // Personal information section
     const personalInfoHTML = `
-        <div class="code-section">
+        <div class="code-section" id="code-info">
             <div class="code-line">
                 <span class="keyword">public</span> <span class="class-name">INFORMATION</span>
             </div>
@@ -394,12 +395,12 @@ function renderRightPanel(data) {
 
     // Education section
     const educationHTML = `
-        <div class="code-section">
+        <div class="code-section" id="code-education">
             <div class="code-line">
                 <span class="keyword">public static class</span> <span class="class-name">EDUCATION</span>
             </div>
             ${data.education.map((edu, index) => `
-                <div class="code-line indent-1">
+                <div class="code-line indent-1" id="code-edu-${index}">
                     <span class="keyword">private void</span> <span class="method">Education${index + 1}</span>()
                 </div>
                 <div class="code-line indent-2">
@@ -423,12 +424,12 @@ function renderRightPanel(data) {
 
     // Experience section
     const experienceHTML = `
-        <div class="code-section">
+        <div class="code-section" id="code-experience">
             <div class="code-line">
                 <span class="keyword">public static class</span> <span class="class-name">EXPERIENCE</span>
             </div>
             ${data.experience.map((exp, index) => `
-                <div class="code-line indent-1">
+                <div class="code-line indent-1" id="code-exp-${index}">
                     <span class="keyword">private void</span> <span class="method">Experience${index + 1}</span>()
                 </div>
                 <div class="code-line indent-2">
@@ -452,12 +453,12 @@ function renderRightPanel(data) {
 
     // Certifications section
     const certificationsHTML = data.certifications ? `
-        <div class="code-section">
+        <div class="code-section" id="code-certifications">
             <div class="code-line">
                 <span class="keyword">public static class</span> <span class="class-name">CERTIFICATIONS</span>
             </div>
-            ${data.certifications.map(cert => `
-                <div class="code-line indent-1">
+            ${data.certifications.map((cert, index) => `
+                <div class="code-line indent-1" id="code-cert-${index}">
                     <span class="keyword">public void</span> <span class="method">${cert.name.replace(/\s+/g, '')}</span>
                 </div>
                 <div class="code-line indent-2">
@@ -489,12 +490,12 @@ function renderRightPanel(data) {
     };
 
     const projectsHTML = data.projects ? `
-        <div class="code-section">
+        <div class="code-section" id="code-projects">
             <div class="code-line">
                 <span class="keyword">public static class</span> <span class="class-name">PROJECTS</span>
             </div>
             ${data.projects.map((project, index) => `
-                <div class="code-line indent-1">
+                <div class="code-line indent-1" id="code-proj-${index}">
                     <span class="keyword">private void</span> <span class="method">Project${index + 1}</span>()
                 </div>
                 <div class="code-line indent-2">
@@ -513,16 +514,23 @@ function renderRightPanel(data) {
         </div>
     ` : '';
 
+    // code on the left, a block-schema flowchart of the same profile on the right
     rightPanel.innerHTML = `
-        <div class="comment">/// &lt;summary&gt;</div>
-        ${summaryHTML}
+        <div class="code-layout">
+            <div class="code-main">
+                <div class="comment" id="code-summary">/// &lt;summary&gt;</div>
+                ${summaryHTML}
 
-        ${personalInfoHTML}
-        ${educationHTML}
-        ${certificationsHTML}
-        ${experienceHTML}
-        ${projectsHTML}
+                ${personalInfoHTML}
+                ${educationHTML}
+                ${certificationsHTML}
+                ${experienceHTML}
+                ${projectsHTML}
+            </div>
+            <aside class="flow-col" id="flowCol" aria-label="Profile flowchart"></aside>
+        </div>
     `;
+    if (typeof window.renderFlowDiagram === 'function') window.renderFlowDiagram(data, document.getElementById('flowCol'));
 }
 
 // Robot eye tracking functionality
@@ -563,6 +571,7 @@ function initRobotEyeTracking() {
         
         // Calculate eye movement based on mouse position
         function updateEyePosition(mouseX, mouseY) {
+            if (window.robotFiring) return;   // eyes are locked on a laser target
             const robotPos = getRobotPosition();
             const deltaX = mouseX - robotPos.x;
             const deltaY = mouseY - robotPos.y;
@@ -714,6 +723,8 @@ function initRobotDraggable() {
     let startClientY = 0;
     let startLeft = 0;
     let startTop = 0;
+    let startTime = 0;
+    let maxMove = 0;
 
     function clampPosition(left, top) {
         const margin = 8;
@@ -744,6 +755,8 @@ function initRobotDraggable() {
         startClientY = e.clientY;
         startLeft = rect.left;
         startTop = rect.top;
+        startTime = performance.now();
+        maxMove = 0;
         applyPosition(startLeft, startTop);
         robotContainer.setPointerCapture(e.pointerId);
         e.preventDefault();
@@ -753,6 +766,7 @@ function initRobotDraggable() {
         if (!dragging || e.pointerId !== dragPointerId) return;
         const dx = e.clientX - startClientX;
         const dy = e.clientY - startClientY;
+        maxMove = Math.max(maxMove, Math.hypot(dx, dy));
         applyPosition(startLeft + dx, startTop + dy);
     });
 
@@ -761,6 +775,11 @@ function initRobotDraggable() {
         dragging = false;
         dragPointerId = null;
         robotContainer.classList.remove('robot-dragging');
+        // a tap (no real drag) fires the eye lasers
+        if (e && e.type === 'pointerup' && maxMove < 6 && performance.now() - startTime < 500 &&
+            typeof window.fireRobotLaser === 'function') {
+            window.fireRobotLaser();
+        }
         if (e) {
             try {
                 robotContainer.releasePointerCapture(e.pointerId);

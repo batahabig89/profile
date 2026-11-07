@@ -14,7 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
     <title id="pageTitle">Loading...</title>
-    <link rel="stylesheet" href="styles.css?v=126">
+    <link rel="stylesheet" href="styles.css?v=134">
 </head>
 <body>
     <div class="container">
@@ -25,6 +25,9 @@
         <div class="right-panel" id="rightPanel">
             <div class="loading">Loading profile...</div>
         </div>
+
+        <!-- C++ playground (Code Editor template only) -->
+        <aside class="cpp-panel" id="cppPanel" aria-label="C++ playground"></aside>
     </div>
     
     <footer class="page-footer">
@@ -48,58 +51,28 @@
         </div>
     </div>
 
-    <!-- Robot Character -->
-    <div class="robot-container" id="robotContainer">
+    <!-- Robot companion (tap = eye lasers, drag = move) -->
+    <div class="robot-container" id="robotContainer" title="Tap me · drag me">
         <div class="robot">
             <div class="robot-head">
                 <div class="robot-face">
                     <div class="robot-eyes">
-                        <div class="robot-eye left-eye">
-                            <div class="robot-pupil"></div>
-                        </div>
-                        <div class="robot-eye right-eye">
-                            <div class="robot-pupil"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="robot-ears">
-                    <div class="robot-ear left-ear"></div>
-                    <div class="robot-ear right-ear"></div>
-                </div>
-            </div>
-            <div class="robot-body">
-                <div class="robot-arms">
-                    <div class="robot-arm left-arm">
-                        <div class="robot-hand left-hand">
-                            <div class="robot-finger"></div>
-                            <div class="robot-finger"></div>
-                            <div class="robot-finger"></div>
-                            <div class="robot-finger"></div>
-                            <div class="robot-finger"></div>
-                        </div>
-                    </div>
-                    <div class="robot-arm right-arm">
-                        <div class="robot-hand right-hand">
-                            <div class="robot-finger"></div>
-                            <div class="robot-finger"></div>
-                            <div class="robot-finger"></div>
-                            <div class="robot-finger"></div>
-                            <div class="robot-finger pointer-finger"></div>
-                        </div>
+                        <div class="robot-eye left-eye"><div class="robot-pupil"></div></div>
+                        <div class="robot-eye right-eye"><div class="robot-pupil"></div></div>
                     </div>
                 </div>
             </div>
-            <div class="robot-base">
-                <div class="robot-wheels">
-                    <div class="robot-wheel left-wheel"></div>
-                    <div class="robot-wheel right-wheel"></div>
-                </div>
-                <div class="robot-base-front"></div>
-            </div>
+            <div class="robot-body"><div class="robot-core"></div></div>
+            <div class="robot-arm left-arm"><div class="robot-fin"></div></div>
+            <div class="robot-arm right-arm"><div class="robot-fin"></div></div>
+            <div class="robot-thrust"></div>
             <div class="robot-shadow"></div>
         </div>
     </div>
 
-    <script src="script.js?v=126"></script>
+    <script src="cpp-editor.js?v=134"></script>
+    <script src="flow-diagram.js?v=134"></script>
+    <script src="robot-laser.js?v=134"></script>
+    <script src="script.js?v=134"></script>
 </body>
 </html>

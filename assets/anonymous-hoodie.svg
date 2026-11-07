@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-labelledby="t">
+  <title id="t">Anonymous hacker in a hoodie</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a1222"/>
+      <stop offset="1" stop-color="#06180f"/>
+    </linearGradient>
+    <linearGradient id="hood" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3a4150"/>
+      <stop offset="0.55" stop-color="#1c2129"/>
+      <stop offset="1" stop-color="#0d1015"/>
+    </linearGradient>
+    <radialGradient id="void" cx="0.5" cy="0.42" r="0.6">
+      <stop offset="0" stop-color="#05070a"/>
+      <stop offset="1" stop-color="#000"/>
+    </radialGradient>
+    <linearGradient id="mask" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4f6f8"/>
+      <stop offset="0.6" stop-color="#c9ced6"/>
+      <stop offset="1" stop-color="#7d8592"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="200" height="200" fill="url(#bg)"/>
+  <!-- falling binary rain -->
+  <g font-family="Consolas, monospace" font-size="11" fill="#2bd46f" opacity="0.32">
+    <text x="8" y="22">1</text><text x="8" y="40">0</text><text x="8" y="58">1</text><text x="8" y="94">1</text>
+    <text x="26" y="12">0</text><text x="26" y="30">1</text><text x="26" y="66">0</text>
+    <text x="164" y="18">1</text><text x="164" y="36">1</text><text x="164" y="54">0</text><text x="164" y="90">1</text>
+    <text x="182" y="28">0</text><text x="182" y="46">1</text><text x="182" y="64">0</text><text x="182" y="82">0</text>
+    <text x="146" y="10">0</text><text x="44" y="16">1</text>
+  </g>
+
+  <!-- shoulders / hoodie body -->
+  <path d="M18 200 C22 160 52 142 78 136 L122 136 C148 142 178 160 182 200 Z" fill="url(#hood)"/>
+  <path d="M78 136 C86 150 114 150 122 136" fill="none" stroke="#0b0d11" stroke-width="5"/>
+  <!-- drawstrings -->
+  <path d="M90 146 C89 160 91 170 88 182" fill="none" stroke="#c9ced6" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M110 146 C111 160 109 170 112 182" fill="none" stroke="#c9ced6" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="88" cy="184" r="2.6" fill="#8a919c"/><circle cx="112" cy="184" r="2.6" fill="#8a919c"/>
+
+  <!-- hood -->
+  <path d="M100 22 C58 22 40 58 42 96 C43 120 52 138 70 148 L130 148 C148 138 157 120 158 96 C160 58 142 22 100 22 Z" fill="url(#hood)"/>
+  <path d="M100 22 C70 24 54 48 50 78" fill="none" stroke="#5a6272" stroke-width="2" opacity="0.6"/>
+  <!-- face opening -->
+  <path d="M100 42 C72 42 62 68 63 94 C64 118 78 138 100 140 C122 138 136 118 137 94 C138 68 128 42 100 42 Z" fill="url(#void)"/>
+
+  <!-- smooth blank mask -->
+  <path d="M100 54 C80 54 72 72 73 92 C74 114 86 130 100 131 C114 130 126 114 127 92 C128 72 120 54 100 54 Z" fill="url(#mask)"/>
+  <path d="M100 56 C100 76 100 100 100 128" stroke="#9aa1ad" stroke-width="0.8" opacity="0.5"/>
+  <!-- eye slits with a green glow -->
+  <path d="M80 86 Q89 80 96 87 Q88 91 80 86 Z" fill="#0b0f14"/>
+  <path d="M120 86 Q111 80 104 87 Q112 91 120 86 Z" fill="#0b0f14"/>
+  <g filter="url(#glow)" fill="#3dff8a">
+    <ellipse cx="88.5" cy="86" rx="3.2" ry="1.6"/>
+    <ellipse cx="111.5" cy="86" rx="3.2" ry="1.6"/>
+  </g>
+  <!-- shadow the hood casts on the mask -->
+  <path d="M73 92 C74 70 84 56 100 54 C116 56 126 70 127 92 C122 72 112 64 100 64 C88 64 78 72 73 92 Z" fill="#000" opacity="0.35"/>
+</svg>

@@ -198,7 +198,7 @@ body::before {
 .right-panel {
     flex: 1;
     padding: 40px 50px;
-    overflow-x: auto;
+    overflow-x: clip;               /* clip (not auto) so the sticky flowchart follows the page scroll */
     background: rgba(4, 8, 18, 0.42);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -716,7 +716,7 @@ h2 {
     box-shadow: 0 4px 12px rgba(78, 201, 176, 0.4);
 }
 
-/* Robot Character */
+/* Robot companion: a sleek hovering ovoid with a floating head, glass visor and fin arms */
 .robot-container {
     position: fixed;
     top: 20px;
@@ -727,277 +727,207 @@ h2 {
     cursor: grab;
     touch-action: none;
     user-select: none;
-    transition: transform 0.5s ease;
+    -webkit-tap-highlight-color: transparent;
 }
-
-.robot-container.robot-dragging {
-    cursor: grabbing;
-    transition: none;
-}
-
-.robot-container.robot-dragging .robot {
-    animation: none;
-}
-
-.robot-container.robot-turned {
-    transform: scaleX(-1);
-}
+.robot-container.robot-dragging { cursor: grabbing; }
+.robot-container.robot-dragging .robot,
+.robot-container.robot-dragging .robot-head { animation-play-state: paused; }
 
 .robot {
+    --shell-hi: #ffffff;
+    --shell-mid: #eef2f6;
+    --shell-lo: #b9c3cf;
+    --glow: 92, 225, 255;
     position: relative;
-    width: 120px;
-    height: 150px;
-    animation: robotFloat 3s ease-in-out infinite;
+    width: 110px;
+    height: 160px;
+    animation: robotHover 4.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.35));
+}
+@keyframes robotHover {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-12px) rotate(2deg); }
 }
 
-@keyframes robotFloat {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-}
-
+/* head floats on its own, a beat behind the body */
 .robot-head {
-    position: relative;
-    width: 90px;
-    height: 90px;
-    background: linear-gradient(145deg, #ffffff, #f0f0f0);
-    border-radius: 50% 50% 45% 45%;
-    margin: 0 auto 8px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 80px;
+    height: 58px;
+    margin-left: -40px;
+    border-radius: 50% 50% 46% 46% / 60% 60% 40% 40%;
+    background:
+        radial-gradient(ellipse 60% 45% at 32% 22%, rgba(255, 255, 255, 0.95), transparent 60%),
+        radial-gradient(ellipse at 50% 30%, var(--shell-hi), var(--shell-mid) 55%, var(--shell-lo) 100%);
+    box-shadow: inset 0 -6px 12px rgba(120, 135, 155, 0.35);
+    animation: robotHead 4.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    animation-delay: -0.5s;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 2;
 }
+@keyframes robotHead {
+    0%, 100% { transform: translateY(0) rotate(3deg); }
+    50% { transform: translateY(-5px) rotate(-3deg); }
+}
+.robot-container:hover .robot-head { animation-duration: 2.2s; }
 
+/* black glass visor */
 .robot-face {
     position: absolute;
-    top: 22px;
+    top: 14px;
     left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 38px;
-    background: #2a2a2a;
-    border-radius: 12px;
+    width: 62px;
+    height: 32px;
+    margin-left: -31px;
+    border-radius: 48% 48% 44% 44% / 60% 60% 40% 40%;
+    background: radial-gradient(ellipse at 50% 40%, #1a2230, #05080d 70%);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.9), 0 0 0 1.5px rgba(255, 255, 255, 0.6);
     overflow: hidden;
-    transition: all 0.3s ease;
 }
-
-.robot-face.robot-smile {
-    background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
-    box-shadow: 
-        0 0 20px rgba(78, 201, 176, 0.3),
-        inset 0 2px 4px rgba(255, 255, 255, 0.1);
-    transform: translateX(-50%) scale(1.05);
-}
-
-.robot-face.robot-smile::after {
-    content: '😊';
+.robot-face::after {        /* glass reflection */
+    content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 20px;
-    z-index: 10;
-    animation: smileGlow 0.5s ease-in-out;
+    top: 3px; left: 8px;
+    width: 26px; height: 8px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent);
+    transform: rotate(-8deg);
+    pointer-events: none;
 }
-
-.robot-eyes {
-    position: relative;
-    width: 100%;
-    height: 100%;
-}
-
+.robot-eyes { position: relative; width: 100%; height: 100%; }
 .robot-eye {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 18px;
-    height: 27px;
-    background: #4ec9b0;
-    border-radius: 50%;
-    box-shadow: 0 0 15px rgba(78, 201, 176, 0.6);
-    transition: all 0.3s ease;
+    width: 17px;
+    height: 11px;
+    border-radius: 50% 50% 45% 45% / 70% 70% 30% 30%;
+    background: radial-gradient(ellipse at 50% 40%, #eaffff, rgb(var(--glow)) 55%, rgba(var(--glow), 0.4));
+    box-shadow: 0 0 10px rgba(var(--glow), 0.95), 0 0 22px rgba(var(--glow), 0.5);
+    transition: background 0.25s, box-shadow 0.25s, height 0.25s;
 }
-
-.robot-eye.left-eye {
-    left: 12px;
-}
-
-.robot-eye.right-eye {
-    right: 12px;
-}
-
+.robot-eye.left-eye { left: 10px; }
+.robot-eye.right-eye { right: 10px; }
 .robot-pupil {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 9px;
-    height: 9px;
+    width: 5px;
+    height: 5px;
     background: #ffffff;
     border-radius: 50%;
-    transition: all 0.2s ease;
+    box-shadow: 0 0 4px #fff;
+    transition: transform 0.25s ease-out;
 }
+/* happy eyes on hover */
+.robot-container:hover .robot-eye { height: 8px; border-radius: 50% 50% 20% 20% / 90% 90% 10% 10%; }
 
-.robot-ears {
+/* teardrop body */
+.robot-body {
     position: absolute;
-    top: 30px;
-    left: 0;
-    right: 0;
-    height: 30px;
+    top: 52px;
+    left: 50%;
+    width: 64px;
+    height: 84px;
+    margin-left: -32px;
+    border-radius: 50% 50% 50% 50% / 38% 38% 62% 62%;
+    background:
+        radial-gradient(ellipse 40% 30% at 34% 20%, rgba(255, 255, 255, 0.95), transparent 70%),
+        radial-gradient(ellipse at 45% 30%, var(--shell-hi), var(--shell-mid) 50%, var(--shell-lo) 100%);
+    box-shadow: inset -6px -10px 18px rgba(110, 125, 145, 0.35);
+    z-index: 1;
 }
-
-.robot-ear {
+.robot-body::before {       /* seam */
+    content: '';
     position: absolute;
-    top: 0;
-    width: 12px;
-    height: 22px;
-    background: linear-gradient(145deg, #e0e0e0, #c0c0c0);
+    top: 12px; left: 12%; right: 12%;
+    height: 10px;
+    border-top: 1px solid rgba(120, 135, 155, 0.35);
     border-radius: 50%;
 }
-
-.robot-ear.left-ear {
-    left: 8px;
-    transform: rotate(-15deg);
-}
-
-.robot-ear.right-ear {
-    right: 8px;
-    transform: rotate(15deg);
-}
-
-.robot-body {
-    position: relative;
-    width: 75px;
-    height: 52px;
-    background: linear-gradient(145deg, #ffffff, #f0f0f0);
-    border-radius: 50% 50% 30% 30%;
-    margin: 0 auto;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
-}
-
-.robot-arms {
+.robot-core {
     position: absolute;
-    top: 8px;
-    left: -22px;
-    right: -22px;
-    height: 37px;
+    top: 34px; left: 50%;
+    width: 12px; height: 12px;
+    margin-left: -6px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffffff, rgb(var(--glow)) 50%, transparent 72%);
+    animation: robotCore 2.6s ease-in-out infinite;
+}
+@keyframes robotCore {
+    0%, 100% { opacity: 0.45; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.15); }
 }
 
+/* fin arms hover beside the body; JS turns them toward the pointer */
 .robot-arm {
     position: absolute;
-    width: 12px;
-    height: 30px;
-    background: linear-gradient(145deg, #ffffff, #e0e0e0);
-    border-radius: 6px;
-    transition: all 0.3s ease;
+    top: 62px;
+    width: 14px;
+    height: 50px;
+    transform-origin: 50% 6px;
+    transition: transform 0.6s cubic-bezier(0.34, 1.4, 0.64, 1);
+    z-index: 2;
+}
+.robot-arm.left-arm { left: 6px; }
+.robot-arm.right-arm { right: 6px; }
+.robot-fin {
+    width: 100%;
+    height: 100%;
+    border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%;
+    background:
+        radial-gradient(ellipse 50% 30% at 40% 20%, rgba(255, 255, 255, 0.95), transparent 70%),
+        linear-gradient(180deg, var(--shell-hi), var(--shell-lo));
+    box-shadow: inset -2px -4px 6px rgba(110, 125, 145, 0.35);
+    animation: robotFin 3s ease-in-out infinite;
+}
+.right-arm .robot-fin { animation-delay: -1.5s; }
+@keyframes robotFin {
+    0%, 100% { transform: translateY(0) rotate(4deg); }
+    50% { transform: translateY(3px) rotate(-4deg); }
 }
 
-.robot-arm.left-arm {
-    left: 0;
-    transform-origin: top center;
-    transition: transform 0.3s ease;
-}
-
-.robot-arm.right-arm {
-    right: 0;
-    transform-origin: top center;
-    transition: transform 0.3s ease;
-}
-
-/* Robot Hands */
-.robot-hand {
+/* anti-gravity glow under the body */
+.robot-thrust {
     position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 16px;
-    height: 20px;
-    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-    border-radius: 8px 8px 4px 4px;
-    display: flex;
-    justify-content: space-around;
-    align-items: flex-end;
-    padding: 2px;
-}
-
-.robot-finger {
-    width: 2px;
-    height: 8px;
-    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-    border-radius: 1px;
-    transition: all 0.3s ease;
-}
-
-.robot-finger.pointer-finger {
-    height: 12px;
-    background: linear-gradient(145deg, #4ec9b0, #45b7d1);
-    box-shadow: 0 0 8px rgba(78, 201, 176, 0.6);
-}
-
-/* Robot Base */
-.robot-base {
-    position: relative;
-    width: 90px;
-    height: 25px;
-    background: linear-gradient(145deg, #e0e0e0, #c0c0c0);
-    border-radius: 12px 12px 8px 8px;
-    margin: 8px auto 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-}
-
-.robot-wheels {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 20px;
-    transform: translateY(-50%);
-}
-
-.robot-wheel {
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    top: 128px; left: 50%;
+    width: 20px; height: 26px;
+    margin-left: -10px;
     border-radius: 50%;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    background: radial-gradient(ellipse at 50% 20%, rgba(var(--glow), 0.9), rgba(var(--glow), 0.15) 55%, transparent 75%);
+    filter: blur(1px);
+    animation: robotThrust 0.35s ease-in-out infinite alternate;
 }
-
-.robot-wheel.left-wheel {
-    left: 8px;
+@keyframes robotThrust {
+    from { transform: scaleY(0.85); opacity: 0.75; }
+    to { transform: scaleY(1.15); opacity: 1; }
 }
-
-.robot-wheel.right-wheel {
-    right: 8px;
-}
-
-.robot-base-front {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 6px;
-    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-    border-radius: 0 0 8px 8px;
-}
-
 .robot-shadow {
     position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90px;
-    height: 15px;
-    background: radial-gradient(ellipse, rgba(0, 0, 0, 0.3), transparent);
+    bottom: -6px; left: 50%;
+    width: 70px; height: 12px;
+    margin-left: -35px;
     border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(var(--glow), 0.35), transparent 70%);
+    animation: robotShadow 4.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes robotShadow {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(0.75); opacity: 0.5; }
 }
 
-/* Eye tracking animation */
-.robot-eye.tracking {
-    animation: eyeBlink 0.3s ease;
-}
-
+/* blink */
+.robot-eye.tracking { animation: eyeBlink 0.3s ease; }
 @keyframes eyeBlink {
     0%, 100% { transform: translateY(-50%) scaleY(1); }
     50% { transform: translateY(-50%) scaleY(0.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .robot, .robot-head, .robot-fin, .robot-core, .robot-thrust, .robot-shadow { animation: none; }
 }
 
 /* Rocket Effect */
@@ -1414,67 +1344,8 @@ h2 {
         top: 10px;
         right: 10px;
     }
-    
-    .robot {
-        width: 90px;
-        height: 112px;
-    }
-    
-    .robot-head {
-        width: 68px;
-        height: 68px;
-    }
-    
-    .robot-face {
-        width: 45px;
-        height: 28px;
-        top: 17px;
-    }
-    
-    .robot-eye {
-        width: 14px;
-        height: 20px;
-    }
-    
-    .robot-eye.left-eye {
-        left: 9px;
-    }
-    
-    .robot-eye.right-eye {
-        right: 9px;
-    }
-    
-    .robot-hand {
-        width: 12px;
-        height: 15px;
-    }
-    
-    .robot-finger {
-        width: 1.5px;
-        height: 6px;
-    }
-    
-    .robot-finger.pointer-finger {
-        height: 9px;
-    }
-    
-    .robot-base {
-        width: 68px;
-        height: 19px;
-    }
-    
-    .robot-wheel {
-        width: 14px;
-        height: 14px;
-    }
-    
-    .robot-wheel.left-wheel {
-        left: 6px;
-    }
-    
-    .robot-wheel.right-wheel {
-        right: 6px;
-    }
+
+    .robot { zoom: 0.78; }
 }
 
 @media (max-width: 768px) {
@@ -1763,3 +1634,356 @@ html[data-template="code"] ::-webkit-scrollbar { width: 11px; height: 11px; }
 html[data-template="code"] ::-webkit-scrollbar-track { background: #0d1117; }
 html[data-template="code"] ::-webkit-scrollbar-thumb { background: #3b4252; border-radius: 6px; border: 2px solid #0d1117; }
 html[data-template="code"] ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+
+/* ---------- C++ playground: a retro blue console IDE (Code Editor template) ---------- */
+@font-face { font-family: 'VT323'; font-style: normal; font-weight: 400; font-display: swap; src: url('templates/rubik/fonts/VT323-latin.woff2') format('woff2'); }
+
+.cpp-panel {
+    --dos-blue: #0000aa;
+    --dos-dark: #000080;
+    --dos-gray: #aaaaaa;
+    --dos-cyan: #00aaaa;
+    --dos-white: #ffffff;
+    --dos-yellow: #ffff55;
+    --dos-font: 'VT323', 'Perfect DOS VGA 437', 'Lucida Console', 'Courier New', monospace;
+    flex: none;
+    width: 480px;
+    position: sticky;
+    top: 196px;                       /* below the robot */
+    align-self: flex-start;
+    height: calc(100vh - 216px);
+    min-height: 460px;
+    margin: 0 16px 20px 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--dos-blue);
+    border: 2px solid #000;
+    box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.55), 0 0 0 1px #5555ff;
+    overflow: hidden;
+    font: 20px/1 var(--dos-font);
+    color: var(--dos-yellow);
+}
+.cpp-panel:empty { display: none; }
+.cpp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* floating / maximized window */
+.cpp-panel.cpp-float { position: fixed; z-index: 1050; margin: 0; min-height: 0; }
+.cpp-panel.cpp-max { position: fixed; z-index: 1100; top: 10px; left: 10px; width: calc(100vw - 20px); height: calc(100dvh - 20px); margin: 0; min-height: 0; }
+.cpp-panel.cpp-moving { user-select: none; opacity: 0.94; }
+html.cpp-maxed .robot-container, html.cpp-maxed .template-switcher { display: none; }
+html.cpp-maxed, html.cpp-maxed body { overflow: hidden; }   /* the page stays put behind a maximized editor */
+html.cpp-maxed .container { z-index: 1100; }               /* lift the editor's stacking context above the footer */
+
+/* menu bar (also the drag handle) */
+.cpp-menubar {
+    display: flex; align-items: center; gap: 2px;
+    padding: 2px 4px;
+    background: var(--dos-gray);
+    color: #000;
+    cursor: move;
+    touch-action: none;
+    user-select: none;
+}
+.cpp-max .cpp-menubar { cursor: default; }
+.cpp-logo { padding: 0 8px; font-size: 22px; }
+.cpp-grab { flex: 1; align-self: stretch; }
+.cpp-select, .cpp-menu {
+    min-width: 0;
+    padding: 2px 8px;
+    font: 20px/1 var(--dos-font);
+    color: #000;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.cpp-select { padding-right: 18px; background: linear-gradient(45deg, transparent 50%, #000 50%) right 8px center / 5px 5px no-repeat, linear-gradient(135deg, #000 50%, transparent 50%) right 4px center / 5px 5px no-repeat; }
+.cpp-select option { background: var(--dos-gray); color: #000; }
+.cpp-menu u, .cpp-wbtn b { text-decoration: none; color: #aa0000; }
+.cpp-select:hover, .cpp-menu:hover, .cpp-select:focus-visible, .cpp-menu:focus-visible { background-color: #00aa00; color: #000; outline: none; }
+.cpp-run { color: #000; font-weight: bold; }
+.cpp-busy .cpp-run { background: #aa0000; color: #fff; }
+.cpp-busy .cpp-run u { color: var(--dos-yellow); }
+
+/* blue desktop with two double-framed windows */
+.cpp-desk { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; padding: 10px 6px 4px; background: var(--dos-blue); }
+.cpp-win {
+    position: relative;
+    display: flex; flex-direction: column;
+    border: 4px double var(--dos-white);
+    background: var(--dos-blue);
+    padding: 6px 2px 4px;
+}
+.cpp-win-edit { flex: 1 1 0; min-height: 140px; }
+.cpp-win-out { flex: 0 0 auto; border-color: var(--dos-gray); background: #000; }
+.cpp-wtitle {
+    position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+    padding: 0 6px;
+    font-size: 20px; line-height: 20px;
+    color: var(--dos-white);
+    background: var(--dos-blue);
+    white-space: nowrap;
+}
+.cpp-win-out .cpp-wtitle { color: var(--dos-gray); background: #000; }
+.cpp-wbtn {
+    position: absolute; top: -13px;
+    padding: 0 2px;
+    font: 20px/20px var(--dos-font);
+    color: var(--dos-white);
+    background: var(--dos-blue);
+    border: 0;
+    cursor: pointer;
+}
+.cpp-win-out .cpp-wbtn { color: var(--dos-gray); background: #000; }
+.cpp-wbtn-l { left: 10px; }
+.cpp-wbtn-r { right: 10px; }
+.cpp-wbtn b { color: #55ff55; }
+.cpp-wbtn:hover b { color: var(--dos-yellow); }
+.cpp-wpos {
+    position: absolute; bottom: -12px; left: 14px;
+    padding: 0 4px;
+    font-size: 18px; line-height: 18px;
+    color: var(--dos-white); background: var(--dos-blue);
+}
+
+.cpp-editor { position: relative; flex: 1 1 0; min-height: 0; display: flex; overflow: hidden; }
+.cpp-gutter {
+    position: relative;               /* the line list is absolute, so it never stretches the editor */
+    flex: none; width: 36px; overflow: hidden;
+    padding: 4px 0;
+    color: var(--dos-cyan);
+    font-size: 16px; line-height: 18px; text-align: right;
+}
+.cpp-lines { position: absolute; top: 4px; left: 0; right: 0; }
+.cpp-lines span { display: block; padding-right: 8px; }
+.cpp-lines .cpp-err-line { color: var(--dos-white); background: #aa0000; }
+.cpp-code { position: relative; flex: 1; min-width: 0; overflow: hidden; }
+.cpp-hl, .cpp-input {
+    margin: 0;
+    padding: 4px 8px;
+    font: 16px/18px var(--dos-font);
+    tab-size: 4;
+    white-space: pre;
+    letter-spacing: 0;
+}
+.cpp-hl { position: absolute; top: 0; left: 0; min-width: 100%; color: var(--dos-yellow); pointer-events: none; }
+.cpp-input {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    resize: none; border: 0; outline: none;
+    color: transparent;
+    background: transparent;
+    caret-color: var(--dos-white);
+    overflow: auto;
+    overscroll-behavior: contain;     /* reaching the end does not scroll the page */
+    scrollbar-color: var(--dos-cyan) var(--dos-dark);
+}
+.cpp-input::selection { background: var(--dos-cyan); color: transparent; }
+.cpp-t-kw { color: var(--dos-white); }
+.cpp-t-type { color: #55ffff; }
+.cpp-t-str { color: #ff55ff; }
+.cpp-t-com { color: var(--dos-gray); }
+.cpp-t-pre { color: #55ff55; }
+.cpp-t-num { color: #ff55ff; }
+.cpp-t-fn { color: var(--dos-white); }
+
+/* output console */
+.cpp-stdin-row { display: flex; align-items: flex-start; gap: 6px; padding: 2px 6px; color: var(--dos-gray); }
+.cpp-stdin-row label { flex: none; line-height: 22px; }
+.cpp-stdin {
+    flex: 1; min-width: 0;
+    padding: 0 4px;
+    font: 20px/22px var(--dos-font);
+    color: var(--dos-white);
+    background: #1a1a1a;
+    border: 0;
+    border-bottom: 1px dashed #555;
+    resize: vertical;
+    min-height: 24px;
+    outline: none;
+}
+.cpp-stdin:focus { background: #222; border-bottom-color: var(--dos-yellow); }
+.cpp-out {
+    height: clamp(80px, 18vh, 180px); margin: 0; overflow: auto;
+    padding: 2px 8px 4px;
+    color: var(--dos-gray);
+    font: 19px/1.15 var(--dos-font);
+    white-space: pre-wrap; word-break: break-word;
+    overscroll-behavior: contain;
+    scrollbar-color: #555 #000;
+}
+.cpp-o-head { color: var(--dos-cyan); }
+/* compile-time rain of Mongolian script over the console */
+.cpp-rain { position: absolute; pointer-events: none; background: #000; z-index: 1; }
+.cpp-o-out { color: var(--dos-white); }
+.cpp-o-err { color: #ff5555; }
+.cpp-o-warn { color: var(--dos-yellow); }
+.cpp-o-ok { color: #55ff55; }
+.cpp-o-dim { color: #777; }
+
+/* function-key bar */
+.cpp-keys {
+    display: flex; flex-wrap: wrap; gap: 0 14px;
+    padding: 2px 8px;
+    background: var(--dos-gray);
+    color: #000;
+    font-size: 19px;
+}
+.cpp-keys b { color: #aa0000; font-weight: normal; }
+.cpp-state { margin-left: auto; padding: 0 6px; }
+.cpp-busy .cpp-state { background: #aa0000; color: var(--dos-yellow); animation: cppBlink 0.8s steps(2) infinite; }
+@keyframes cppBlink { 50% { opacity: 0.4; } }
+.cpp-note { margin: 0; padding: 1px 8px 2px; background: var(--dos-gray); color: #333; font-size: 15px; border-top: 1px solid #777; }
+
+/* resize grip (bottom-right corner) */
+.cpp-resize {
+    position: absolute; right: 0; bottom: 0;
+    width: 18px; height: 18px;
+    cursor: nwse-resize;
+    touch-action: none;
+    background: linear-gradient(135deg, transparent 0 50%, #000 50% 58%, transparent 58% 66%, #000 66% 74%, transparent 74% 82%, #000 82% 90%, transparent 90%);
+}
+.cpp-max .cpp-resize { display: none; }
+
+/* narrower desktops: slimmer playground */
+@media (max-width: 1360px) {
+    .cpp-panel { width: 420px; }
+    .right-panel { padding: 40px 30px; }
+}
+/* tablets and phones: the playground drops below the profile code (no dragging; maximize still works) */
+@media (max-width: 1100px) {
+    .container { flex-wrap: wrap; }
+    .right-panel { flex: 1 1 0; min-width: 0; }
+    .cpp-panel:not(.cpp-max) {
+        order: 3;
+        position: relative; top: auto;
+        width: auto; flex: 1 1 100%;
+        height: 640px; min-height: 0;
+        margin: 0 16px 24px;
+    }
+    .cpp-menubar { cursor: default; }
+    .cpp-resize { display: none; }
+}
+@media (max-width: 768px) {
+    /* the container is a column here: every block keeps its natural height */
+    .right-panel, .cpp-panel { flex: none; }
+    .cpp-panel:not(.cpp-max) { flex: none; width: auto; margin: 0 10px 20px; height: 620px; }
+    .cpp-out { height: clamp(80px, 14vh, 130px); }
+    .cpp-panel { font-size: 18px; }
+    .cpp-hl, .cpp-input { font-size: 15px; line-height: 17px; }
+    .cpp-gutter { font-size: 15px; line-height: 17px; width: 32px; }
+    .cpp-keys span:nth-child(3) { display: none; }
+}
+
+/* ---------- robot eye lasers + scorch marks (Code Editor template) ---------- */
+.laser-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 999; pointer-events: none; }
+.burn-layer { position: absolute; top: 0; left: 0; width: 100%; z-index: 5; pointer-events: none; overflow: hidden; }
+html[data-template]:not([data-template="code"]) .laser-canvas,
+html[data-template]:not([data-template="code"]) .burn-layer { display: none; }
+.burn-mark {
+    position: absolute;
+    background:
+        radial-gradient(circle at 50% 50%, #050200 0 16%, #1e0d03 28%, rgba(70, 32, 6, 0.92) 42%, rgba(150, 90, 20, 0.6) 58%, rgba(215, 170, 60, 0.28) 72%, transparent 80%);
+    filter: blur(0.6px);
+    animation: burnCool 2.4s ease-out forwards;
+}
+/* fresh burns glow like embers, then cool down to a scorched patch */
+@keyframes burnCool {
+    0% { box-shadow: 0 0 26px 10px rgba(255, 120, 20, 0.85), inset 0 0 18px 6px rgba(255, 170, 40, 0.9); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 120, 20, 0), inset 0 0 6px 2px rgba(120, 60, 10, 0.35); }
+}
+.burn-smoke {
+    position: absolute;
+    width: 18px; height: 18px;
+    margin: -9px 0 0 -9px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(160, 160, 160, 0.55), rgba(90, 90, 90, 0) 70%);
+    opacity: 0;
+    animation: burnSmoke 2.2s ease-out forwards;
+}
+@keyframes burnSmoke {
+    0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+    15% { opacity: 0.8; }
+    100% { opacity: 0; transform: translate(var(--drift, 0), -90px) scale(2.6); }
+}
+.robot-container.robot-firing .robot { --glow: 255, 60, 60; }
+.robot-container.robot-firing .robot-eye { height: 7px; background: radial-gradient(ellipse, #fff, #ff3b3b 60%); box-shadow: 0 0 12px rgba(255, 40, 40, 1), 0 0 26px rgba(255, 40, 40, 0.7); }
+@media (prefers-reduced-motion: reduce) {
+    .burn-mark, .burn-smoke { animation: none; }
+    .burn-smoke { display: none; }
+}
+
+/* ---------- profile flowchart next to the code (Code Editor template) ---------- */
+.code-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 32px; align-items: start; }
+.code-main { min-width: 0; }
+.flow-col {
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #30363d transparent;
+}
+.flow-card {
+    background: rgba(13, 17, 23, 0.82);
+    border: 1px solid rgba(78, 201, 176, 0.18);
+    border-radius: 10px;
+    padding: 10px 10px 14px;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
+}
+.flow-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 0 4px 6px; }
+.flow-file { color: #e6edf3; font-size: 12px; }
+.flow-file::before { content: '◇ '; color: #dcdcaa; }
+.flow-hint { color: #6e7681; font-size: 10px; }
+.flow-legend { display: flex; flex-wrap: wrap; gap: 4px 10px; padding: 0 4px 8px; margin-bottom: 4px; border-bottom: 1px dashed #30363d; color: #8b949e; font-size: 10px; }
+.flow-legend i { display: inline-block; width: 12px; height: 8px; margin-right: 4px; vertical-align: middle; border: 1.5px solid; }
+.lg-term { border-color: #6a9955; border-radius: 6px; }
+.lg-io { border-color: #ce9178; transform: skewX(-20deg); }
+.lg-proc { border-color: #569cd6; }
+.lg-loop { border-color: #c586c0; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); background: #c586c0; }
+.lg-dec { border-color: #dcdcaa; transform: rotate(45deg) scale(0.7); }
+.flow-svg { display: block; width: 100%; height: auto; font-family: 'Consolas', 'Courier New', monospace; }
+
+.fl-shape { fill: color-mix(in srgb, var(--c) 10%, #0d1117); stroke: var(--c); stroke-width: 1.5; transition: fill 0.2s, stroke-width 0.2s; }
+.fl-text { fill: #d4d4d4; font-size: 11px; }
+.fl-b { fill: #fff; font-weight: bold; }
+.fl-d { fill: #8b949e; }
+.fl-label { fill: var(--c); font-size: 9.5px; letter-spacing: 1px; }
+.fl-badge { fill: #4ec9b0; font-size: 9.5px; font-weight: bold; }
+.fl-edge { fill: none; stroke: #6e7681; stroke-width: 1.4; }
+.fl-loopedge { stroke: #c586c0; stroke-dasharray: 4 3; }
+.fl-dim { stroke: #3a4048; fill: #4a5058; }
+.fl-yes { fill: #8b949e; font-size: 9.5px; }
+.fl-packet { fill: #4ec9b0; filter: drop-shadow(0 0 4px #4ec9b0); }
+.fl-pulse { fill: none; stroke: #4ec9b0; stroke-width: 1.5; animation: flPulse 1.6s ease-in-out infinite; }
+@keyframes flPulse { 50% { opacity: 0.15; } }
+.fl-link { cursor: pointer; outline: none; }
+.fl-link:hover .fl-shape, .fl-link:focus-visible .fl-shape { fill: color-mix(in srgb, var(--c) 26%, #0d1117); stroke-width: 2.4; }
+.fl-active .fl-shape { fill: color-mix(in srgb, var(--c) 32%, #0d1117); stroke-width: 2.6; filter: drop-shadow(0 0 6px var(--c)); }
+
+/* the code lines a block points at flash when it is clicked */
+.code-flash { animation: codeFlash 1.6s ease-out; border-radius: 3px; }
+@keyframes codeFlash {
+    0%, 30% { background: rgba(78, 201, 176, 0.28); box-shadow: -4px 0 0 #4ec9b0; }
+    100% { background: transparent; box-shadow: none; }
+}
+
+/* mid-size desktops: slimmer editor and flowchart so both still fit beside the code */
+@media (min-width: 1400px) and (max-width: 1599px) {
+    .cpp-panel { width: 380px; }
+    .right-panel { padding: 40px 24px; }
+    .code-layout { grid-template-columns: minmax(0, 1fr) 290px; gap: 20px; }
+    .flow-hint { display: none; }
+}
+/* not enough room beside the code: the flowchart sits above it */
+@media (max-width: 1399px) {
+    .code-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+    .flow-col { order: -1; position: static; max-height: none; overflow: visible; max-width: 400px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .fl-pulse, .code-flash { animation: none; }
+    .fl-packet { display: none; }
+}
