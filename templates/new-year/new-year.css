@@ -1,0 +1,117 @@
+html[data-template="new-year"] body{margin:0;background:#081a25;color:#e7f3f3;font-family:system-ui,sans-serif;overflow-x:hidden}
+.ny-app{max-width:1500px;margin:auto;padding:30px 36px 100px}.ny-header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:25px}.ny-brand{font-size:13px;letter-spacing:3px;color:#b8d9d5}.ny-brand b{color:#e8bf79}.ny-tag{font:11px monospace;letter-spacing:1px;color:#a8c5c8;border:1px solid #36515b;padding:9px 13px;border-radius:30px}.ny-layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:22px}.ny-world{position:relative;min-height:650px;border:1px solid #36515b;border-radius:20px;overflow:hidden;background:#102c3d}.ny-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:pan-y}.ny-intro{position:absolute;left:30px;top:27px;pointer-events:none}.ny-eyebrow{font:11px monospace;letter-spacing:3px;color:#e5bb77}.ny-intro h1{font-family:Georgia,serif;font-weight:400;font-size:clamp(34px,4vw,58px);line-height:1.1;margin:12px 0;color:#fff8e7}.ny-intro p{font-size:12px;color:#bcd3d9;max-width:280px;line-height:1.7}.ny-scene-label{position:absolute;bottom:18px;left:24px;right:24px;display:flex;justify-content:space-between;align-items:center;gap:10px;font:10px monospace;color:#31505d}.ny-panel{border:1px solid #34505a;background:#102530;border-radius:20px;overflow:hidden;align-self:start}.ny-panel-top{padding:23px 22px 16px}.ny-panel-top h2{font-size:20px;font-weight:500;margin:0 0 8px}.ny-panel-top p{font-size:12px;line-height:1.7;color:#a4bfc6;margin:0}.ny-presets{display:flex;gap:7px;padding:0 22px 20px;flex-wrap:wrap}.ny-app button{font:inherit;cursor:pointer}.ny-presets button,.ny-pause{border:1px solid #42616b;border-radius:7px;color:#cbe1e1;background:#17343f;padding:8px 11px;font-size:11px}.ny-presets button:hover,.ny-pause:hover{background:#2e515b}.ny-tab{background:#091d28;padding:12px 20px;font:11px monospace;border-top:1px solid #2c4651;border-bottom:1px solid #2c4651;color:#dfbd84}.ny-editor{display:flex;background:#091d28;padding:18px 0;min-height:235px}.ny-lines{margin:0;padding:0 12px 0 16px;white-space:pre;text-align:right;color:#49616a;font:13px/1.85 monospace;user-select:none}.ny-code{display:block;width:100%;min-width:0;height:215px;resize:vertical;border:0;background:transparent;color:#a9e3cc;font:13px/1.85 ui-monospace,monospace;outline:none;tab-size:2;white-space:pre;padding:0 14px 0 0}.ny-code:focus{box-shadow:inset 2px 0 #dfbd84}.ny-actions{padding:16px 22px}.ny-run{width:100%;border:0;border-radius:8px;background:#eac58b;color:#162b33;padding:12px;font-weight:600!important;font-size:12px!important}.ny-run:hover{background:#ffdda4}.ny-status{font:11px/1.6 monospace;color:#a3cbb8;min-height:36px;margin:12px 0 0}.ny-status[data-error="true"]{color:#ffa69a}.ny-help{padding:0 22px 22px;color:#99b7c0;font-size:11px;line-height:1.9}.ny-help summary{cursor:pointer;color:#d6e5e7}.ny-help code{color:#e7c58b}.ny-profile{margin-top:23px;border-top:1px solid #2f4b55;padding-top:23px;display:flex;gap:30px;justify-content:space-between;align-items:start}.ny-profile h2{margin:0 0 7px;font:24px Georgia,serif;color:#fff2da}.ny-profile p{margin:0;color:#9ebac4;font-size:12px;line-height:1.8}.ny-skills{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;max-width:470px}.ny-skills span{font:10px monospace;color:#a7c8ce;padding:7px 10px;border:1px solid #2f4b55;border-radius:5px}.ny-profile details{margin-top:12px;color:#b8d4dc;font-size:12px}.ny-profile summary{cursor:pointer}.ny-profile pre{white-space:pre-wrap;max-width:650px;font:11px/1.8 monospace}.ny-app button:focus-visible,.ny-app summary:focus-visible{outline:2px solid #ffdda4;outline-offset:4px}
+@media(min-width:1450px){.ny-world{min-height:730px}}@media(max-width:1000px){.ny-app{padding:22px 18px 100px}.ny-layout{grid-template-columns:minmax(0,1fr) 300px}.ny-intro{left:22px}.ny-world{min-height:620px}}@media(max-width:760px){.ny-layout{grid-template-columns:1fr}.ny-world{min-height:610px}.ny-header{margin-bottom:18px}.ny-tag{font-size:9px}.ny-intro h1{font-size:42px}.ny-panel{width:100%}.ny-profile{flex-direction:column;gap:16px}.ny-skills{justify-content:flex-start}.ny-intro p{max-width:230px}}
+
+/* Keep the fixed tower silhouette clear of the scene heading. */
+.ny-intro{top:85px}.ny-intro h1{font-size:clamp(30px,3.1vw,46px)}
+.ny-intro p{max-width:225px}.ny-lines{height:215px;overflow:hidden;flex-shrink:0}.ny-code{overflow-wrap:normal}
+@media(max-width:1000px) and (min-width:761px){.ny-intro h1{font-size:29px}.ny-intro p{max-width:170px;font-size:11px}.ny-eyebrow{font-size:9px;letter-spacing:1px}}
+@media(max-width:760px){.ny-intro{top:80px}.ny-intro h1{font-size:32px}.ny-intro p{max-width:190px;font-size:11px}.ny-eyebrow{font-size:9px;letter-spacing:1.5px}}
+
+@media(max-width:500px){.ny-intro{top:70px}.ny-intro h1{font-size:26px;max-width:185px}.ny-intro p{max-width:170px;font-size:10px}.ny-brand{padding-left:27px;font-size:10px;letter-spacing:2px}.ny-tag{font-size:8px;padding:8px 10px}.ny-header{gap:12px}}
+
+.ny-canvas{cursor:crosshair}.ny-canvas:focus-visible{outline:2px solid #ecc58c;outline-offset:-5px}
+.ny-flight-hint{position:absolute;left:24px;right:24px;bottom:51px;margin:0;color:#244958;font:11px/1.5 system-ui,sans-serif;pointer-events:none}
+.ny-music-bar{display:flex;align-items:center;gap:12px;padding:0 22px 18px}.ny-mute{flex-shrink:0;border:1px solid #476577;background:#193b49;color:#e7d7b1;border-radius:7px;padding:9px 10px;font-size:11px!important}.ny-mute:hover{background:#28515e}.ny-mute[aria-pressed="true"]{color:#adc0c7;background:#152c38}.ny-flight-state{color:#9dbfc9;font:10px/1.6 ui-monospace,monospace}
+@media(max-width:500px){.ny-flight-hint{left:18px;right:18px;font-size:10px;bottom:57px}.ny-music-bar{gap:10px}.ny-scene-label{left:18px;right:18px}}
+
+/* v2: syntax-coloured editor, show progress, flag chip */
+.ny-code-wrap{position:relative;flex:1;min-width:0;display:flex;align-self:flex-start}
+.ny-hl,.ny-code{font:13px/1.85 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;tab-size:2;letter-spacing:0}
+.ny-lines{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.ny-hl{position:absolute;inset:0;margin:0;padding:0 14px 0 0;overflow:hidden;white-space:pre;color:#a9e3cc;pointer-events:none}
+.ny-code{position:relative;color:transparent;caret-color:#ffdda4;background:transparent;-webkit-text-fill-color:transparent}
+.ny-code::selection{background:rgba(255,221,164,.22)}
+.ny-hl .k{color:#ffd58a}.ny-hl .e{color:#8ee6b0}.ny-hl .n{color:#7fd0ff}.ny-hl .m{color:#d3a6ff}.ny-hl .c{color:#5f7c86}
+.ny-hl .h{color:#f3e3c3;box-shadow:inset 0 -2px var(--c)}
+.ny-hl .err{background:rgba(255,110,110,.16);box-shadow:inset 2px 0 #ff8f84}
+.ny-lines .err{color:#ff8f84}
+.ny-scene-label{bottom:16px}
+.ny-show{display:flex;align-items:center;gap:6px;font:10px/1 ui-monospace,monospace;letter-spacing:1px;color:#28495a;text-transform:uppercase;background:rgba(255,255,255,.62);padding:7px 11px;border-radius:20px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);min-height:12px}
+.ny-show:empty{display:none}
+.ny-show i{width:7px;height:7px;border-radius:50%;border:1px solid #6d8c99;display:inline-block;flex-shrink:0}
+.ny-show i.done{background:#8aa6b2;border-color:#8aa6b2}
+.ny-show i.on{background:#e9a94f;border-color:#e9a94f;box-shadow:0 0 6px #e9a94f}
+.ny-show b{font-weight:600;margin-left:3px;white-space:nowrap}
+.ny-pause{background:rgba(23,52,63,.88)}
+.ny-flag-chip{display:inline-block;width:16px;height:9px;vertical-align:-1px;margin-right:2px;border-radius:1px;background:radial-gradient(circle at 16.6% 50%,#ffd900 0 1.6px,transparent 1.8px),linear-gradient(90deg,#da2032 33.3%,#0066b3 33.3% 66.6%,#da2032 66.6%)}
+.ny-intro .ny-flight-hint{position:static;margin:10px 0 0;color:#9cc4d3;font-size:11px;line-height:1.5}
+@media(max-width:500px){.ny-intro .ny-flight-hint{font-size:10px;max-width:170px}.ny-show{font-size:9px;padding:6px 9px;gap:5px}.ny-show i{width:6px;height:6px}}
+.ny-code{height:250px}.ny-lines{height:250px}.ny-editor{min-height:270px}
+
+/* v3: taller sky for the countdown, profile introduction with a galloping reindeer herd */
+.ny-world{min-height:700px}
+@media(min-width:1450px){.ny-world{min-height:760px}}
+@media(max-width:1000px){.ny-world{min-height:680px}}
+@media(max-width:760px){.ny-world{min-height:640px}}
+@media(max-width:500px){.ny-intro{top:104px}.ny-intro p:not(.ny-flight-hint){display:none}}
+.ny-about{position:relative;margin-top:26px;border:1px solid #2f4b55;border-radius:22px;overflow:hidden;isolation:isolate;background:radial-gradient(120% 80% at 50% 0%,#15394b 0%,#0b1f2b 62%,#081a25 100%)}
+.ny-herd{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.ny-herd-back{z-index:0}.ny-herd-front{z-index:2}
+.ny-about-inner{position:relative;z-index:1;padding:34px 34px 40px}
+.ny-about-head{display:flex;gap:24px;align-items:center;margin-bottom:26px}
+.ny-avatar{flex:0 0 96px;width:96px;height:96px;border-radius:50%;padding:4px;background:conic-gradient(#ffd58a,#da2032,#0066b3,#4dffb5,#ffd58a);box-shadow:0 0 30px rgba(255,213,138,.25)}
+.ny-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#0d2633;display:block}
+.ny-about-head h2{font:400 clamp(30px,4vw,46px)/1.05 Georgia,serif;margin:8px 0 6px;color:#fff6e3}
+.ny-role{margin:0;color:#e8c58b;font-size:13px;letter-spacing:.5px}
+.ny-summary{margin:8px 0 0;color:#a9c4cc;font-size:12px;line-height:1.7;max-width:640px}
+.ny-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.ny-chip{font:11px ui-monospace,monospace;color:#cfe3e6;border:1px solid #36515b;background:rgba(16,37,48,.6);padding:6px 10px;border-radius:20px;text-decoration:none}
+.ny-secret span{filter:blur(4px);transition:filter .25s}
+.ny-secret:hover span,.ny-secret:focus-visible span,.ny-secret.revealed span{filter:none}
+.ny-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.ny-card{grid-column:span 6;background:rgba(12,32,43,.6);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);border:1px solid rgba(120,170,190,.22);border-radius:16px;padding:18px 18px 16px;min-width:0}
+.ny-card-exp{grid-column:span 5;grid-row:span 2}
+.ny-card-projects,.ny-card-wide{grid-column:span 7}
+.ny-card h3{font:600 11px ui-monospace,monospace;letter-spacing:2.5px;text-transform:uppercase;color:#e5bb77;margin:0 0 12px}
+.ny-card h3:not(:first-child){margin-top:18px}
+.ny-timeline{list-style:none;margin:0;padding:0 0 0 14px;border-left:1px dashed #3c5b66}
+.ny-timeline li{position:relative;padding:0 0 14px 6px}
+.ny-timeline li::before{content:'';position:absolute;left:-19px;top:4px;width:8px;height:8px;border-radius:50%;background:#ffd58a;box-shadow:0 0 8px #ffd58a}
+.ny-timeline li:first-child::before{background:#4dffb5;box-shadow:0 0 10px #4dffb5}
+.ny-when{display:block;font:10px ui-monospace,monospace;color:#7fa3ae;margin-bottom:2px}
+.ny-timeline b,.ny-list b,.ny-project b{display:block;color:#f1f6f6;font-size:13px;font-weight:600}
+.ny-timeline em,.ny-list em{display:block;font-style:normal;color:#9fc0c8;font-size:12px}
+.ny-timeline p,.ny-list p,.ny-project p{margin:4px 0 0;color:#8eaab3;font-size:11px;line-height:1.6}
+.ny-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.ny-skill-row{display:grid;grid-template-columns:76px 1fr;gap:8px;align-items:start;margin-bottom:9px}
+.ny-skill-row>b{font:600 10px ui-monospace,monospace;color:#8fb2bc;text-transform:uppercase;letter-spacing:1px;padding-top:5px}
+.ny-tags{display:flex;flex-wrap:wrap;gap:5px}
+.ny-tags span{font:10.5px ui-monospace,monospace;color:#bfe0dd;background:rgba(77,255,181,.06);border:1px solid rgba(120,200,190,.22);padding:4px 8px;border-radius:6px}
+.ny-traits{margin-top:8px}.ny-traits span{color:#ffd58a;border-color:rgba(255,213,138,.35);background:rgba(255,213,138,.06)}
+.ny-projects{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.ny-project{display:block;text-decoration:none;border:1px solid rgba(120,170,190,.2);border-radius:12px;padding:12px;background:rgba(8,26,37,.55);transition:transform .2s,border-color .2s}
+.ny-project:hover{transform:translateY(-2px);border-color:#e5bb77}
+.ny-picon{font-size:18px}.ny-project .ny-tags{margin-top:8px}
+@media(max-width:1000px){.ny-card,.ny-card-exp,.ny-card-projects,.ny-card-wide{grid-column:1/-1;grid-row:auto}}
+@media(max-width:760px){.ny-about-inner{padding:24px 18px 30px}.ny-about-head{flex-direction:column;align-items:flex-start;gap:14px}.ny-avatar{flex-basis:auto;width:78px;height:78px}.ny-card,.ny-card-exp,.ny-card-projects,.ny-card-wide{grid-column:1/-1}}
+
+/* v4: full-name reveal with a blurred surname, open snow field at the bottom of the profile */
+.ny-name{display:grid;width:max-content;max-width:100%;cursor:default;outline:none}
+.ny-name-nick,.ny-name-full{grid-area:1/1;justify-self:start;white-space:nowrap;transition:opacity .35s ease,transform .35s ease}
+.ny-name-full{opacity:0;transform:translateY(6px)}
+.ny-name.full .ny-name-nick{opacity:0;transform:translateY(-6px)}
+.ny-name.full .ny-name-full{opacity:1;transform:none}
+.ny-name-last{display:inline-block;filter:blur(8px);transition:filter .35s ease}
+.ny-name.near-last .ny-name-last{filter:none}
+.ny-name:focus-visible{outline:2px solid #ffdda4;outline-offset:5px;border-radius:4px}
+.ny-about-inner{padding-bottom:250px}
+.ny-about-head h2{text-shadow:0 2px 14px rgba(5,18,28,.8)}
+.ny-summary,.ny-role{text-shadow:0 1px 8px rgba(5,18,28,.9)}
+@media(max-width:760px){.ny-about-inner{padding-bottom:225px}}
+@media(max-width:500px){.ny-name-nick,.ny-name-full{white-space:normal}}
+
+/* v5: Цасан өвгөн avatar in a blue Mongolian deel */
+.ny-avatar{flex:0 0 128px;width:128px;height:128px;padding:4px;background:conic-gradient(#f2c14e,#2f7fd6,#d9333f,#4dffb5,#f2c14e);box-shadow:0 0 34px rgba(80,160,255,.3)}
+.ny-grandpa{width:100%;height:100%;border-radius:50%;display:block;overflow:hidden}
+.ny-grandpa .sg-fig{animation:ny-grandpa-bob 4.5s ease-in-out infinite;transform-origin:100px 200px}
+.ny-grandpa .sg-tassel{animation:ny-tassel 2.6s ease-in-out infinite;transform-origin:100px 16px}
+.ny-grandpa .sg-staff circle{animation:ny-twinkle 2.2s ease-in-out infinite}
+.ny-grandpa .sg-flakes{animation:ny-flakes 6s linear infinite}
+.ny-avatar:hover .sg-fig{animation-duration:1.6s}
+@keyframes ny-grandpa-bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-3px) rotate(-1.5deg)}}
+@keyframes ny-tassel{0%,100%{transform:rotate(0)}50%{transform:rotate(6deg)}}
+@keyframes ny-twinkle{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes ny-flakes{from{transform:translateY(-10px)}to{transform:translateY(16px)}}
+@media(prefers-reduced-motion:reduce){.ny-grandpa *{animation:none!important}}
+@media(max-width:760px){.ny-avatar{flex-basis:auto;width:104px;height:104px}}

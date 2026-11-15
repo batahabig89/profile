@@ -1,10 +1,15 @@
 /* Keep ?v= in sync with index.html (cache-bust on GitHub Pages) */
-var ASSET_VER = '134';
+var ASSET_VER = '143';
 
 // Selectable page templates. "code" is the built-in editor look; others load their own CSS/JS
 // and register a renderer on window.ProfileTemplates[name].
 var TEMPLATES = {
     code: { label: 'Code Editor' },
+    'new-year': {
+        label: 'New Year ❄️',
+        css: 'templates/new-year/new-year.css',
+        js: 'templates/new-year/new-year.js'
+    },
     halloween: {
         label: 'Halloween 🎃',
         css: 'templates/halloween/halloween.css',
