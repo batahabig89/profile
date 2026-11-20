@@ -255,6 +255,11 @@ Validation: `node --test tests/new-year.test.cjs`.
 Open `index.html?template=space` or select **Space 🪐**. Everything is drawn on Canvas/SVG, with no
 external assets.
 
+Layout: on wide screens (over 1100px) the three-body sky takes the left 3/5 and the Earth lab the right
+2/5, side by side; the lab then uses a tall layout (wall screen on top, ring in the middle, console,
+people and tanks at the bottom). On tablets and phones the two are stacked; tablets get the wide lab
+layout, phones the tall one.
+
 - **Three-body sky (3D)** — three large suns (granulated photosphere, sunspots, limb darkening,
   corona streamers, prominences) start on the Chenciner–Montgomery figure-eight orbit. The
   simulation is 3D (leapfrog, light softening) and seen through a slowly circling perspective camera:
@@ -267,6 +272,12 @@ external assets.
   thought to be possibly such a merger product): huge, pulsing, losing dusty gas and dimming under a
   dust veil. Its core then collapses into a supernova with a butterfly-shaped nebula, and a new sun
   forms. **⚡ Ойрын тойрог** sets two suns into a tight, fast binary to watch it happen.
+- **James Webb and Voyager 1** — the James Webb Space Telescope hovers in the upper left (18 gold
+  hexagonal mirror segments with sunlight sweeping across them, the secondary mirror on three struts,
+  the five-layer sunshield and the spacecraft bus), while Voyager 1 drifts slowly across the sky (big
+  high-gain dish, ten-sided bus with the golden record, magnetometer boom, RTG boom, science platform,
+  plasma-wave antennas). Click Webb and it flashes an infrared shot; click Voyager and the golden record
+  glints as it sends «Сайн уу, сансар!». Both are drawn locally on Canvas.
 - **Black hole** — event horizon shadow (`Үзэгдлийн хаяа`), photon ring, Doppler-bright accretion
   disk with its far side lensed over the top, lensed background stars, a sagging spacetime grid.
   A sun dragged close to it is captured and spirals in **in 3D in the disk plane**: it stays round,
@@ -274,13 +285,23 @@ external assets.
   and fading at the horizon while its torn-off gas winds into a luminous spiral; then a supernova with
   a butterfly nebula kicks every surviving body (the butterfly effect) and a new sun ignites.
 - **Junkyard** — a curved scrap planet with heaps of tyres, pipes, gears, barrels, old screens, a
-  wrecked rocket and a `ХОГИЙН ЦЭГ` sign. An original hand-built robot (riveted boiler body,
-  telescopic neck, one big lens eye, a steam chimney) wanders, picks up scrap and gazes at the suns;
-  click it and it waves and beeps. (Inspired by the look of hand-drawn adventure games, not a copy of
-  any game character.)
-- **Earth lab (separate section)** — a scientist runs a particle accelerator in an underground lab;
-  colliding hydrogen bunches release an **X boson** that makes the test chamber weightless
-  (**Жингүйдэл**) or pulls everything in (**Хэт таталцал**). It never mixes with the three-body sky.
+  wrecked rocket and a `ХОГИЙН ЦЭГ` sign. On the right, two original hand-built robots (riveted
+  boiler bodies, telescopic necks, one big lens eye) play table tennis on a level salvaged deck plate.
+  The table is a slab of wrecked starship hull (`NX-17`, scorch marks, a broken corner) propped on a
+  barrel and a stack of tyres, with a bent-pipe chain-link net and an old screen as the scoreboard.
+  Their eyes follow the ball, they swing red paddles, and every few rallies one misses, the ball
+  bounces away, the score changes and the other serves. Click a robot and it waves and beeps.
+  (Inspired by the look of hand-drawn adventure games, not a copy of any game character.)
+- **Earth lab (separate section)** — an underground high-energy lab: ceiling pipes and cable trays,
+  an observation window into the 27 km tunnel where beam pulses race away, a whiteboard
+  (`E = mc²`, `p + p → X + …`, `√s = 13.6 TeV` and a small Feynman diagram), server racks with
+  blinking LEDs, steaming liquid-helium tanks, hazard stripes round the detector, a rotating amber
+  beacon and a `BEAM ON` lamp that light up during a run. A scientist starts the run at the console
+  while an assistant with a tablet watches. Colliding hydrogen bunches release an **X boson**; the
+  wall screen shows the event display of the last collision and an invariant-mass histogram whose
+  purple X peak grows with every collision until `X · 5σ НЭЭЛТ!`. The boson makes the test chamber
+  weightless (**Жингүйдэл**: objects and both scientists float) or pulls everything in
+  (**Хэт таталцал**). It never mixes with the three-body sky.
 - **Profile** — mission-style introduction with small line icons (rocket, satellite, planet,
   telescope, comet), an orbiting emblem, stats, a flight-log timeline and cards. Behind it an animated
   starfield with nebulae, a spiral galaxy, a ringed gas giant and an original capital ship with a bank

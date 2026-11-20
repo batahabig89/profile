@@ -87,3 +87,17 @@ html[data-template="space"] body{margin:0;background:#02040b;color:#dfe6ff;font-
 @media(max-width:640px){.sp-about-inner{padding:120px 16px 24px}.sp-emblem{width:64px;height:64px;flex-basis:64px}.sp-emblem-ic{width:30px;height:30px}.sp-stat{min-width:72px;padding:8px}.sp-stat b{font-size:18px}}
 .sp-project-ic{flex:0 0 34px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:0;background:radial-gradient(circle at 35% 30%,hsl(var(--h) 85% 72%),hsl(var(--h) 60% 28%) 70%);box-shadow:0 0 14px hsl(var(--h) 85% 60% / .45),inset 0 0 0 1px hsl(var(--h) 90% 80% / .35)}
 .sp-project-ic .sp-ic{width:18px;height:18px}
+
+/* v4: three-body sky (3/5) and the lab (2/5) side by side on wide screens; stacked on tablets/phones */
+.sp-stage{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:20px;align-items:stretch}
+.sp-stage .sp-world{height:min(84vh,840px)}
+.sp-stage .sp-lab-wrap{margin-top:0;display:flex;flex-direction:column;min-width:0}
+.sp-stage .sp-lab-head{margin:0 2px 10px}
+.sp-stage .sp-lab-head h2{font-size:clamp(22px,2vw,30px)}
+.sp-stage .sp-lab-head p{font-size:11px;line-height:1.6}
+.sp-stage .sp-lab{flex:1;height:auto;min-height:520px}
+.sp-stage .sp-lab-status{top:12px;bottom:auto;left:12px;right:12px;max-width:none}
+.sp-stage .sp-lab-hud{left:12px;right:12px;bottom:12px;justify-content:center}
+@media(max-width:1100px){.sp-stage{grid-template-columns:1fr}.sp-stage .sp-world{height:min(82vh,820px)}.sp-stage .sp-lab-wrap{margin-top:6px}.sp-stage .sp-lab{flex:none;height:clamp(460px,56vw,580px)}
+.sp-stage .sp-lab-status{top:auto;bottom:18px;left:18px;right:auto;max-width:52%}.sp-stage .sp-lab-hud{left:auto;right:18px;bottom:18px;justify-content:flex-end}}
+@media(max-width:640px){.sp-stage .sp-world{min-height:640px;height:auto}.sp-stage .sp-lab{height:640px}.sp-stage .sp-lab-status{top:12px;bottom:auto;left:12px;right:12px;max-width:none}.sp-stage .sp-lab-hud{left:12px;right:12px;bottom:12px;justify-content:center}}

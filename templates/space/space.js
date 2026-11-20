@@ -164,6 +164,65 @@
         c.restore();
     }
 
+    // James Webb Space Telescope: 18 gold hexagonal mirror segments, a secondary mirror on three struts
+    // and the five-layer kite-shaped sunshield with the spacecraft bus underneath. `glint` 0–1 flashes it.
+    function drawWebb(c, t, glint) {
+        c.lineJoin = 'round';
+        // Sunshield: five stacked silvery-violet layers.
+        for (let i = 4; i >= 0; i--) {
+            const y = 22 + i * 2.6, g = c.createLinearGradient(-70, y, 70, y);
+            g.addColorStop(0, '#8e86a8'); g.addColorStop(.45, i === 0 ? '#efe9ff' : '#cfc6e6'); g.addColorStop(1, '#6d6688');
+            c.fillStyle = g; c.strokeStyle = 'rgba(40,30,60,.45)'; c.lineWidth = .7;
+            c.beginPath(); c.moveTo(-72, y); c.lineTo(-8, y - 15); c.lineTo(66, y - 3); c.lineTo(10, y + 14); c.closePath(); c.fill(); c.stroke();
+        }
+        c.fillStyle = '#3a3448'; c.fillRect(-12, 38, 24, 9); c.fillStyle = '#1d2a4a'; c.fillRect(-30, 41, 16, 5);
+        c.strokeStyle = '#6b6f80'; c.lineWidth = 1; for (let x = -29; x < -14; x += 3) { c.beginPath(); c.moveTo(x, 41); c.lineTo(x, 46); c.stroke(); }
+        // Tower and backplane.
+        c.fillStyle = '#2b2b33'; c.fillRect(-3, 6, 6, 16);
+        // Primary mirror: two rings of hexagons round an empty centre (18 segments).
+        const hexes = [], R = 7.2;
+        for (let q = -2; q <= 2; q++) for (let r = -2; r <= 2; r++) { const sN = -q - r, d = Math.max(Math.abs(q), Math.abs(r), Math.abs(sN)); if (d >= 1 && d <= 2) hexes.push([R * 1.5 * q, R * Math.sqrt(3) * (r + q / 2)]); }
+        for (const [hx, hy0] of hexes) {
+            const hy = hy0 * .92 - 6, sweep = Math.sin(t * 1.2 - hx * .08 - hy * .05);
+            const g = c.createLinearGradient(hx - R, hy - R, hx + R, hy + R); g.addColorStop(0, '#fff2b8'); g.addColorStop(.5, '#e7b43c'); g.addColorStop(1, '#9a6a14');
+            c.fillStyle = g; c.strokeStyle = '#5a3d0a'; c.lineWidth = .8;
+            c.beginPath(); for (let k = 0; k < 6; k++) { const a = k / 6 * TAU; c.lineTo(hx + Math.cos(a) * R * .93, hy + Math.sin(a) * R * .93 * .92); } c.closePath(); c.fill(); c.stroke();
+            const shine = Math.max(0, sweep) ** 6 * .7 + glint * .8;
+            if (shine > .02) { c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = shine; c.fillStyle = '#fffbe6'; c.fill(); c.restore(); }
+        }
+        // Secondary mirror on three struts.
+        c.strokeStyle = '#3c3c46'; c.lineWidth = 1.2;
+        for (const [sx, sy] of [[-20, 8], [20, 8], [0, -30]]) { c.beginPath(); c.moveTo(sx, sy); c.lineTo(0, -10 - 22); c.stroke(); }
+        c.fillStyle = '#e7b43c'; c.beginPath(); c.arc(0, -33, 3.2, 0, TAU); c.fill();
+        if (glint > 0) { c.save(); c.globalCompositeOperation = 'lighter'; const g = c.createRadialGradient(0, -6, 0, 0, -6, 70); g.addColorStop(0, `rgba(255,230,160,${(.6 * glint).toFixed(3)})`); g.addColorStop(1, 'rgba(255,230,160,0)'); c.fillStyle = g; c.fillRect(-70, -76, 140, 140); c.restore(); }
+    }
+    // Voyager: big high-gain dish, ten-sided bus with the golden record, magnetometer boom,
+    // RTG boom with three power units, science platform and two long plasma-wave antennas.
+    function drawVoyager(c, t, glint) {
+        c.lineCap = 'round'; c.lineJoin = 'round';
+        c.strokeStyle = '#b9c2cc'; c.lineWidth = .7;
+        c.beginPath(); c.moveTo(4, 14); c.lineTo(-30, 70); c.moveTo(4, 14); c.lineTo(36, 66); c.stroke();
+        c.strokeStyle = '#8a95a0'; c.lineWidth = 1.1; c.beginPath(); c.moveTo(10, 8); c.lineTo(118, -46); c.stroke();
+        c.fillStyle = '#c9d0d7'; for (const f of [.35, .7, 1]) c.fillRect(10 + 108 * f - 2, 8 - 54 * f - 2, 4, 4);
+        c.strokeStyle = '#7d8790'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(-4, 16); c.lineTo(-46, 34); c.stroke();
+        for (let i = 0; i < 3; i++) { const x = -22 - i * 10, y = 24 + i * 4.2; c.fillStyle = '#2c2a2a'; c.fillRect(x - 4, y - 3, 8, 6); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = 'rgba(255,120,60,.25)'; c.beginPath(); c.arc(x, y, 5, 0, TAU); c.fill(); c.restore(); }
+        c.strokeStyle = '#7d8790'; c.beginPath(); c.moveTo(10, 16); c.lineTo(38, 30); c.stroke();
+        c.fillStyle = '#4b4f58'; c.fillRect(34, 26, 12, 8); c.fillStyle = '#9fb8d6'; c.beginPath(); c.arc(46, 29, 2.2, 0, TAU); c.arc(46, 33, 1.6, 0, TAU); c.fill();
+        // Ten-sided bus with the golden record.
+        c.fillStyle = '#7a7f86'; c.strokeStyle = '#2c3036'; c.lineWidth = 1;
+        c.beginPath(); for (let k = 0; k < 10; k++) { const a = k / 10 * TAU; c.lineTo(4 + Math.cos(a) * 11, 14 + Math.sin(a) * 6); } c.closePath(); c.fill(); c.stroke();
+        c.fillStyle = '#5f646c'; c.fillRect(-7, 14, 22, 8);
+        const gr = c.createRadialGradient(10, 18, 0, 10, 18, 4); gr.addColorStop(0, '#fff3c0'); gr.addColorStop(1, '#c8962a');
+        c.fillStyle = gr; c.beginPath(); c.arc(10, 18, 3.4, 0, TAU); c.fill();
+        if (glint > 0) { c.save(); c.globalCompositeOperation = 'lighter'; const g = c.createRadialGradient(10, 18, 0, 10, 18, 40); g.addColorStop(0, `rgba(255,220,140,${glint})`); g.addColorStop(1, 'rgba(255,220,140,0)'); c.fillStyle = g; c.fillRect(-30, -22, 80, 80); c.restore(); }
+        // High-gain antenna dish facing home.
+        const dg = c.createRadialGradient(-2, -12, 2, 4, -6, 26); dg.addColorStop(0, '#ffffff'); dg.addColorStop(.7, '#dde3e8'); dg.addColorStop(1, '#9aa5ae');
+        c.fillStyle = dg; c.strokeStyle = '#59616a'; c.lineWidth = 1.2; c.beginPath(); c.ellipse(4, -6, 24, 11, -.12, 0, TAU); c.fill(); c.stroke();
+        c.strokeStyle = 'rgba(90,100,110,.35)'; c.beginPath(); c.ellipse(4, -6, 15, 7, -.12, 0, TAU); c.stroke();
+        c.strokeStyle = '#59616a'; c.beginPath(); c.moveTo(4, -6); c.lineTo(2, -22); c.stroke(); c.fillStyle = '#c9d0d7'; c.fillRect(0, -25, 4, 4);
+        c.strokeStyle = '#59616a'; c.beginPath(); c.moveTo(4, 5); c.lineTo(4, 8); c.stroke();
+    }
+
     // An original capital ship (long armoured hull, stepped superstructure, command tower) with a bank
     // of blue ion engines. Faces left; `engine` 0–1 sets the exhaust, `warp` 0–1 stretches it into a jump.
     function drawShip(c, t, engine, warp) {
@@ -234,16 +293,24 @@
         const needle = -2.4 + Math.sin(p.t * 2.2) * .6 + p.excite * 1.5; c.strokeStyle = '#c0392b'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(-6, -42); c.lineTo(-6 + Math.cos(needle) * 4, -42 + Math.sin(needle) * 4); c.stroke();
         c.fillStyle = '#3c3430'; c.fillRect(4, -45, 8, 6); c.fillStyle = Math.sin(p.t * 6) > 0 ? '#7dff9e' : '#2e6b3c'; c.fillRect(5.5, -43.5, 2, 2); c.fillStyle = '#ffcf4d'; c.fillRect(8.5, -43.5, 2, 2);
         // Arms: left one waves, right one carries scrap or reaches down.
-        const arm = (side, a1, a2, claw) => {
+        const arm = (side, a1, a2, claw, paddle) => {
             const sh = [side * 17, -54], el = [sh[0] + Math.sin(a1) * 13 * side, sh[1] + Math.cos(a1) * 13], hd = [el[0] + Math.sin(a2) * 12 * side, el[1] + Math.cos(a2) * 12];
             c.strokeStyle = ink; c.lineWidth = 4.5; c.beginPath(); c.moveTo(...sh); c.lineTo(...el); c.lineTo(...hd); c.stroke();
             c.strokeStyle = '#6a605a'; c.lineWidth = 2.5; c.stroke();
             c.fillStyle = '#b06a3c'; c.beginPath(); c.arc(...el, 2.6, 0, TAU); c.fill();
             c.strokeStyle = ink; c.lineWidth = 2; c.beginPath(); c.moveTo(hd[0], hd[1]); c.lineTo(hd[0] + side * 4, hd[1] + 4); c.moveTo(hd[0], hd[1]); c.lineTo(hd[0] - side * 1, hd[1] + 5); c.stroke();
+            if (paddle) {
+                c.save(); c.translate(hd[0], hd[1]); c.rotate(.5 - p.swing * .9);
+                c.fillStyle = '#6b4a2e'; c.fillRect(-1.6, -2, 3.2, 9);
+                c.fillStyle = '#c9302c'; c.strokeStyle = ink; c.lineWidth = 1.2; c.beginPath(); c.ellipse(0, -9, 7, 8, 0, 0, TAU); c.fill(); c.stroke();
+                c.fillStyle = 'rgba(255,255,255,.25)'; c.beginPath(); c.ellipse(-2, -11, 2.5, 3, 0, 0, TAU); c.fill();
+                c.restore();
+            }
             if (claw) { c.fillStyle = '#8f9aa3'; c.strokeStyle = ink; c.lineWidth = 1.2; c.beginPath(); for (let i = 0; i < 12; i++) { const a = i / 12 * TAU, rr = i % 2 ? 4.5 : 6; c.lineTo(hd[0] + side * 3 + Math.cos(a) * rr, hd[1] + 6 + Math.sin(a) * rr); } c.closePath(); c.fill(); c.stroke(); }
         };
         arm(-1, p.wave > 0 ? Math.PI * .9 + Math.sin(p.t * 14) * .35 * p.wave : .35 + Math.sin(p.walk) * .2, p.wave > 0 ? Math.PI * 1.1 : .2, false);
-        arm(1, p.reach ? 1.1 : .4 - Math.sin(p.walk) * .2, p.reach ? 1.6 : .5, p.carry);
+        if (p.paddle) arm(1, .75 + p.swing * .75, 1.25 + p.swing * .45, false, true);
+        else arm(1, p.reach ? 1.1 : .4 - Math.sin(p.walk) * .2, p.reach ? 1.6 : .5, p.carry);
         // Telescopic neck and the domed head with one big lens eye.
         const nh = 6 + p.neck * 18;
         for (let i = 0; i < 3; i++) { const w = 7 - i * 1.5, y0 = -62 - nh * i / 3; c.fillStyle = i % 2 ? '#8b7d74' : '#6e625b'; c.fillRect(-w / 2, y0 - nh / 3, w, nh / 3 + 1); c.strokeStyle = ink; c.lineWidth = 1; c.strokeRect(-w / 2, y0 - nh / 3, w, nh / 3 + 1); }
@@ -278,20 +345,40 @@
         c.strokeStyle = '#c7d0d8'; c.beginPath(); c.moveTo(0, -94); c.lineTo(0, -38); c.stroke();
         c.fillStyle = '#4f7fb8'; c.beginPath(); c.moveTo(-4, -98); c.lineTo(4, -98); c.lineTo(2, -78); c.lineTo(0, -74); c.lineTo(-2, -78); c.closePath(); c.fill();
         c.fillStyle = '#8fb6d9'; c.fillRect(6, -86, 7, 9); c.fillStyle = '#e04f4f'; c.fillRect(8, -88, 1.5, 6); c.fillStyle = '#2f6fd6'; c.fillRect(10.5, -88, 1.5, 6);
-        const arm = (side, a1, a2) => {
-            const sh = [side * 14, -94], el = [sh[0] + Math.sin(a1) * 20, sh[1] + Math.cos(a1) * 20], hd = [el[0] + Math.sin(a2) * 18, el[1] + Math.cos(a2) * 18];
+        // Arms from explicit joints, mirrored left/right, so every pose stays symmetric and natural.
+        const limb = (sh, el, hd, open) => {
             c.strokeStyle = '#e4e9ed'; c.lineWidth = 8; c.beginPath(); c.moveTo(...sh); c.lineTo(...el); c.lineTo(...hd); c.stroke();
+            c.strokeStyle = '#c7d0d8'; c.lineWidth = 1; c.beginPath(); c.moveTo(el[0] + (hd[0] - el[0]) * .8 - 3, el[1] + (hd[1] - el[1]) * .8); c.lineTo(el[0] + (hd[0] - el[0]) * .8 + 3, el[1] + (hd[1] - el[1]) * .8); c.stroke();
             c.fillStyle = '#e8b896'; c.beginPath(); c.arc(...hd, 3.6, 0, TAU); c.fill();
+            if (open) {
+                const dx = hd[0] - el[0], dy = hd[1] - el[1], l = Math.hypot(dx, dy) || 1, ux = dx / l, uy = dy / l;
+                c.strokeStyle = '#e8b896'; c.lineWidth = 1.6; c.lineCap = 'round';
+                for (const spread of [-.6, 0, .6]) { const a = Math.atan2(uy, ux) + spread; c.beginPath(); c.moveTo(hd[0] + Math.cos(a) * 3, hd[1] + Math.sin(a) * 3); c.lineTo(hd[0] + Math.cos(a) * 7, hd[1] + Math.sin(a) * 7); c.stroke(); }
+            }
         };
-        arm(-1, p.lift ? Math.PI * .85 : -.15, p.lift ? Math.PI * .95 : .1);
-        arm(1, p.lift ? -Math.PI * .85 : p.press > 0 ? .9 + p.press * .5 : .35, p.lift ? -Math.PI * .95 : p.press > 0 ? 1.5 : .9);
+        const pose = p.pose || (p.press > 0 ? 'press' : 'idle'), tt = p.t || 0;
+        for (const side of [-1, 1]) {
+            const sh = [side * 14, -94];
+            let el, hd, open = false;
+            if (pose === 'amazed') { el = [sh[0] + side * 12, sh[1] - 16]; hd = [el[0] + side * 6, el[1] - 18]; open = true; }
+            else if (pose === 'float') { const w = Math.sin(tt * 2.2 + side) * 5; el = [sh[0] + side * 19, sh[1] + 2 + w]; hd = [el[0] + side * 17, el[1] - 4 + w * 1.4]; open = true; }
+            else if (pose === 'brace') { const tr = Math.sin(tt * 30 + side) * .8; el = [sh[0] - 15, sh[1] + 5 + tr]; hd = [el[0] - 17, el[1] + 1 + tr]; open = true; }
+            else if (side === 1 && pose === 'press') { const a1 = .9 + p.press * .5; el = [sh[0] + Math.sin(a1) * 20, sh[1] + Math.cos(a1) * 20]; hd = [el[0] + Math.sin(1.5) * 18, el[1] + Math.cos(1.5) * 18]; }
+            else { const a1 = side < 0 ? -.15 : .35, a2 = side < 0 ? .1 : .9; el = [sh[0] + Math.sin(a1) * 20, sh[1] + Math.cos(a1) * 20]; hd = [el[0] + Math.sin(a2) * 18, el[1] + Math.cos(a2) * 18]; }
+            limb(sh, el, hd, open);
+        }
         // Head: hair, round glasses, a little smile (or an "o" when amazed).
         c.fillStyle = '#e8b896'; c.fillRect(-4, -104, 8, 8);
         c.beginPath(); c.ellipse(0, -114, 11, 13, 0, 0, TAU); c.fill();
-        c.fillStyle = '#3a3330'; c.beginPath(); c.ellipse(-1, -124, 12, 6, -.15, Math.PI, TAU); c.fill(); c.beginPath(); c.ellipse(-10, -117, 3.5, 7, .2, 0, TAU); c.fill(); c.beginPath(); c.ellipse(9.5, -118, 3, 6, -.2, 0, TAU); c.fill();
+        c.fillStyle = p.hair || '#3a3330'; c.beginPath(); c.ellipse(-1, -124, 12, 6, -.15, Math.PI, TAU); c.fill(); c.beginPath(); c.ellipse(-10, -117, 3.5, 7, .2, 0, TAU); c.fill(); c.beginPath(); c.ellipse(9.5, -118, 3, 6, -.2, 0, TAU); c.fill();
         c.strokeStyle = ink; c.lineWidth = 1.4; c.beginPath(); c.arc(-4.5, -114, 4, 0, TAU); c.moveTo(8.5, -114); c.arc(4.5, -114, 4, 0, TAU); c.moveTo(-.5, -114); c.lineTo(.5, -114); c.stroke();
         c.fillStyle = ink; c.beginPath(); c.arc(-4.5 + p.look, -114, 1.3, 0, TAU); c.arc(4.5 + p.look, -114, 1.3, 0, TAU); c.fill();
         c.beginPath(); if (p.lift) c.ellipse(0, -106, 2, 2.6, 0, 0, TAU); else c.arc(0, -108, 3, .2, Math.PI - .2); p.lift ? c.fill() : c.stroke();
+        if (p.tablet && (!p.pose || p.pose === 'idle')) {
+            c.save(); c.translate(14, -72); c.rotate(-.35);
+            c.fillStyle = '#20262c'; c.fillRect(-11, -8, 22, 16); c.fillStyle = '#123a4e'; c.fillRect(-9, -6, 18, 12);
+            c.strokeStyle = '#7fd0ff'; c.lineWidth = .8; c.beginPath(); for (let i = 0; i <= 8; i++) c.lineTo(-8 + i * 2, 3 - Math.sin(i + (p.t || 0) * 4) * 3); c.stroke(); c.restore();
+        }
     }
     // Junk heaps on the scrap planet: tyres, pipes, gears, barrels, an old screen and a broken dish.
     function drawJunk(c, x, y, s, r) {
@@ -315,11 +402,11 @@
     function render(data, root) {
         if (root._spaceCleanup) root._spaceCleanup();
         root.innerHTML = `<main class="sp-app"><header class="sp-header"><div class="sp-brand"><b>✦</b> DEEP SPACE / LAB</div><span class="sp-tag">3-BODY · BLACK HOLE · X-BOSON</span></header>`
-            + `<section class="sp-world"><canvas class="sp-canvas" aria-label="Гурван нар бие биенээ таталцлаар тойрон эргэнэ. Нарыг чирж хаявал холдоно, хар нүх рүү ойртуулбал сорогдоно. Доор хогийн цэгт робот тэнүүчилнэ."></canvas>`
+            + `<div class="sp-stage"><section class="sp-world"><canvas class="sp-canvas" aria-label="Гурван нар бие биенээ таталцлаар тойрон эргэнэ. Нарыг чирж хаявал холдоно, хар нүх рүү ойртуулбал сорогдоно. Доор хогийн цэгт робот тэнүүчилнэ."></canvas>`
             + ``
             + `<div class="sp-hud"><button type="button" data-act="tight">⚡ Ойрын тойрог</button><button type="button" data-act="reset">∞ 8 дүрс</button><button type="button" data-act="pause" aria-pressed="false">Ⅱ</button></div><p class="sp-status" aria-live="polite"></p></section>`
             + `<section class="sp-lab-wrap"><div class="sp-lab-head"><span class="sp-eyebrow">ДЭЛХИЙ · ГАЗАР ДООРХ ЛАБОРАТОРИ</span><h2>Бөөмийн хурдасгуур</h2><p>Эрдэмтэн устөрөгчийн атомуудыг гэрлийн хурдад ойртуулж мөргөлдүүлнэ. Тэсрэлтээс гарсан X бозон камерын голд жингүйдэл эсвэл хэт таталцал үүсгэнэ.</p></div>`
-            + `<div class="sp-lab"><canvas class="sp-lab-canvas" aria-label="Лабораторид эрдэмтэн бөөмийн хурдасгуураар туршилт хийж байна"></canvas><div class="sp-hud sp-lab-hud"><button type="button" data-act="fire">⚛ Туршилт эхлүүлэх</button><div class="sp-mode" role="group" aria-label="X бозоны нөлөө"><button type="button" data-mode="zero" aria-pressed="true">◯ Жингүйдэл</button><button type="button" data-mode="well" aria-pressed="false">● Хэт таталцал</button></div></div><p class="sp-status sp-lab-status" aria-live="polite"></p></div></section>`
+            + `<div class="sp-lab"><canvas class="sp-lab-canvas" aria-label="Лабораторид эрдэмтэн бөөмийн хурдасгуураар туршилт хийж байна"></canvas><div class="sp-hud sp-lab-hud"><button type="button" data-act="fire">⚛ Туршилт эхлүүлэх</button><div class="sp-mode" role="group" aria-label="X бозоны нөлөө"><button type="button" data-mode="zero" aria-pressed="true">◯ Жингүйдэл</button><button type="button" data-mode="well" aria-pressed="false">● Хэт таталцал</button></div></div><p class="sp-status sp-lab-status" aria-live="polite"></p></div></section></div>`
             + `${profileHtml(data)}</main>`;
         const canvas = root.querySelector('.sp-canvas'), ctx = canvas.getContext('2d'), status = root.querySelector('.sp-world .sp-status');
         if (!ctx) return;
@@ -512,42 +599,130 @@
             if (e && e.phase === 'reborn') { const q = bodyPx(bodies[e.sun]), f = 1 - Math.min(1, e.t / 2.2); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = `rgba(255,240,200,${f})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(q.x, q.y, sys.sun * (1 + (1 - f) * 6), 0, TAU); ctx.stroke(); ctx.restore(); }
         }
 
-        /* --- Junkyard robot --- */
-        const robot = { x: 200, dir: 1, state: 'walk', t: 0, walk: 0, target: 300, neck: 0, wave: 0, carry: false, reach: false, beep: 0, excite: 0, blink: false };
+        /* --- Two junkyard robots playing table tennis on a wrecked starship hull --- */
         function groundY(x) { return ground.cy - Math.sqrt(Math.max(0, ground.R * ground.R - (x - ground.cx) ** 2)); }
-        function robotScale() { return clamp(width / 1100, .62, 1) * 1.45; }
-        function updateRobot(dt) {
-            const r = robot; r.t += dt; r.wave = Math.max(0, r.wave - dt * .6); r.beep = Math.max(0, r.beep - dt); r.excite = Math.max(0, r.excite - dt * .5);
-            r.blink = (r.t % 3.7) < .12;
-            if (r.state === 'walk') {
-                r.neck = Math.max(0, r.neck - dt * 2); r.reach = false;
-                const step = 34 * robotScale() * dt; r.dir = Math.sign(r.target - r.x) || 1; r.x += r.dir * step; r.walk += dt * 7;
-                if (Math.abs(r.target - r.x) < 3) { r.state = random() < .5 ? 'pick' : 'gaze'; r.t = 0; }
-            } else if (r.state === 'pick') { r.reach = r.t < 1.2; if (r.t > .9) r.carry = !r.carry; if (r.t > 1.6) next(); }
-            else if (r.state === 'gaze') { r.neck = Math.min(1, r.neck + dt * 1.5); if (r.t > 3.2) next(); }
-            function next() { r.state = 'walk'; r.t = 0; r.target = clamp(r.x + (random() - .5) * width * .5, width * .08, width * .92); }
+        function robotScale() { return clamp(width / 1100, .62, 1) * 1.2; }
+        function tableGeom() {
+            const m = width < 640, s = robotScale(), tx = width * (m ? .58 : .68), tw = (m ? 50 : 70) * s, py = groundY(tx) - 4 * s;
+            return { tx, tw, py, ty: py - 26 * s, s, depth: 10 * s, px0: tx - tw - 66 * s, px1: tx + tw + 66 * s };
         }
-        function drawRobotNow() {
-            const s = robotScale(), y = groundY(robot.x), live = [0, 1, 2].filter(alive);
-            let best = null; for (const i of live) { const q = bodyPx(bodies[i]); if (!best || Math.hypot(q.x - robot.x, q.y - y) < Math.hypot(best.x - robot.x, best.y - y)) best = q; }
-            const lookX = best ? (best.x - robot.x) / 300 * robot.dir : 0, lookY = robot.state === 'gaze' ? -1 : robot.state === 'pick' ? .8 : 0;
-            ctx.save(); ctx.translate(robot.x, y - (robot.beep > 0 ? Math.sin((1 - robot.beep) * Math.PI) * 14 * s : 0)); ctx.scale(s * robot.dir, s);
-            ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(0, 1, 22, 4, 0, 0, TAU); ctx.fill();
-            const headY = drawRobot(ctx, { walk: robot.walk, moving: robot.state === 'walk', t: robot.t + time, neck: robot.neck, wave: robot.wave, carry: robot.carry, reach: robot.reach, lookX, lookY, blink: robot.blink, excite: robot.excite });
-            ctx.restore();
-            robot.hit = { x: robot.x, y: y + headY * s / 2, r: 40 * s };
-            if (robot.beep > 0) {
-                const bx = robot.x + 24 * s, by = y + headY * s - 26 * s;
-                ctx.fillStyle = 'rgba(240,236,224,.95)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by - 16, 64, 20, 9) : ctx.rect(bx, by - 16, 64, 20); ctx.fill();
-                ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.fillStyle = '#3a2a20'; ctx.textAlign = 'left'; ctx.fillText('бип-буп!', bx + 8, by - 2);
+        const players = [0, 1].map(i => ({ side: i ? 1 : -1, swing: 0, wave: 0, beep: 0, excite: 0, t: random() * 3, hit: null }));
+        const pong = { from: 0, t: 0, dur: 1.05, state: 'serve', score: [0, 0], hits: 0, missAt: 5, x: 0, y: 0, vx: 0, vy: 0, bounced: 0 };
+        function playerX(i) { const g = tableGeom(); return g.tx + players[i].side * (g.tw + 34 * g.s); }
+        function paddlePoint(i) { const g = tableGeom(), x = playerX(i); return { x: x - players[i].side * 22 * g.s, y: g.py - 50 * g.s }; }
+        function updateRobot(dt) {
+            const g = tableGeom();
+            for (const r of players) { r.t += dt; r.wave = Math.max(0, r.wave - dt * .6); r.beep = Math.max(0, r.beep - dt); r.excite = Math.max(0, r.excite - dt * .5); r.swing *= Math.exp(-dt * 5); }
+            const P = pong; P.t += dt;
+            if (P.state === 'serve') {
+                const a = paddlePoint(P.from); P.x = a.x; P.y = a.y - Math.sin(Math.min(1, P.t / .6) * Math.PI) * 26 * g.s;
+                if (P.t > .7) { P.state = 'rally'; P.t = 0; P.hits = 0; P.missAt = 4 + Math.floor(random() * 8); players[P.from].swing = 1; }
+            } else if (P.state === 'rally') {
+                const to = 1 - P.from, a = paddlePoint(P.from), b = paddlePoint(to), bx = g.tx + players[to].side * g.tw * .55, u = Math.min(1, P.t / P.dur);
+                if (u < .55) { const v = u / .55; P.x = a.x + (bx - a.x) * v; P.y = a.y + (g.ty - a.y) * v - Math.sin(v * Math.PI) * 38 * g.s; }
+                else { const v = (u - .55) / .45; P.x = bx + (b.x - bx) * v; P.y = g.ty + (b.y - g.ty) * v - Math.sin(v * Math.PI) * 24 * g.s; }
+                if (u > .72) players[to].swing = Math.max(players[to].swing, -smooth((u - .72) / .28) * .8);
+                if (u >= 1) {
+                    if (P.hits >= P.missAt) {
+                        P.state = 'miss'; P.t = 0; P.vx = players[to].side * 150 * g.s; P.vy = -60 * g.s; P.bounced = 0;
+                        P.score[P.from]++; players[to].excite = 1; players[to].beep = 1.1; players[P.from].wave = 1.4;
+                    } else { P.from = to; P.t = 0; P.hits++; P.dur = .85 + random() * .35; players[to].swing = 1; }
+                }
+            } else if (P.state === 'miss') {
+                P.vy += 600 * g.s * dt; P.x += P.vx * dt; P.y += P.vy * dt;
+                const gy = (P.x > g.px0 && P.x < g.px1 ? g.py - 3 * g.s : groundY(P.x)) - 3 * g.s;
+                if (P.y > gy && P.vy > 0) { P.y = gy; P.vy *= -.5; P.vx *= .7; P.bounced++; }
+                if (P.t > 1.8) { P.state = 'serve'; P.t = 0; P.from = 1 - P.from; }
             }
         }
+        function drawTable() {
+            const { tx, tw, ty, s, depth, py, px0, px1 } = tableGeom(), x0 = tx - tw, x1 = tx + tw;
+            // A level deck plate salvaged from the same ship, so the court is flat on the curved planet.
+            ctx.fillStyle = '#2a211d'; ctx.beginPath(); ctx.moveTo(px0, py); ctx.lineTo(px1, py); ctx.lineTo(px1, groundY(px1) + 2); ctx.lineTo(px0, groundY(px0) + 2); ctx.closePath(); ctx.fill();
+            const deck = ctx.createLinearGradient(0, py - 5 * s, 0, py + 4 * s); deck.addColorStop(0, '#8d6a4f'); deck.addColorStop(1, '#4a3324');
+            ctx.fillStyle = deck; ctx.fillRect(px0, py - 3 * s, px1 - px0, 6 * s); ctx.strokeStyle = '#1a120e'; ctx.lineWidth = 1; ctx.strokeRect(px0, py - 3 * s, px1 - px0, 6 * s);
+            ctx.fillStyle = '#c9a26a'; for (let xx = px0 + 8 * s; xx < px1; xx += 16 * s) ctx.fillRect(xx, py - 1 * s, 1.6, 1.6);
+            // Supports: a rusty barrel and a stack of tyres.
+            const gl = py - 3 * s, gr = py - 3 * s;
+            ctx.fillStyle = '#6b3b25'; ctx.fillRect(x0 + 6 * s, ty + 6 * s, 16 * s, gl - ty - 6 * s); ctx.fillStyle = '#4a2818'; ctx.fillRect(x0 + 6 * s, ty + 14 * s, 16 * s, 3 * s);
+            for (let i = 0; i < 3; i++) { const yy = gr - 5 * s - i * 8 * s; ctx.fillStyle = '#1e1b1c'; ctx.beginPath(); ctx.ellipse(x1 - 16 * s, yy, 13 * s, 5 * s, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#0b0a0a'; ctx.beginPath(); ctx.ellipse(x1 - 16 * s, yy, 5 * s, 2 * s, 0, 0, TAU); ctx.fill(); }
+            // The tabletop is a slab of wrecked starship hull with a broken corner, scorch marks and rivets.
+            const top = ctx.createLinearGradient(0, ty - depth, 0, ty); top.addColorStop(0, '#9aa6b1'); top.addColorStop(1, '#5d6873');
+            ctx.fillStyle = top; ctx.strokeStyle = '#151b20'; ctx.lineWidth = 1.2;
+            ctx.beginPath(); ctx.moveTo(x0, ty); ctx.lineTo(x0 + 12 * s, ty - depth); ctx.lineTo(x1 - 2 * s, ty - depth); ctx.lineTo(x1 + 8 * s, ty - depth * .3); ctx.lineTo(x1, ty);
+            ctx.lineTo(x0 + 18 * s, ty); ctx.lineTo(x0 + 12 * s, ty + 3 * s); ctx.lineTo(x0 + 6 * s, ty - 1 * s); ctx.closePath(); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#3a434c'; ctx.beginPath(); ctx.moveTo(x0 + 6 * s, ty - 1 * s); ctx.lineTo(x0 + 12 * s, ty + 3 * s); ctx.lineTo(x0 + 18 * s, ty); ctx.lineTo(x1, ty); ctx.lineTo(x1, ty + 6 * s); ctx.lineTo(x0 + 4 * s, ty + 6 * s); ctx.closePath(); ctx.fill(); ctx.stroke();
+            ctx.save(); ctx.globalAlpha = .45; const burn = ctx.createRadialGradient(tx - tw * .45, ty - depth * .5, 0, tx - tw * .45, ty - depth * .5, 18 * s); burn.addColorStop(0, '#1a1210'); burn.addColorStop(1, 'rgba(26,18,16,0)'); ctx.fillStyle = burn; ctx.fillRect(x0, ty - depth, tw * 2, depth); ctx.restore();
+            ctx.strokeStyle = 'rgba(240,240,230,.7)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x0 + 8 * s, ty - depth * .5); ctx.lineTo(x1 + 2 * s, ty - depth * .5); ctx.stroke();
+            ctx.fillStyle = '#2a3138'; for (let xx = x0 + 16 * s; xx < x1; xx += 14 * s) { ctx.fillRect(xx, ty + 2 * s, 1.6, 1.6); }
+            ctx.fillStyle = 'rgba(220,120,60,.55)'; ctx.font = `700 ${Math.round(6 * s)}px ui-monospace, Menlo, monospace`; ctx.textAlign = 'left'; ctx.fillText('NX-17', x1 - 34 * s, ty + 5 * s);
+            // Net made from a bent pipe and a strip of chain-link.
+            ctx.strokeStyle = '#8c969e'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(tx, ty - 11 * s); ctx.lineTo(tx + 9 * s, ty - depth - 10 * s); ctx.lineTo(tx + 9 * s, ty - depth); ctx.stroke();
+            ctx.strokeStyle = 'rgba(200,210,220,.55)'; ctx.lineWidth = .7;
+            for (let n = 1; n < 6; n++) { const f = n / 6; ctx.beginPath(); ctx.moveTo(tx + 9 * s * f, ty - depth * f); ctx.lineTo(tx + 9 * s * f, ty - depth * f - 10.5 * s); ctx.stroke(); }
+            for (let n = 0; n < 4; n++) { const h = n * 3 * s; ctx.beginPath(); ctx.moveTo(tx, ty - h); ctx.lineTo(tx + 9 * s, ty - depth - h); ctx.stroke(); }
+            // Scoreboard: an old screen on a pole.
+            const sy = ty - 70 * s; ctx.fillStyle = '#4a4038'; ctx.fillRect(tx - 1.5 * s, sy + 14 * s, 3 * s, ty - depth - sy - 14 * s);
+            ctx.fillStyle = '#2c2a28'; ctx.fillRect(tx - 22 * s, sy - 4 * s, 44 * s, 20 * s); ctx.fillStyle = '#123a2e'; ctx.fillRect(tx - 19 * s, sy - 1 * s, 38 * s, 14 * s);
+            ctx.fillStyle = '#7dffb0'; ctx.font = `700 ${Math.round(10 * s)}px ui-monospace, Menlo, monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(`${pong.score[0]} : ${pong.score[1]}`, tx, sy + 6.5 * s); ctx.textBaseline = 'alphabetic';
+        }
+        function drawRobotNow() {
+            const g = tableGeom(), P = pong;
+            drawTable();
+            players.forEach((r, i) => {
+                const x = playerX(i), y = g.py - 3 * g.s, s = g.s, dir = -r.side, bob = r.beep > 0 ? Math.sin((1 - r.beep) * Math.PI) * 12 * s : Math.abs(Math.sin(r.t * 5)) * 1.5 * s;
+                const lookX = clamp((P.x - x) / 120 * dir, -1, 1), lookY = clamp((P.y - (y - 80 * s)) / 60, -1, 1);
+                ctx.save(); ctx.translate(x, y - bob); ctx.scale(s * dir, s);
+                ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(0, 1, 22, 4, 0, 0, TAU); ctx.fill();
+                const headY = drawRobot(ctx, { walk: r.t * 6, moving: false, t: r.t + time, neck: .25 + .2 * Math.max(0, -lookY), wave: r.wave, carry: false, reach: false, paddle: true, swing: r.swing, lookX, lookY, blink: (r.t % 3.9) < .12, excite: r.excite });
+                ctx.restore();
+                r.hit = { x, y: y + headY * s / 2, r: 40 * s };
+                if (r.beep > 0) {
+                    const bx = x + (r.side > 0 ? 10 : -74) * s, by = y + headY * s - 24 * s;
+                    ctx.fillStyle = 'rgba(240,236,224,.95)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by - 16, 64, 20, 9) : ctx.rect(bx, by - 16, 64, 20); ctx.fill();
+                    ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.fillStyle = '#3a2a20'; ctx.textAlign = 'left'; ctx.fillText('бип-буп!', bx + 8, by - 2);
+                }
+            });
+            // The ball, with a soft shadow on the table or the ground.
+            const onTable = Math.abs(P.x - g.tx) < g.tw, sh = onTable ? g.ty - g.depth * .5 : P.x > g.px0 && P.x < g.px1 ? g.py - 3 * g.s : groundY(P.x);
+            ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(P.x, sh, 4 * g.s, 1.4 * g.s, 0, 0, TAU); ctx.fill();
+            const bg = ctx.createRadialGradient(P.x - 1, P.y - 1, 0, P.x, P.y, 3.4 * g.s); bg.addColorStop(0, '#ffffff'); bg.addColorStop(1, '#ffb36b');
+            ctx.fillStyle = bg; ctx.beginPath(); ctx.arc(P.x, P.y, 3.2 * g.s, 0, TAU); ctx.fill();
+        }
+
+        /* --- Voyager 1 drifting across the far sky, James Webb hovering at its post --- */
+        const webb = { x: 0, y: 0, s: 1, glint: 0, msg: 0 }, voyager = { x: 0, y: 0, s: 1, glint: 0, msg: 0 };
+        function placeProbes() {
+            const m = width < 640;
+            Object.assign(webb, { x: width * (m ? .2 : .13), y: height * (m ? .34 : .17), s: k * (m ? .62 : .95) });
+            voyager.y = height * (m ? .6 : .62); voyager.s = k * (m ? .55 : .8); if (!voyager.x) voyager.x = width * .78;
+        }
+        function updateProbes(dt) {
+            voyager.x -= 9 * k * dt; if (voyager.x < -140 * voyager.s) voyager.x = width + 140 * voyager.s;
+            for (const p of [webb, voyager]) { p.glint = Math.max(0, p.glint - dt * .8); p.msg = Math.max(0, p.msg - dt); }
+        }
+        function drawProbes() {
+            const wy = webb.y + Math.sin(time * .6) * 3 * k;
+            ctx.save(); ctx.translate(webb.x, wy); ctx.rotate(Math.sin(time * .2) * .04); ctx.scale(webb.s, webb.s); drawWebb(ctx, time, webb.glint); ctx.restore();
+            label(ctx, 'JAMES WEBB', webb.x, wy + 64 * webb.s, 'rgba(255,224,150,.75)', 'center', 8);
+            const vy = voyager.y + Math.sin(time * .35) * 4 * k;
+            ctx.save(); ctx.translate(voyager.x, vy); ctx.rotate(-.12); ctx.scale(voyager.s, voyager.s); drawVoyager(ctx, time, voyager.glint); ctx.restore();
+            label(ctx, 'VOYAGER 1', voyager.x, vy + 52 * voyager.s, 'rgba(200,215,235,.7)', 'center', 8);
+            for (const [p, text, y] of [[webb, '◎ Хэт улаан туяаны зураг авлаа!', wy - 58 * webb.s], [voyager, '📡 «Сайн уу, сансар!»', vy - 40 * voyager.s]]) {
+                if (p.msg <= 0) continue;
+                ctx.globalAlpha = Math.min(1, p.msg); ctx.font = '600 11px ui-monospace, Menlo, monospace';
+                const w = ctx.measureText(text).width + 16, x = clamp(p.x - w / 2, 6, width - w - 6);
+                ctx.fillStyle = 'rgba(14,20,48,.9)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y - 16, w, 22, 10) : ctx.rect(x, y - 16, w, 22); ctx.fill();
+                ctx.fillStyle = '#ffe2a0'; ctx.textAlign = 'left'; ctx.fillText(text, x + 8, y - 1); ctx.globalAlpha = 1;
+            }
+        }
+        const onProbe = p => Math.hypot(p.x - webb.x, p.y - webb.y) < 60 * webb.s ? webb : Math.hypot(p.x - voyager.x, p.y - voyager.y) < 50 * voyager.s ? voyager : null;
 
         /* --- Pointer: drag a sun (toward the hole if you dare), poke the robot --- */
         const grab = { x: 0, y: 0, vx: 0, vy: 0, lx: 0, ly: 0, lt: 0, id: null };
         const point = e => { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) * width / r.width, y: (e.clientY - r.top) * height / r.height }; };
         function sunAt(p) { let hit = null, best = -Infinity; for (const i of [0, 1, 2].filter(alive)) { const q = bodyPx(bodies[i]); if (Math.hypot(q.x - p.x, q.y - p.y) < sunRadius(i) * q.p * 1.6 && q.depth > best) { hit = i; best = q.depth; } } return hit; }
-        const onRobot = p => robot.hit && Math.hypot(p.x - robot.hit.x, p.y - robot.hit.y) < robot.hit.r;
+        const onRobot = p => players.find(r => r.hit && Math.hypot(p.x - r.hit.x, p.y - r.hit.y) < r.hit.r);
         canvas.addEventListener('pointerdown', e => {
             if (!e.isPrimary || e.button !== 0) return;
             const p = point(e), i = sunAt(p);
@@ -557,7 +732,8 @@
                 try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
                 canvas.style.cursor = 'grabbing'; return;
             }
-            if (onRobot(p)) { robot.wave = 1.6; robot.beep = 1.2; robot.excite = 1; }
+            const probe = onProbe(p); if (probe) { probe.glint = 1; probe.msg = 2.6; return; }
+            const bot = onRobot(p); if (bot) { bot.wave = 1.6; bot.beep = 1.2; bot.excite = 1; }
         });
         canvas.addEventListener('pointermove', e => {
             const p = point(e);
@@ -567,7 +743,7 @@
                 const lim = Math.max(width, height) / sys.scale; grab.x = clamp(s.x, -lim, lim); grab.y = clamp(s.y, -lim, lim); grab.lx = s.x; grab.ly = s.y; grab.lt = now;
                 return;
             }
-            if (e.pointerType === 'mouse') canvas.style.cursor = sunAt(p) !== null ? 'grab' : onRobot(p) ? 'pointer' : '';
+            if (e.pointerType === 'mouse') canvas.style.cursor = sunAt(p) !== null ? 'grab' : onRobot(p) || onProbe(p) ? 'pointer' : '';
         });
         const release = e => {
             if (grabbed === null || e.pointerId !== grab.id) return;
@@ -586,6 +762,7 @@
             bh = { x: width * (m ? .8 : .82), y: height * (m ? .14 : .24), R: Math.min(width, height) * (m ? .045 : .052) };
             ground = { cx: width / 2, R: width * 1.8, top: height * (m ? .84 : .8) };
             ground.cy = ground.top + ground.R;
+            placeProbes();
             const c = mkCanvas(width * ratio, height * ratio), x = c.getContext('2d'); x.setTransform(ratio, 0, 0, ratio, 0, 0); back = c;
             x.fillStyle = '#030611'; x.fillRect(0, 0, width, height);
             const neb = (px, py, r, col) => { const g = x.createRadialGradient(px, py, 0, px, py, r); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, width, height); };
@@ -608,7 +785,9 @@
             x.strokeStyle = 'rgba(255,190,120,.55)'; x.lineWidth = 2; x.beginPath(); x.arc(ground.cx, ground.cy, ground.R, Math.PI * 1.25, Math.PI * 1.75); x.stroke();
             const heaps = m ? 8 : 13;
             for (let i = 0; i < heaps; i++) {
-                const hx = (i + .2 + r() * .6) / heaps * width, hs = (1 + r() * .8) * k, gy = ground.cy - Math.sqrt(Math.max(0, ground.R ** 2 - (hx - ground.cx) ** 2));
+                const hx = (i + .2 + r() * .6) / heaps * width, tg = tableGeom();
+                if (Math.abs(hx - tg.tx) < tg.tw + 95 * tg.s) continue;
+                const hs = (1 + r() * .8) * k, gy = ground.cy - Math.sqrt(Math.max(0, ground.R ** 2 - (hx - ground.cx) ** 2));
                 for (let j = 0; j < 7; j++) drawJunk(x, hx + (r() - .5) * 60 * hs, gy + 8 + r() * 12 - (j > 4 ? 14 * hs : 0), hs * (.6 + r() * .6), r);
             }
             // A wrecked rocket lying on its side and a crooked sign.
@@ -616,10 +795,9 @@
             x.save(); x.translate(wx, wy); x.rotate(-.22); x.scale(k, k);
             x.fillStyle = '#9aa3aa'; x.strokeStyle = '#141414'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(-40, -8); x.lineTo(28, -12); x.quadraticCurveTo(50, -6, 28, 0); x.lineTo(-40, 2); x.closePath(); x.fill(); x.stroke();
             x.fillStyle = '#b94a3a'; x.beginPath(); x.moveTo(-40, -8); x.lineTo(-52, -20); x.lineTo(-34, -8); x.closePath(); x.fill(); x.fillStyle = '#1d2b36'; x.beginPath(); x.arc(14, -6, 4, 0, TAU); x.fill(); x.restore();
-            const sx = width * (m ? .86 : .9), sy = ground.cy - Math.sqrt(ground.R ** 2 - (sx - ground.cx) ** 2) + 6;
+            const sx = width * (m ? .3 : .38), sy = ground.cy - Math.sqrt(ground.R ** 2 - (sx - ground.cx) ** 2) + 6;
             x.save(); x.translate(sx, sy); x.rotate(.12); x.fillStyle = '#5a4030'; x.fillRect(-2, -34 * k, 4, 34 * k); x.fillStyle = '#c9a26a'; x.fillRect(-30 * k, -44 * k, 60 * k, 16 * k);
             x.fillStyle = '#3a2618'; x.font = `700 ${Math.round(8 * k + 1)}px ui-monospace, Menlo, monospace`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('ХОГИЙН ЦЭГ', 0, -36 * k); x.restore();
-            robot.x = clamp(robot.x, width * .08, width * .92); robot.target = clamp(robot.target, width * .08, width * .92);
         }
 
         /* --- Drawing --- */
@@ -750,7 +928,7 @@
         function spaceScene() {
             ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
             ctx.drawImage(back, 0, 0, width, height);
-            drawStars(); drawGrid(); drawBlackHole(); drawEvent(); drawBodies();
+            drawStars(); drawGrid(); drawProbes(); drawBlackHole(); drawEvent(); drawBodies();
             drawRobotNow();
             const e = event, text = e && e.type === 'merge' && e.phase === 'rednova' ? '✸ Хоёр нар нийлж УЛААН НОВА гялбалаа' : e && e.phase === 'swell' ? '◉ Нийлсэн од хавдаж улайж байна — аврага улаан од болж хувирна…' : e && e.phase === 'giant' ? '● Аврага улаан од (Бетельгейзе шиг) — лугшиж, тоосоор бүрхэгдэн бүдгэрнэ' : e && e.phase === 'collapse' ? '… цөм нурж байна!'
                 : contacts.some(c => c[2] < .3) ? '⇄ Нарс маш ойр эргэлдэж, бие биеэсээ масс сорж байна' : e && e.phase === 'fall' ? '☄ Нар хар нүхэнд сорогдож, урт гэрлэн урсгал болж байна…' : e && e.phase === 'quiet' ? '… хар нүх нарыг залгилаа' : e && e.phase === 'nova' ? '✸ Супернова! Эрвээхэй мананцар цацагдаж, бүх тойрог зам хөдөллөө' : e && e.phase === 'reborn' ? '✦ Шинэ нар асав — гурван бие дахин тойрон эргэнэ'
@@ -765,12 +943,18 @@
         const collider = { phase: 'idle', t: 0, s: 0, omega: .6, idle: 7, press: 0 };
         let tracks = [], shocks = [], flash = 0, boson = null, items = [];
         const sci = { x: 0, y: 0, float: 0, lean: 0, lift: false };
+        // Lab furniture (filled in by labLayout) and the running physics results.
+        let win = null, screen = null, racks = null, tanks = null, beacon = null, assistant = null, collisions = 0, eventDisplay = [];
         function labLayout() {
             lk = clamp(Math.min(LW / 1000, LH / 520), .55, 1.1);
-            const m = LW < 640, floor = LH * .78;
-            acc = { x: LW * (m ? .58 : .6), y: LH * .5, rx: Math.min(LW * (m ? .36 : .3), 340), ry: LH * .14, floor };
+            // m = tall/narrow lab (the side column on desktops, or a phone): screen on top, ring in the
+            // middle, console and people at the bottom.
+            const m = LW < 700, floor = LH * (m ? .84 : .78);
+            const scrH = m ? clamp(LH * .2, 90, 150) : 120 * lk, scrTop = m ? 100 : 62 * lk, scrBottom = scrTop + scrH;
+            acc = m ? { x: LW * .5, y: scrBottom + (floor - scrBottom) * .4, rx: Math.min(LW * .42, 340), ry: LH * .085, floor }
+                : { x: LW * .6, y: LH * .5, rx: Math.min(LW * .3, 340), ry: LH * .14, floor };
             chamber = { x: acc.x, y: acc.y - 6 * lk, w: 44 * lk, h: 70 * lk };
-            desk = { x: LW * (m ? .03 : .05), w: LW * (m ? .3 : .22), y: floor - 52 * lk };
+            desk = { x: LW * (m ? .03 : .05), w: LW * (m ? .34 : .22), y: floor - 52 * lk };
             sci.x = desk.x + desk.w + 26 * lk; sci.y = floor + 18 * lk;
             const c = mkCanvas(LW * ratio, LH * ratio), x = c.getContext('2d'); x.setTransform(ratio, 0, 0, ratio, 0, 0); labBack = c;
             const wall = x.createLinearGradient(0, 0, 0, floor); wall.addColorStop(0, '#16222d'); wall.addColorStop(1, '#22313d'); x.fillStyle = wall; x.fillRect(0, 0, LW, floor);
@@ -787,14 +971,64 @@
                 const g = x.createLinearGradient(0, 14, 0, floor); g.addColorStop(0, 'rgba(220,240,255,.16)'); g.addColorStop(1, 'rgba(220,240,255,0)');
                 x.fillStyle = g; x.beginPath(); x.moveTo(cx - 34 * lk, 14); x.lineTo(cx + 34 * lk, 14); x.lineTo(cx + 110 * lk, floor); x.lineTo(cx - 110 * lk, floor); x.closePath(); x.fill();
             }
+            // Ceiling pipes and cable trays.
+            for (const [y, col, w] of [[22, '#7d8a96', 6], [31, '#c8742c', 4], [38, '#3a73c9', 4]]) {
+                x.fillStyle = col; x.fillRect(0, y * lk, LW, w * lk); x.fillStyle = 'rgba(255,255,255,.18)'; x.fillRect(0, y * lk, LW, 1);
+            }
+            x.fillStyle = '#5a6672'; for (let px = 30 * lk; px < LW; px += 140 * lk) x.fillRect(px, 16 * lk, 4 * lk, 28 * lk);
+            // Observation window into the accelerator tunnel (perspective).
+            win = m ? null : { x: LW * .03, y: 64 * lk, w: LW * .24, h: 118 * lk };
+            if (win) {
+                const { x: wx, y: wy, w: ww, h: wh } = win, vx = wx + ww * .55, vy = wy + wh * .52;
+                x.fillStyle = '#0a1118'; x.fillRect(wx, wy, ww, wh);
+                x.strokeStyle = 'rgba(120,150,180,.35)'; x.lineWidth = 1;
+                for (const [cx, cy] of [[wx, wy], [wx + ww, wy], [wx, wy + wh], [wx + ww, wy + wh]]) { x.beginPath(); x.moveTo(cx, cy); x.lineTo(vx, vy); x.stroke(); }
+                for (let i = 1; i < 7; i++) { const f = 1 - (i / 7) ** .6; x.strokeRect(vx - (vx - wx) * f, vy - (vy - wy) * f, ww * f, wh * f); }
+                x.fillStyle = 'rgba(255,220,150,.5)'; for (let i = 1; i < 7; i++) { const f = 1 - (i / 7) ** .6; x.fillRect(vx - (vx - wx) * f + ww * f * .4, vy - (vy - wy) * f + 1, ww * f * .2, 2); }
+                x.strokeStyle = '#4d5d6b'; x.lineWidth = 6 * lk; x.strokeRect(wx, wy, ww, wh); x.lineWidth = 2; x.beginPath(); x.moveTo(wx + ww / 2, wy); x.lineTo(wx + ww / 2, wy + wh); x.stroke();
+                x.fillStyle = '#9fb3c6'; x.font = `600 ${Math.round(8 * lk + 1)}px ui-monospace, Menlo, monospace`; x.textAlign = 'left'; x.fillText('ХОНГИЛ · 27 КМ', wx + 6, wy + wh + 14 * lk);
+            }
+            // Whiteboard with the physics of the run.
+            if (!m) {
+                const bx = LW * .3, by = 66 * lk, bw = LW * .2, bh = 96 * lk;
+                x.fillStyle = '#e9edf0'; x.fillRect(bx, by, bw, bh); x.strokeStyle = '#8d99a5'; x.lineWidth = 3; x.strokeRect(bx, by, bw, bh);
+                x.fillStyle = '#1d4ea8'; x.font = `600 ${Math.round(12 * lk + 1)}px Georgia, serif`; x.textAlign = 'left'; x.textBaseline = 'alphabetic';
+                x.fillText('E = mc²', bx + 10 * lk, by + 22 * lk); x.fillStyle = '#b8322e'; x.fillText('p + p → X + …', bx + 10 * lk, by + 44 * lk);
+                x.fillStyle = '#2d6a3a'; x.font = `600 ${Math.round(10 * lk + 1)}px Georgia, serif`; x.fillText('√s = 13.6 TeV', bx + 10 * lk, by + 64 * lk); x.fillText('g → 0 ?', bx + 10 * lk, by + 84 * lk);
+                // A little Feynman diagram.
+                const fx = bx + bw * .72, fy = by + bh * .5; x.strokeStyle = '#333'; x.lineWidth = 1.4;
+                x.beginPath(); x.moveTo(fx - 26 * lk, fy - 22 * lk); x.lineTo(fx - 8 * lk, fy); x.lineTo(fx - 26 * lk, fy + 22 * lk); x.moveTo(fx + 26 * lk, fy - 22 * lk); x.lineTo(fx + 8 * lk, fy); x.lineTo(fx + 26 * lk, fy + 22 * lk); x.stroke();
+                x.strokeStyle = '#8a2be2'; x.beginPath(); for (let i = 0; i <= 16; i++) x.lineTo(fx - 8 * lk + i, fy + Math.sin(i * 1.4) * 3); x.stroke();
+            }
+            // Big wall screen frame (contents are live), server racks and liquid-helium tanks.
+            screen = m ? { x: LW * .05, y: scrTop, w: LW * .9, h: scrH } : { x: LW * .74, y: 62 * lk, w: LW * .24, h: scrH };
+            x.fillStyle = '#0c1218'; x.fillRect(screen.x - 6, screen.y - 6, screen.w + 12, screen.h + 12); x.strokeStyle = '#4a5866'; x.strokeRect(screen.x - 6, screen.y - 6, screen.w + 12, screen.h + 12);
+            racks = m ? { x: LW * .92, y: floor - LH * .2, w: LW * .065, h: LH * .2 } : { x: LW * .945, y: floor - 190 * lk, w: LW * .048, h: 190 * lk };
+            if (racks) { x.fillStyle = '#1a2128'; x.fillRect(racks.x, racks.y, racks.w, racks.h); x.strokeStyle = '#3e4a56'; for (let i = 1; i < 8; i++) { x.beginPath(); x.moveTo(racks.x, racks.y + racks.h * i / 8); x.lineTo(racks.x + racks.w, racks.y + racks.h * i / 8); x.stroke(); } x.strokeRect(racks.x, racks.y, racks.w, racks.h); }
+            tanks = (m ? [LW * .81, LW * .87] : [LW * .898, LW * .924]).map((tx, i) => { const h = m ? LH * (.17 - i * .04) : (150 - i * 30) * lk; return { x: tx, y: floor - h, r: m ? Math.max(8, LW * .022) : 13 * lk, h }; });
+            if (tanks) for (const t of tanks) {
+                const g = x.createLinearGradient(t.x - t.r, 0, t.x + t.r, 0); g.addColorStop(0, '#7a8894'); g.addColorStop(.4, '#e6edf2'); g.addColorStop(1, '#55626d');
+                x.fillStyle = g; x.fillRect(t.x - t.r, t.y, t.r * 2, t.h); x.beginPath(); x.ellipse(t.x, t.y, t.r, t.r * .35, 0, 0, TAU); x.fill();
+                x.fillStyle = 'rgba(255,255,255,.5)'; for (let i = 0; i < 6; i++) x.fillRect(t.x - t.r + 2, t.y + t.h * (.2 + i * .12), t.r * 2 - 4, 1.5);
+                x.fillStyle = '#2f6fd6'; x.fillRect(t.x - t.r, t.y + t.h * .45, t.r * 2, 14 * lk); x.fillStyle = '#fff'; x.font = `700 ${Math.round(6 * lk + 1)}px ui-monospace, Menlo, monospace`; x.textAlign = 'center'; x.fillText('He', t.x, t.y + t.h * .45 + 10 * lk);
+            }
+            // Hazard stripes on the floor around the detector.
+            const dpt = { x: acc.x, y: acc.y + acc.ry };
+            x.save(); x.beginPath(); x.rect(dpt.x - 80 * lk, floor + 4, 160 * lk, 16 * lk); x.clip();
+            for (let i = -12; i < 20; i++) { x.fillStyle = i % 2 ? '#1a1a1a' : '#d9b43a'; x.beginPath(); x.moveTo(dpt.x - 80 * lk + i * 12 * lk, floor + 4); x.lineTo(dpt.x - 80 * lk + i * 12 * lk + 12 * lk, floor + 4); x.lineTo(dpt.x - 80 * lk + i * 12 * lk, floor + 20 * lk); x.lineTo(dpt.x - 80 * lk + i * 12 * lk - 12 * lk, floor + 20 * lk); x.closePath(); x.fill(); }
+            x.restore();
+            beacon = { x: LW * .5 + (m ? 95 * lk + 14 : 160 * lk), y: m ? 78 : 40 * lk };
+            assistant = { x: LW * (m ? .68 : .855), y: floor + 18 * lk };
             // Wall sign with a radiation trefoil.
-            const sx = LW * (m ? .5 : .32), sy = 40 * lk;
-            x.fillStyle = '#0f171e'; x.fillRect(sx - 150 * lk, sy - 16 * lk, 300 * lk, 30 * lk); x.strokeStyle = '#d9b43a'; x.strokeRect(sx - 150 * lk, sy - 16 * lk, 300 * lk, 30 * lk);
-            x.fillStyle = '#e8d7a0'; x.font = `700 ${Math.round(11 * lk + 1)}px ui-monospace, Menlo, monospace`; x.textAlign = 'center'; x.textBaseline = 'middle';
-            x.fillText('ӨНДӨР ЭНЕРГИЙН ЛАБОРАТОРИ', sx + 14 * lk, sy);
-            x.fillStyle = '#d9b43a'; x.beginPath(); x.arc(sx - 128 * lk, sy, 10 * lk, 0, TAU); x.fill(); x.fillStyle = '#0f171e';
-            for (let i = 0; i < 3; i++) { x.beginPath(); x.moveTo(sx - 128 * lk, sy); x.arc(sx - 128 * lk, sy, 9 * lk, i * TAU / 3 - .5, i * TAU / 3 + .5); x.closePath(); x.fill(); }
-            x.beginPath(); x.arc(sx - 128 * lk, sy, 2.4 * lk, 0, TAU); x.fill();
+            const sx = LW * .5, sy = m ? 78 : 40 * lk;
+            {
+                x.fillStyle = '#0f171e'; x.fillRect(sx - 150 * lk, sy - 16 * lk, 300 * lk, 30 * lk); x.strokeStyle = '#d9b43a'; x.strokeRect(sx - 150 * lk, sy - 16 * lk, 300 * lk, 30 * lk);
+                x.fillStyle = '#e8d7a0'; x.font = `700 ${Math.round(11 * lk + 1)}px ui-monospace, Menlo, monospace`; x.textAlign = 'center'; x.textBaseline = 'middle';
+                x.fillText('ӨНДӨР ЭНЕРГИЙН ЛАБОРАТОРИ', sx + 14 * lk, sy);
+                x.fillStyle = '#d9b43a'; x.beginPath(); x.arc(sx - 128 * lk, sy, 10 * lk, 0, TAU); x.fill(); x.fillStyle = '#0f171e';
+                for (let i = 0; i < 3; i++) { x.beginPath(); x.moveTo(sx - 128 * lk, sy); x.arc(sx - 128 * lk, sy, 9 * lk, i * TAU / 3 - .5, i * TAU / 3 + .5); x.closePath(); x.fill(); }
+                x.beginPath(); x.arc(sx - 128 * lk, sy, 2.4 * lk, 0, TAU); x.fill();
+            }
             // Ring supports.
             x.fillStyle = '#3a4652';
             for (let n = 0; n < 10; n++) { const a = n / 10 * TAU, px = acc.x + Math.cos(a) * acc.rx, py = acc.y + Math.sin(a) * acc.ry; if (Math.sin(a) < -.2) continue; x.fillRect(px - 3 * lk, py, 6 * lk, floor - py); }
@@ -818,6 +1052,8 @@
             const r = rng(Math.floor(time * 1000) + 3);
             tracks = Array.from({ length: 70 }, (_, i) => { const a = r() * TAU, v = (80 + r() * 240) * lk; return { x: d.x, y: d.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v * .7, curl: (r() - .5) * 9, life: 0, max: 1.3 + r() * 1.3, path: [], c: ['#7ff3ff', '#ffd36b', '#ff6fa8', '#b38bff', '#8bff9e'][i % 5] }; });
             boson = { t: 0, from: d, x: d.x, y: d.y, mode, strength: 0 };
+            collisions++;
+            eventDisplay = Array.from({ length: 22 }, (_, i) => ({ a: r() * TAU, curl: (r() - .5) * 2.2, len: .45 + r() * .55, c: ['#7ff3ff', '#ffd36b', '#ff6fa8', '#b38bff', '#8bff9e'][i % 5] }));
             collider.phase = 'boom'; collider.t = 0;
         }
         function updateLab(dt) {
@@ -863,10 +1099,74 @@
             else { c.fillStyle = '#b8c0c6'; c.beginPath(); for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; c.lineTo(Math.cos(a) * o.r, Math.sin(a) * o.r); } c.closePath(); c.fill(); }
             c.restore();
         }
+        // Body language: amazed when the boson appears, swimming in zero-g, bracing in the pull.
+        function labPose() {
+            if (boson && boson.t > .3) return boson.strength < .6 ? 'amazed' : boson.mode === 'zero' ? 'float' : 'brace';
+            return collider.press > 0 ? 'press' : 'idle';
+        }
         function labLabel(text, x, y, color, size) { label(lx, text, x, y, color, 'center', size); }
+        function drawLabLive() {
+            const c = lx, col = collider, running = col.phase !== 'idle' || !!boson;
+            // Beam pulses racing down the tunnel seen through the window.
+            if (win) {
+                const { x: wx, y: wy, w: ww, h: wh } = win, vx = wx + ww * .55, vy = wy + wh * .52, by = wy + wh * .82;
+                c.save(); c.beginPath(); c.rect(wx, wy, ww, wh); c.clip();
+                c.strokeStyle = '#6f8fb0'; c.lineWidth = 7 * lk; c.beginPath(); c.moveTo(wx - 10, by); c.lineTo(vx, vy + 4); c.stroke();
+                c.globalCompositeOperation = 'lighter';
+                for (let n = 0; n < 5; n++) {
+                    const f = (time * (.15 + col.omega * .06) + n / 5) % 1, px = vx + (wx - 10 - vx) * (1 - f) ** 2, py = vy + 4 + (by - vy - 4) * (1 - f) ** 2, rr = (2 + 8 * (1 - f) ** 2) * lk;
+                    const g = c.createRadialGradient(px, py, 0, px, py, rr * 3); g.addColorStop(0, `rgba(140,220,255,${running ? .9 : .35})`); g.addColorStop(1, 'rgba(140,220,255,0)'); c.fillStyle = g; c.fillRect(px - rr * 3, py - rr * 3, rr * 6, rr * 6);
+                }
+                c.restore();
+            }
+            // Rotating amber beacon and the BEAM ON lamp.
+            if (beacon) {
+                const { x, y } = beacon;
+                c.fillStyle = '#2a2f35'; c.fillRect(x - 7 * lk, y + 4 * lk, 14 * lk, 5 * lk);
+                c.fillStyle = running ? '#ffb02e' : '#6b4a1a'; c.beginPath(); c.arc(x, y + 4 * lk, 7 * lk, Math.PI, TAU); c.fill();
+                if (running) {
+                    c.save(); c.globalCompositeOperation = 'lighter'; const a = time * 6;
+                    for (const dir of [0, Math.PI]) { const g = c.createRadialGradient(x, y, 0, x, y, 160 * lk); g.addColorStop(0, 'rgba(255,170,60,.35)'); g.addColorStop(1, 'rgba(255,170,60,0)'); c.fillStyle = g; c.beginPath(); c.moveTo(x, y); c.arc(x, y, 160 * lk, a + dir - .25, a + dir + .25); c.closePath(); c.fill(); }
+                    c.restore();
+                }
+                c.fillStyle = running ? '#d9333f' : '#3a1d1f'; c.fillRect(x + 14 * lk, y - 6 * lk, 58 * lk, 18 * lk);
+                c.fillStyle = running ? '#fff' : '#7a5a5c'; c.font = `700 ${Math.round(8 * lk + 1)}px ui-monospace, Menlo, monospace`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('BEAM ON', x + 43 * lk, y + 3 * lk); c.textBaseline = 'alphabetic';
+            }
+            // Wall screen: event display of the last collision and the invariant-mass histogram.
+            if (screen) {
+                const { x, y, w, h } = screen, half = w * .45, ex = x + half / 2, ey = y + h / 2 + 4, er = Math.min(half, h) * .42;
+                c.fillStyle = '#04080c'; c.fillRect(x, y, w, h);
+                c.strokeStyle = 'rgba(120,170,220,.35)'; c.lineWidth = 1;
+                for (const [rr, cl] of [[er, '#3a73c9'], [er * .72, '#c77a2c'], [er * .42, '#2e6b3c']]) { c.strokeStyle = cl; c.beginPath(); c.arc(ex, ey, rr, 0, TAU); c.stroke(); }
+                for (let n = 0; n < 8; n++) { const a = n / 8 * TAU; c.strokeStyle = 'rgba(120,170,220,.2)'; c.beginPath(); c.moveTo(ex + Math.cos(a) * er * .42, ey + Math.sin(a) * er * .42); c.lineTo(ex + Math.cos(a) * er, ey + Math.sin(a) * er); c.stroke(); }
+                const fresh = col.phase === 'boom' ? Math.min(1, col.t * 2) : 1;
+                c.save(); c.globalCompositeOperation = 'lighter'; c.lineWidth = 1.2;
+                for (const tr of eventDisplay) {
+                    c.strokeStyle = tr.c; c.beginPath(); c.moveTo(ex, ey);
+                    for (let i = 1; i <= 12; i++) { const f = i / 12 * tr.len * fresh, a = tr.a + tr.curl * f; c.lineTo(ex + Math.cos(a) * er * f, ey + Math.sin(a) * er * f); }
+                    c.stroke();
+                }
+                c.restore();
+                const hx = x + half + 10, hw = w - half - 18, hy = y + 14, hh = h - 30, bins = 24;
+                c.strokeStyle = '#5f7486'; c.beginPath(); c.moveTo(hx, hy); c.lineTo(hx, hy + hh); c.lineTo(hx + hw, hy + hh); c.stroke();
+                const peak = Math.min(1, collisions / 4);
+                for (let b = 0; b < bins; b++) {
+                    const f = b / bins, bg = .75 * Math.exp(-f * 2.6), sig = peak * .8 * Math.exp(-(((f - .62) / .05) ** 2)), v = Math.min(1, bg + sig + .03 * Math.sin(b * 7.1));
+                    c.fillStyle = sig > .05 ? '#c79bff' : '#4f8fc8'; c.fillRect(hx + 2 + f * (hw - 4), hy + hh - v * hh, (hw - 4) / bins - 1, v * hh);
+                }
+                c.fillStyle = '#9fb3c6'; c.font = `600 ${Math.round(7 * lk + 2)}px ui-monospace, Menlo, monospace`; c.textAlign = 'left';
+                c.fillText(`EVENT #${String(collisions).padStart(4, '0')}`, x + 4, y + 10);
+                c.fillText('m [GeV]', hx + hw - 40, y + h - 4);
+                if (collisions >= 3) { c.fillStyle = '#e3d0ff'; c.textAlign = 'center'; c.fillText(collisions >= 4 ? 'X · 5σ НЭЭЛТ!' : 'X · 3σ', hx + hw * .62, hy + 8); }
+            }
+            // Server LEDs and liquid-helium vapour.
+            if (racks) for (let i = 0; i < 8; i++) for (let j = 0; j < 5; j++) { const on = Math.sin(time * (3 + i) + j * 2.3 + i) > .2; c.fillStyle = on ? (j % 3 ? '#4dff9e' : '#ffcf4d') : '#173022'; c.fillRect(racks.x + 5 + j * (racks.w - 10) / 5, racks.y + racks.h * (i + .5) / 8 - 1, 3, 2); }
+            if (tanks) for (const t of tanks) for (let n = 0; n < 5; n++) { const f = (time * .35 + n / 5 + t.x * .01) % 1; c.fillStyle = `rgba(220,240,255,${(.28 * (1 - f)).toFixed(3)})`; c.beginPath(); c.arc(t.x + Math.sin(f * 6 + n) * 5 * lk, t.y - f * 46 * lk, (4 + f * 10) * lk, 0, TAU); c.fill(); }
+        }
         function labScene() {
             const c = lx, col = collider; c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
             c.drawImage(labBack, 0, 0, LW, LH);
+            drawLabLive();
             // Monitors on the desk: beam energy and a live trace.
             for (let i = 0; i < 3; i++) {
                 const mx = desk.x + 8 * lk + i * (desk.w - 16 * lk) / 3, mw = (desk.w - 28 * lk) / 3, my = desk.y - 44 * lk;
@@ -891,7 +1191,7 @@
             c.fillStyle = '#3a4652'; c.fillRect(chamber.x - chamber.w * .7, chamber.y + chamber.h * .5, chamber.w * 1.4, 10 * lk);
             c.fillStyle = 'rgba(160,210,255,.08)'; c.strokeStyle = 'rgba(180,220,255,.5)'; c.lineWidth = 1.5;
             c.beginPath(); c.roundRect ? c.roundRect(chamber.x - chamber.w / 2, chamber.y - chamber.h / 2, chamber.w, chamber.h, 10 * lk) : c.rect(chamber.x - chamber.w / 2, chamber.y - chamber.h / 2, chamber.w, chamber.h); c.fill(); c.stroke();
-            labLabel('ТУРШИЛТЫН КАМЕР', chamber.x, chamber.y - chamber.h / 2 - 8 * lk, '#9fc6ff', 9);
+            if (!boson) labLabel('ТУРШИЛТЫН КАМЕР', chamber.x, chamber.y - chamber.h / 2 - 8 * lk, '#9fc6ff', 9);
             const [a1, a2] = beamAngles(col.s, DETECTOR), fast = smooth((col.omega - 1) / 8);
             [[a1, 1, '111,211,255'], [a2, -1, '255,122,138']].forEach(([a, dir, cl]) => {
                 c.save(); c.globalCompositeOperation = 'lighter';
@@ -930,9 +1230,14 @@
                 if (s > .2) labLabel(b.mode === 'zero' ? 'ЖИНГҮЙДЭЛ · 0 g' : 'ХЭТ ТАТАЛЦАЛ', b.x, b.y + chamber.h / 2 + 26 * lk, b.mode === 'zero' ? '#9fe7ff' : '#d6a6ff', 10);
             }
             for (const o of items) drawLabItem(o);
+            if (assistant) {
+                c.save(); c.translate(assistant.x, assistant.y - sci.float * .8 + (sci.float > 2 ? Math.sin(time * 1.3 + 1) * 4 : 0)); c.rotate(-sci.lean * .8 + (sci.float > 2 ? Math.sin(time * .8 + 2) * .2 : 0)); c.scale(lk * 1.15, lk * 1.15);
+                drawScientist(c, { press: 0, pose: labPose(), lift: sci.lift, float: sci.float / (34 * lk) || 0, look: boson ? -1.4 : -.6, hair: '#9a5a2a', tablet: true, t: time + 1.3 });
+                c.restore();
+            }
             // The scientist: presses the button, floats when gravity vanishes, leans into the pull.
             c.save(); c.translate(sci.x, sci.y - sci.float + Math.sin(time * 1.6) * (sci.float > 2 ? 4 : .6)); c.rotate(sci.lean + (sci.float > 2 ? Math.sin(time * .9) * .15 : 0)); c.scale(-lk * 1.25, lk * 1.25);
-            drawScientist(c, { press: collider.press, lift: sci.lift, float: sci.float / (34 * lk) || 0, look: boson ? -1.2 : collider.phase === 'accel' ? -.8 : .6 });
+            drawScientist(c, { press: collider.press, pose: labPose(), t: time, lift: sci.lift, float: sci.float / (34 * lk) || 0, look: boson ? -1.2 : collider.phase === 'accel' ? -.8 : .6 });
             c.restore();
             const text = boson && boson.strength > .2 ? (boson.mode === 'zero' ? '◯ X бозон: камерын голд таталцал алга болж, бүх юм хөвж байна' : '● X бозон: хэт таталцал бүх биетийг өөртөө татаж байна')
                 : collider.phase === 'accel' ? '⚛ Эрдэмтэн устөрөгчийн атомуудыг хурдасгаж байна…' : collider.phase === 'boom' ? '✸ Мөргөлдөөн! Тэсрэлтээс X бозон гарлаа' : 'Эрдэмтэн туршилтаа бэлдэж байна · «Туршилт эхлүүлэх»';
@@ -1010,7 +1315,7 @@
         const seen = new IntersectionObserver(entries => entries.forEach(e => { if (e.target === lab) labVisible = e.isIntersecting; else if (e.target === aboutEl) aboutVisible = e.isIntersecting; else spaceVisible = e.isIntersecting; }));
         seen.observe(canvas); seen.observe(lab); seen.observe(aboutEl);
         resize(); resizeLab(); aboutLayout();
-        function advance(dt) { time += dt; view.az += dt * .07; physics(dt); updateEvent(dt); updateRobot(dt); updateLab(dt); updateShip(dt); }
+        function advance(dt) { time += dt; view.az += dt * .07; updateProbes(dt); physics(dt); updateEvent(dt); updateRobot(dt); updateLab(dt); updateShip(dt); }
         function tick(now) {
             if (disposed) return;
             const dt = Math.min((now - last) / 1000 || 0, .05); last = now;
