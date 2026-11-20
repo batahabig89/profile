@@ -1,5 +1,5 @@
 /* Keep ?v= in sync with index.html (cache-bust on GitHub Pages) */
-var ASSET_VER = '143';
+var ASSET_VER = '148';
 
 // Selectable page templates. "code" is the built-in editor look; others load their own CSS/JS
 // and register a renderer on window.ProfileTemplates[name].
@@ -29,10 +29,15 @@ var TEMPLATES = {
         label: 'Tetris Arcade 🕹️',
         css: 'templates/tetris/tetris.css',
         js: 'templates/tetris/tetris.js'
+    },
+    space: {
+        label: 'Space 🪐',
+        css: 'templates/space/space.css',
+        js: 'templates/space/space.js'
     }
 };
 // Renamed when the default template changes, so earlier saved choices don't hide the new default
-var TEMPLATE_STORAGE_KEY = 'profileTemplate.v3';
+var TEMPLATE_STORAGE_KEY = 'profileTemplate.v4';
 
 function getSelectedTemplate() {
     let name = new URLSearchParams(location.search).get('template');
@@ -43,7 +48,7 @@ function getSelectedTemplate() {
             /* storage blocked */
         }
     }
-    return TEMPLATES[name] ? name : 'rubik';
+    return TEMPLATES[name] ? name : 'new-year';
 }
 
 var ACTIVE_TEMPLATE = getSelectedTemplate();
