@@ -1,5 +1,5 @@
 /* Keep ?v= in sync with index.html (cache-bust on GitHub Pages) */
-var ASSET_VER = '153';
+var ASSET_VER = '154';
 
 // Selectable page templates. "code" is the built-in editor look; others load their own CSS/JS
 // and register a renderer on window.ProfileTemplates[name].
@@ -205,6 +205,7 @@ async function renderProfile(data) {
             document.documentElement.setAttribute('data-template', 'code');
         }
     }
+    renderShowcase();
     renderLeftPanel(data);
     renderRightPanel(data);
     if (typeof window.initCppEditor === 'function') window.initCppEditor(data, document.getElementById('cppPanel'));
@@ -280,6 +281,41 @@ function profileImageSrc(url) {
     if (!url || /^https?:\/\//i.test(url)) return url;
     const sep = url.indexOf('?') >= 0 ? '&' : '?';
     return url + sep + 'v=' + ASSET_VER;
+}
+
+// Code Editor template: the three recent projects and the 5-minute presentation, shown above the code panels.
+// Data comes from presentation-data.js (window.PRESENTATION) so the deck and this strip never drift apart.
+function renderShowcase() {
+    const host = document.getElementById('showcase');
+    const P = window.PRESENTATION;
+    if (!host || !P || !Array.isArray(P.projects)) return;
+    const local = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    const siteUrl = (key, hash) => {
+        const s = P.sites[key] || {};
+        const base = (local ? s.local : s.remote) || s.remote || '#';
+        return hash ? `${base}#${hash}` : base;
+    };
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    host.innerHTML = `
+        <div class="showcase-head">
+            <div class="showcase-title"><span class="comment">// projects</span>Сүүлийн 2 жилийн төслүүд</div>
+            <a class="showcase-deck" href="presentation.html">&#9654; 5 минутын танилцуулга</a>
+        </div>
+        <div class="showcase-grid">
+            ${P.projects.map((p) => `
+            <article class="showcase-card">
+                <a class="shot" href="${siteUrl(p.site)}" target="_blank" rel="noopener"><img src="${esc(p.image)}" alt="${esc(p.title)}" loading="lazy"></a>
+                <div class="showcase-body">
+                    <div class="showcase-meta"><span class="number">${esc(p.n)}</span> <span class="comment">·</span> <span class="string">${esc(p.period)}</span> <span class="comment">· ${esc(p.org)}</span></div>
+                    <h3><a href="${siteUrl(p.site)}" target="_blank" rel="noopener">${esc(p.title)}</a></h3>
+                    <p>${esc(p.pitch)}</p>
+                    <div class="showcase-links">
+                        <a class="open" href="${siteUrl(p.site)}" target="_blank" rel="noopener">Нээх &#8599;</a>
+                        ${(p.links || []).slice(0, 3).map((l) => `<a href="${siteUrl(p.site, l.hash)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join('')}
+                    </div>
+                </div>
+            </article>`).join('')}
+        </div>`;
 }
 
 function renderLeftPanel(data) {
