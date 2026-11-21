@@ -1988,11 +1988,53 @@ html[data-template]:not([data-template="code"]) .burn-layer { display: none; }
     .fl-packet { display: none; }
 }
 
-/* ── Career strip (Code Editor template): work in order ── */
-#career { display: none; }
-html[data-template="code"] #career { display: block; position: relative; z-index: 1; padding: 22px 20px 12px; background: rgba(6, 10, 22, 0.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid #1a1a1a; }
-.career-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 12px 18px; margin-bottom: 14px; padding-right: 130px; } /* keep clear of the robot companion */
-.career-title { font-size: 15px; color: #e6edf3; font-weight: 700; }
-.career-title .comment { color: #6a9955; font-weight: 400; margin-right: 10px; }
-.career-title .career-sub { margin-left: 10px; font-weight: 400; font-size: 12px; color: #8b949e; }
-@media (max-width: 900px) { html[data-template="code"] #career { padding: 58px 14px 10px; } .career-head { padding-right: 90px; } }
+/* ── Code Editor template v2: tidy sidebar, readable sections (experience first), closable C++ playground ── */
+.left-panel { width: 300px; }
+.pv-role { color: #8b949e; font-size: 12px; margin-top: 4px; line-height: 1.4; }
+.pv-block { margin-bottom: 18px; }
+.pv-block-title { color: #6a9955; font-size: 12px; margin-bottom: 6px; }
+.pv-kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; margin: 0; font-size: 12px; }
+.pv-kv dt { color: #569cd6; }
+.pv-kv dd { margin: 0; color: #d4d4d4; word-break: break-word; }
+.pv-kv a { color: #ce9178; text-decoration: none; }
+.pv-kv a:hover { text-decoration: underline; }
+.pv-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.pv-chip { display: inline-block; font-size: 11px; line-height: 1.4; padding: 2px 8px; border-radius: 999px; border: 1px solid #30363d; color: #c9d1d9; background: rgba(13, 17, 23, 0.7); }
+.pv-chip-dim { color: #8b949e; }
+.pv-chip-teal { border-color: rgba(78, 201, 176, 0.35); color: #99f6e4; background: rgba(78, 201, 176, 0.08); }
+.pv-chip-violet { border-color: rgba(167, 139, 250, 0.35); color: #ddd6fe; background: rgba(167, 139, 250, 0.08); }
+.left-panel .flow-col { position: static; max-height: none; overflow: visible; margin-top: 10px; padding-top: 14px; border-top: 1px dashed #30363d; }
+.pv-main { max-width: 1100px; }
+.pv-summary { margin-bottom: 22px; }
+.pv-section { margin-bottom: 30px; }
+.pv-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #1f2937; scroll-margin-top: 20px; }
+.pv-head .comment { font-size: 13px; }
+.pv-title { color: #e6edf3; font-size: 16px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+.pv-sub { color: #8b949e; font-size: 12px; }
+.right-panel .career .timeline { grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+.pv-grid { display: grid; gap: 12px; }
+.pv-grid-2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.pv-grid-3 { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.pv-card { display: grid; grid-template-columns: 40px 1fr; gap: 10px; align-items: start; background: rgba(13, 21, 40, 0.78); border: 1px solid rgba(148, 163, 184, 0.16); border-radius: 14px; padding: 12px; color: inherit; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+.pv-card h4 { margin: 0; font-size: 14px; color: #fff; }
+.pv-card p { margin: 3px 0 0; font-size: 12px; color: #94a3b8; line-height: 1.4; }
+.pv-card-ico { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font-size: 20px; background: rgba(167, 139, 250, 0.14); }
+.pv-project { transition: border-color .2s, transform .2s; }
+.pv-project:hover { border-color: #58a6ff; transform: translateY(-2px); }
+.pv-project .pv-card-ico { background: rgba(56, 189, 248, 0.14); }
+.pv-meta { font-size: 11px; color: #64748b; margin-top: 4px; font-family: Consolas, 'Courier New', monospace; }
+.pv-certs { margin-top: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pv-certs .comment { margin-right: 4px; }
+.pv-skills { display: grid; gap: 6px; }
+.pv-skill-row { display: grid; grid-template-columns: 90px 1fr; gap: 8px; align-items: start; }
+.pv-skill-k { color: #569cd6; font-size: 12px; padding-top: 4px; }
+.pv-skill-row .pv-chips { margin-top: 0; }
+.cpp-panel { width: 400px; }
+@media (max-width: 1500px) { .cpp-panel { width: 380px; } }
+@media (max-width: 768px) { .left-panel { width: 100%; } .left-panel .flow-col { display: none; } .pv-skill-row { grid-template-columns: 1fr; } }
+/* C++ playground: close button + launcher to bring it back */
+.cpp-close { color: #aa0000; font-weight: bold; }
+.cpp-panel.cpp-hidden { display: none !important; }
+.cpp-launcher { display: none; position: fixed; right: 16px; bottom: 16px; z-index: 1049; align-items: center; gap: 8px; font: 700 15px/1 'VT323', 'Perfect DOS VGA 437', 'Lucida Console', 'Courier New', monospace; color: #000; background: #aaaaaa; border: 2px solid #0000aa; box-shadow: 4px 4px 0 #000080; padding: 8px 14px; cursor: pointer; }
+html[data-template="code"].cpp-closed .cpp-launcher { display: inline-flex; }
+.cpp-launcher:hover { background: #00aa00; }

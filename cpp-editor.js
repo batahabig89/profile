@@ -419,6 +419,7 @@
                 '<button type="button" class="cpp-menu cpp-run" data-act="run" title="Compile & run (F5 / Ctrl+Enter)"><u>R</u>un</button>' +
                 '<button type="button" class="cpp-menu" data-act="reset" title="Restore the example">R<u>e</u>set</button>' +
                 '<span class="cpp-grab" aria-hidden="true"></span>' +
+                '<button type="button" class="cpp-menu cpp-close" data-act="close" title="Close — reopen with the C++ button at the bottom right">×</button>' +
             '</div>' +
             '<div class="cpp-desk">' +
                 '<section class="cpp-win cpp-win-edit">' +
@@ -573,6 +574,7 @@
             if (act === 'run') run();
             else if (act === 'max') win.toggleMax();
             else if (act === 'dock') win.dock();
+            else if (act === 'close') win.close();
             else if (act === 'clear') out.innerHTML = '';
             else if (act === 'reset') {
                 var ex2 = EXAMPLES.filter(function (x) { return x.id === exSel.value; })[0];
@@ -657,11 +659,11 @@
         var bar = panel.querySelector('.cpp-menubar'), grip = panel.querySelector('.cpp-resize');
         var maxIcon = panel.querySelector('[data-k="maxicon"]');
         var MIN_W = 340, MIN_H = 360, M = 8;
-        var g = null, mode = 'dock', before = 'dock';
-        try { var s = JSON.parse(localStorage.getItem(WIN_KEY)); if (s && s.g) { g = s.g; mode = s.mode || 'dock'; } } catch (_) { /* ignore */ }
+        var g = null, mode = 'dock', before = 'dock', hidden = false;
+        try { var s = JSON.parse(localStorage.getItem(WIN_KEY)) || {}; if (s.g) { g = s.g; mode = s.mode || 'dock'; } hidden = !!s.hidden; } catch (_) { /* ignore */ }
 
         function canFloat() { return window.innerWidth > 1100; }
-        function store() { try { localStorage.setItem(WIN_KEY, JSON.stringify({ mode: mode, g: g })); } catch (_) { /* ignore */ } }
+        function store() { try { localStorage.setItem(WIN_KEY, JSON.stringify({ mode: mode, g: g, hidden: hidden })); } catch (_) { /* ignore */ } }
         function clampG() {
             var vw = window.innerWidth, vh = window.innerHeight;
             g.w = Math.max(MIN_W, Math.min(vw - 2 * M, g.w));
@@ -680,7 +682,9 @@
                 panel.style.left = panel.style.top = panel.style.width = panel.style.height = '';
             }
             maxIcon.textContent = mode === 'max' ? '↓' : '↑';
-            document.documentElement.classList.toggle('cpp-maxed', mode === 'max');
+            panel.classList.toggle('cpp-hidden', hidden);
+            document.documentElement.classList.toggle('cpp-closed', hidden);
+            document.documentElement.classList.toggle('cpp-maxed', mode === 'max' && !hidden);
             onChange();
         }
         function toFloat() {
@@ -739,8 +743,24 @@
                 else { before = mode; mode = 'max'; }
                 apply(); store();
             },
-            dock: function () { mode = 'dock'; apply(); store(); }
+            dock: function () { mode = 'dock'; apply(); store(); },
+            close: function () {
+                hidden = true;
+                if (mode === 'max') mode = before === 'float' && canFloat() && g ? 'float' : 'dock';
+                apply(); store();
+            },
+            open: function () { hidden = false; apply(); store(); }
         };
+        // a small DOS-style button at the bottom right brings a closed playground back
+        if (!document.querySelector('.cpp-launcher')) {
+            var launcher = document.createElement('button');
+            launcher.type = 'button';
+            launcher.className = 'cpp-launcher';
+            launcher.title = 'Open the C++ playground';
+            launcher.innerHTML = '<span aria-hidden="true">≡</span> C++ playground';
+            launcher.addEventListener('click', function () { api.open(); });
+            document.body.appendChild(launcher);
+        }
         return api;
     }
 

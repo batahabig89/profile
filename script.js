@@ -1,5 +1,5 @@
 /* Keep ?v= in sync with index.html (cache-bust on GitHub Pages) */
-var ASSET_VER = '155';
+var ASSET_VER = '156';
 
 // Selectable page templates. "code" is the built-in editor look; others load their own CSS/JS
 // and register a renderer on window.ProfileTemplates[name].
@@ -205,7 +205,6 @@ async function renderProfile(data) {
             document.documentElement.setAttribute('data-template', 'code');
         }
     }
-    renderCareer(data);
     renderLeftPanel(data);
     renderRightPanel(data);
     if (typeof window.initCppEditor === 'function') window.initCppEditor(data, document.getElementById('cppPanel'));
@@ -283,277 +282,84 @@ function profileImageSrc(url) {
     return url + sep + 'v=' + ASSET_VER;
 }
 
-// Code Editor template: career timeline (work in order, 2010 → now) above the code panels.
-// Cards come from profile-data.json (experience + careerDetails + extraExperience), drawn by timeline.js.
-function renderCareer(data) {
-    const host = document.getElementById('career');
-    if (!host || !window.CareerTimeline) return;
-    host.innerHTML = `
-        <div class="career-head">
-            <div class="career-title"><span class="comment">// career</span>Хийсэн ажлын дараалал<span class="career-sub">2010 → одоо</span></div>
-        </div>
-        <div class="career"><div class="timeline"></div></div>`;
-    window.CareerTimeline.render(host.querySelector('.timeline'), data);
+// ── Code Editor template: tidy sidebar + readable sections (experience first, oldest → now) ──
+const pvEsc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const pvChips = (arr, cls = '') => (arr || []).map((t) => `<span class="pv-chip ${cls}">${pvEsc(t)}</span>`).join('');
+const pvSplit = (arr) => (arr || []).join(', ').split(/,\s*/).map((s) => s.trim()).filter(Boolean);
+function pvHead(id, comment, title, sub) {
+    return `<div class="pv-head" id="${id}"><span class="comment">// ${comment}</span><span class="pv-title">${title}</span>${sub ? `<span class="pv-sub">${sub}</span>` : ''}</div>`;
 }
 
 function renderLeftPanel(data) {
-    const leftPanel = document.getElementById('leftPanel');
-    leftPanel.innerHTML = `
+    const info = data.personalInfo;
+    document.getElementById('leftPanel').innerHTML = `
         <div class="profile-section">
             <img src="${profileImageSrc('assets/anonymous-hoodie.svg')}" alt="Anonymous hacker in a hoodie" class="profile-img">
-            <div class="username">
-                <span class="keyword">public</span> ${nameRevealMarkup(data.personalInfo, true)}
-            </div>
+            <div class="username"><span class="keyword">public</span> ${nameRevealMarkup(info, true)}</div>
+            <div class="pv-role">${pvEsc(info.title)}</div>
         </div>
-
-        <div class="section">
-            <div class="section-content">
-                ${data.platforms.primary.join(',<br>')}
-            </div>
+        <div class="pv-block" id="code-info">
+            <div class="pv-block-title">// contact</div>
+            <dl class="pv-kv">
+                <dt>email</dt><dd><a href="mailto:${pvEsc(info.email)}">${pvEsc(info.email)}</a></dd>
+                <dt>phone</dt><dd>${pvEsc(info.phone)}</dd>
+                <dt>location</dt><dd>${pvEsc((info.location || []).slice(0, 2).join(', '))}</dd>
+                ${info.age != null ? `<dt>age</dt><dd>${pvEsc(info.age)}</dd>` : ''}
+                <dt>license</dt><dd>${info.vehicleLicense ? 'yes' : 'no'}</dd>
+            </dl>
+            <div class="pv-chips">${pvChips(data.profileTraits, 'pv-chip-teal')}</div>
         </div>
-
-        <div class="section">
-            <div class="section-title">enum PLATFORMS</div>
-        </div>
-
-        <div class="section">
-            <div class="section-content">
-                ${data.platforms.secondary.join(',<br>')}
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">enum LANGUAGES</div>
-        </div>
-
-        <div class="section">
-            <div class="section-content">
-                ${data.programmingLanguages.join('<br>')}
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">WORK SKILLS</div>
-        </div>
-
-        <div class="section">
-            <div class="section-content">
-            <strong>Frontend:</strong> ${data.workSkills.frontend.join(', ')}<br><br>
-            <strong>Backend:</strong> ${data.workSkills.backend.join(', ')}<br><br>
-            <strong>Database:</strong> ${data.workSkills.database.join(', ')}<br><br>
-            <strong>Cloud:</strong> ${data.workSkills.cloud.join(', ')}<br><br>
-            <strong>Mobile:</strong> ${data.workSkills.mobile.join(', ')}<br><br>
-            <strong>DevOps:</strong> ${data.workSkills.devops.join(', ')}
-        </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">TOOLS</div>
-        </div>
-
-        <div class="section">
-            <div class="section-content">
-                ${data.tools.join('<br>')}
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">LANGUAGES SPOKEN</div>
-        </div>
-
-        <div class="section">
-            <div class="section-content">
-                ${Object.entries(data.spokenLanguages).map(([lang, level]) => `${lang} = ${level}`).join('<br>')}
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">PROFILE</div>
-        </div>
-
-        <div class="section">
-            <div class="section-content">
-                ${data.profileTraits.join('<br>')}
-            </div>
-        </div>
+        <div class="pv-block"><div class="pv-block-title">// platforms</div><div class="pv-chips">${pvChips(data.platforms.primary)}${pvChips(data.platforms.secondary, 'pv-chip-dim')}</div></div>
+        <div class="pv-block"><div class="pv-block-title">// languages</div><div class="pv-chips">${pvChips(pvSplit(data.programmingLanguages))}</div></div>
+        <div class="pv-block"><div class="pv-block-title">// tools</div><div class="pv-chips">${pvChips(pvSplit(data.tools), 'pv-chip-dim')}</div></div>
+        <div class="pv-block"><div class="pv-block-title">// spoken</div><dl class="pv-kv">${Object.entries(data.spokenLanguages || {}).map(([l, lv]) => `<dt>${pvEsc(l)}</dt><dd>${pvEsc(lv)}</dd>`).join('')}</dl></div>
+        <aside class="flow-col" id="flowCol" aria-label="Profile flowchart"></aside>
     `;
 }
 
 function renderRightPanel(data) {
-    const rightPanel = document.getElementById('rightPanel');
-    
-    // Summary section
-    const summaryHTML = data.summary.lines.map(line => 
-        `<div class="comment">/// ${line}</div>`
-    ).join('');
-
-    // Personal information section
-    const personalInfoHTML = `
-        <div class="code-section" id="code-info">
-            <div class="code-line">
-                <span class="keyword">public</span> <span class="class-name">INFORMATION</span>
-            </div>
-            <div class="code-line indent-1">
-                <span class="keyword">public string</span> <span class="string">"${nameRevealMarkup(data.personalInfo, true)}"</span>,
-            </div>
-            <div class="code-line indent-1">
-                <span class="keyword">public string</span> <span class="string">"${data.personalInfo.title}"</span>,
-            </div>
-            <div class="code-line indent-1">
-                <span class="keyword">public</span> <span class="type">email</span> <span class="string">"${data.personalInfo.email}"</span>,
-            </div>
-            <div class="code-line indent-1">
-                <span class="keyword">public</span> <span class="type">PHONE</span> = <span class="string">${data.personalInfo.phone}</span>
-            </div>
-            <div class="code-line indent-1">
-                <span class="keyword">public</span> <span class="type">LOCATION</span> = <span class="operator">[</span><span class="string">'${data.personalInfo.location[0]}'</span>, <span class="string">${data.personalInfo.location[1]}</span><span class="operator">]</span>
-            </div>
-            <div class="code-line">
-                <span class="variable">VEHICLE_LICENSE</span> = <span class="boolean">${data.personalInfo.vehicleLicense}</span>
-            </div>
-            <div class="code-line">
-                <span class="variable">AGE</span> = <span class="number">${data.personalInfo.age}</span>
-            </div>
-        </div>
-    `;
-
-    // Education section
-    const educationHTML = `
-        <div class="code-section" id="code-education">
-            <div class="code-line">
-                <span class="keyword">public static class</span> <span class="class-name">EDUCATION</span>
-            </div>
-            ${data.education.map((edu, index) => `
-                <div class="code-line indent-1" id="code-edu-${index}">
-                    <span class="keyword">private void</span> <span class="method">Education${index + 1}</span>()
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Level</span> = <span class="string">"${edu.level}"</span>,
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Field</span> = <span class="string">"${edu.field}"</span>,
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Date</span> = <span class="string">"${edu.date}"</span>,
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Institution</span> = <span class="string">"${edu.institution}"</span>,
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">GPA</span> = <span class="number">${edu.GPA || 'N/A'}</span>
-                </div>
-            `).join('')}
-        </div>
-    `;
-
-    // Experience section
-    const experienceHTML = `
-        <div class="code-section" id="code-experience">
-            <div class="code-line">
-                <span class="keyword">public static class</span> <span class="class-name">EXPERIENCE</span>
-            </div>
-            ${data.experience.map((exp, index) => `
-                <div class="code-line indent-1" id="code-exp-${index}">
-                    <span class="keyword">private void</span> <span class="method">Experience${index + 1}</span>()
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Company</span> = <span class="string">"${exp.company}"</span>,
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Role</span> = <span class="string">"${exp.role}"</span>,
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Duration</span> = <span class="string">"${exp.duration.start} - ${exp.duration.end}"</span>,
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Type</span> = <span class="string">"${exp.type}"</span>,
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Description</span> = <span class="string">"${exp.description.join(' ')}"</span>
-                </div>
-            `).join('')}
-        </div>
-    `;
-
-    // Certifications section
-    const certificationsHTML = data.certifications ? `
-        <div class="code-section" id="code-certifications">
-            <div class="code-line">
-                <span class="keyword">public static class</span> <span class="class-name">CERTIFICATIONS</span>
-            </div>
-            ${data.certifications.map((cert, index) => `
-                <div class="code-line indent-1" id="code-cert-${index}">
-                    <span class="keyword">public void</span> <span class="method">${cert.name.replace(/\s+/g, '')}</span>
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Issuer</span> = <span class="string">"${cert.issuer}"</span>,
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Date</span> = <span class="string">"${cert.date}"</span>
-                </div>
-            `).join('')}
-        </div>
-    ` : '';
-
-    // Projects section
+    const summaryHTML = data.summary.lines.map((line) => `<div class="comment">/// ${pvEsc(line)}</div>`).join('');
     const getProjectIcon = (project) => {
-        // Use custom icon from JSON if available, otherwise fallback to auto-detection
-        if (project.icon) {
-            return project.icon;
-        }
-        
-        // Fallback to automatic emoji detection
+        if (project.icon) return project.icon;
         const name = project.name.toLowerCase();
         if (name.includes('tax') || name.includes('gov')) return '🏛️';
         if (name.includes('simple') || name.includes('fintech')) return '💰';
         if (name.includes('burtgel') || name.includes('ehalamj')) return '📋';
         if (name.includes('app') || name.includes('mobile')) return '📱';
-        if (name.includes('web') || name.includes('frontend')) return '🌐';
-        if (name.includes('backend') || name.includes('api')) return '⚙️';
         return '💻';
     };
+    const jobCount = window.CareerTimeline ? window.CareerTimeline.items(data).length : (data.experience || []).length;
+    document.getElementById('rightPanel').innerHTML = `
+        <div class="pv-main">
+            <div class="pv-summary" id="code-summary"><div class="comment">/// &lt;summary&gt;</div>${summaryHTML}</div>
 
-    const projectsHTML = data.projects ? `
-        <div class="code-section" id="code-projects">
-            <div class="code-line">
-                <span class="keyword">public static class</span> <span class="class-name">PROJECTS</span>
-            </div>
-            ${data.projects.map((project, index) => `
-                <div class="code-line indent-1" id="code-proj-${index}">
-                    <span class="keyword">private void</span> <span class="method">Project${index + 1}</span>()
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Name</span> = <span class="string">"${project.name}"</span>,
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Description</span> = <span class="string">"${project.description}"</span>,
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">Technologies</span> = <span class="operator">[</span><span class="string">'${project.technologies.join("', '")}'</span><span class="operator">]</span>,
-                </div>
-                <div class="code-line indent-2">
-                    <span class="variable">var</span> <span class="variable">URL</span> = <span class="string">"${project.url}"</span>
-                </div>
-            `).join('')}
-        </div>
-    ` : '';
+            <section class="pv-section">
+                ${pvHead('code-experience', 'experience', 'Хийсэн ажлын дараалал', `2010 → одоо · ${jobCount} байгууллага, төсөл`)}
+                <div class="career"><div class="timeline" id="pvTimeline"></div></div>
+            </section>
 
-    // code on the left, a block-schema flowchart of the same profile on the right
-    rightPanel.innerHTML = `
-        <div class="code-layout">
-            <div class="code-main">
-                <div class="comment" id="code-summary">/// &lt;summary&gt;</div>
-                ${summaryHTML}
+            <section class="pv-section">
+                ${pvHead('code-education', 'education', 'Боловсрол')}
+                <div class="pv-grid pv-grid-2">
+                    ${(data.education || []).map((e) => `<div class="pv-card"><div class="pv-card-ico">🎓</div><div><h4>${pvEsc(e.field)}</h4><p>${pvEsc(e.level)} · ${pvEsc(e.institution)}</p><div class="pv-meta">${pvEsc(e.date)}${e.GPA ? ` · GPA ${pvEsc(e.GPA)}` : ''}</div></div></div>`).join('')}
+                </div>
+                ${data.certifications && data.certifications.length ? `<div class="pv-certs" id="code-certifications"><span class="comment">// certifications</span>${data.certifications.map((c) => `<span class="pv-chip pv-chip-violet">${pvEsc(c.name)} · ${pvEsc(c.issuer)} ${pvEsc(c.date)}</span>`).join('')}</div>` : ''}
+            </section>
 
-                ${personalInfoHTML}
-                ${educationHTML}
-                ${certificationsHTML}
-                ${experienceHTML}
-                ${projectsHTML}
-            </div>
-            <aside class="flow-col" id="flowCol" aria-label="Profile flowchart"></aside>
+            ${data.projects && data.projects.length ? `<section class="pv-section">
+                ${pvHead('code-projects', 'projects', 'Бусад төслүүд', `${data.projects.length} систем · нэвтэрсэн`)}
+                <div class="pv-grid pv-grid-3">
+                    ${data.projects.map((p) => `<a class="pv-card pv-project" href="${pvEsc(p.url)}" target="_blank" rel="noopener"><div class="pv-card-ico">${getProjectIcon(p)}</div><div><h4>${pvEsc(p.name)}</h4><p>${pvEsc(p.description)}</p><div class="pv-chips">${pvChips(p.technologies, 'pv-chip-dim')}</div></div></a>`).join('')}
+                </div>
+            </section>` : ''}
+
+            <section class="pv-section" id="code-skills">
+                ${pvHead('code-skills-head', 'skills', 'Ур чадвар')}
+                <div class="pv-skills">${Object.entries(data.workSkills || {}).map(([k, list]) => `<div class="pv-skill-row"><span class="pv-skill-k">${pvEsc(k)}</span><div class="pv-chips">${pvChips(list)}</div></div>`).join('')}</div>
+            </section>
         </div>
     `;
+    if (window.CareerTimeline) window.CareerTimeline.render(document.getElementById('pvTimeline'), data);
     if (typeof window.renderFlowDiagram === 'function') window.renderFlowDiagram(data, document.getElementById('flowCol'));
 }
 
