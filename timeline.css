@@ -1,0 +1,71 @@
+/* Хийсэн ажлын дараалал — цагийн шугам (timeline.js). `.career` дотор бүрэн бие даасан (профайлын Code Editor template). */
+.career {
+  --tl-teal: #4ec9b0; --tl-sky: #38bdf8; --tl-violet: #a78bfa; --tl-amber: #fbbf24; --tl-rose: #fb7185;
+  --tl-muted: #94a3b8; --tl-dim: #64748b; --tl-line: rgba(148, 163, 184, 0.16);
+  --tl-mono: 'JetBrains Mono', 'Consolas', 'Menlo', monospace;
+  --tl-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--tl-sans); color: #e2e8f0; line-height: 1.5;
+}
+.career *, .career *::before, .career *::after { box-sizing: border-box; }
+.career .timeline { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 10px; }
+.career .job { position: relative; padding-top: 22px; }
+.career .job::before { content: ''; position: absolute; top: 5px; left: 0; width: 14px; height: 14px; border-radius: 50%; background: #070b18; border: 3px solid var(--tl-teal); box-shadow: 0 0 0 4px rgba(78, 201, 176, 0.15); }
+.career .job.now::before { border-color: var(--tl-sky); box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2); }
+.career .job.extra::before { border-style: dashed; border-color: var(--tl-violet); box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.15); }
+.career .job::after { content: ''; position: absolute; top: 11px; left: 16px; right: -10px; height: 2px; background: linear-gradient(90deg, rgba(78, 201, 176, 0.5), rgba(56, 189, 248, 0.35)); }
+.career .job:last-child::after { display: none; }
+.career .job .card { height: 100%; margin: 0; background: rgba(13, 21, 40, 0.78); border: 1px solid var(--tl-line); border-radius: 14px; padding: 9px 11px; backdrop-filter: blur(10px); }
+.career .job .card.has-art { display: grid; grid-template-columns: 1fr 104px; column-gap: 10px; align-items: start; }
+.career .job .card.has-art > :not(.art) { grid-column: 1; }
+.career .job .card.has-art .art { grid-column: 2; grid-row: 1 / span 6; align-self: center; width: 104px; height: 62px; margin: 0; }
+.career .job .yrs { font-family: var(--tl-mono); font-size: 10.5px; color: var(--tl-sky); }
+.career .job h4 { font-family: var(--tl-sans); font-size: 13px; font-weight: 700; color: #fff; margin: 2px 0 0; line-height: 1.25; }
+.career .job .role { font-size: 11px; color: var(--tl-muted); line-height: 1.3; }
+.career .job .pj { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 2px; }
+.career .job .pj li { position: relative; padding-left: 10px; font-size: 10.5px; color: #cbd5e1; line-height: 1.25; }
+.career .job .pj li::before { content: ''; position: absolute; left: 0; top: 6px; width: 4px; height: 4px; border-radius: 50%; background: var(--tl-teal); }
+.career .job .badges { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px; }
+.career .chip { display: inline-block; font-family: var(--tl-mono); font-size: 10.5px; line-height: 1.4; padding: 2px 9px; border-radius: 999px; border: 1px solid rgba(56, 189, 248, 0.25); background: rgba(56, 189, 248, 0.08); color: #bae6fd; }
+.career .chip.teal { border-color: rgba(78, 201, 176, 0.3); background: rgba(78, 201, 176, 0.1); color: #99f6e4; }
+.career .chip.violet { border-color: rgba(167, 139, 250, 0.3); background: rgba(167, 139, 250, 0.1); color: #ddd6fe; }
+.career .chip.slate { border-color: rgba(148, 163, 184, 0.3); background: rgba(148, 163, 184, 0.08); color: #cbd5e1; }
+.career .chip.amber { border-color: rgba(251, 191, 36, 0.35); background: rgba(251, 191, 36, 0.1); color: #fde68a; }
+.career .job .art { margin-top: 5px; height: 40px; border-radius: 10px; background: linear-gradient(180deg, rgba(2, 6, 23, 0.6), rgba(15, 23, 42, 0.4)); border: 1px solid rgba(148, 163, 184, 0.1); overflow: hidden; }
+.career .job .art svg { width: 100%; height: 100%; display: block; }
+
+/* ТВ цамхаг */
+.career .art-tower .l { fill: var(--c); transform-box: fill-box; transform-origin: center; animation: tl-twinkle 1.8s ease-in-out infinite; animation-delay: calc(var(--i) * -0.23s); filter: drop-shadow(0 0 2px var(--c)); }
+.career .art-tower .w { animation: tl-twinkle 3s ease-in-out infinite; animation-delay: calc(var(--i) * -0.4s); }
+.career .art-tower .halo { fill: rgba(251, 191, 36, 0.25); animation: tl-halo 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.career .art-tower .beacon { fill: #fb7185; animation: tl-twinkle 1s ease-in-out infinite; filter: drop-shadow(0 0 2px #fb7185); }
+@keyframes tl-twinkle { 0%, 100% { opacity: 0.25; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.35); } }
+@keyframes tl-halo { 0%, 100% { opacity: 0.15; transform: scale(0.8); } 50% { opacity: 0.5; transform: scale(1.1); } }
+
+/* Жижиг робот */
+.career .art-walle .bot { transform-box: fill-box; transform-origin: center; animation: tl-walle 7s ease-in-out infinite; }
+.career .art-walle .track { stroke-dasharray: 3 2; animation: tl-roll 0.45s linear infinite; }
+.career .art-walle .eyes { transform-box: fill-box; transform-origin: center; animation: tl-blink 3.6s infinite; }
+.career .art-walle .arm { transform-box: fill-box; transform-origin: right center; animation: tl-wave 1.2s ease-in-out infinite alternate; }
+.career .art-walle .arm.b { transform-origin: left center; animation-delay: -0.6s; }
+@keyframes tl-walle { 0% { transform: translateX(0) scaleX(1); } 44% { transform: translateX(58px) scaleX(1); } 50% { transform: translateX(58px) scaleX(-1); } 94% { transform: translateX(0) scaleX(-1); } 100% { transform: translateX(0) scaleX(1); } }
+@keyframes tl-roll { to { stroke-dashoffset: -5; } }
+@keyframes tl-blink { 0%, 90%, 100% { transform: scaleY(1); } 94% { transform: scaleY(0.1); } }
+@keyframes tl-wave { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+
+/* Хотын гэрэлтүүлэг 60% → 100% */
+.career .art-lamps .bulb { fill: #fbbf24; filter: drop-shadow(0 0 3px #fbbf24); }
+.career .art-lamps .cone { fill: rgba(251, 191, 36, 0.14); }
+.career .art-lamps .late .bulb, .career .art-lamps .late .cone { animation: tl-lightup 6s ease-in-out infinite; animation-delay: calc(var(--d) * 1s); opacity: 0; }
+@keyframes tl-lightup { 0%, 20% { opacity: 0; } 35%, 80% { opacity: 1; } 95%, 100% { opacity: 0; } }
+
+/* Ухаалаг гарц */
+.career .art-gate .arm { transform-box: view-box; transform-origin: 37px 39.5px; animation: tl-gate 6s ease-in-out infinite; }
+.career .art-gate .car { animation: tl-car 6s ease-in-out infinite; }
+.career .art-gate .sig { fill: #fb7185; animation: tl-sig 6s ease-in-out infinite; }
+@keyframes tl-gate { 0%, 18% { transform: rotate(0); } 30%, 70% { transform: rotate(-72deg); } 82%, 100% { transform: rotate(0); } }
+@keyframes tl-car { 0%, 22% { transform: translateX(0); } 34% { transform: translateX(52px); } 60% { transform: translateX(156px); } 60.01%, 100% { transform: translateX(0); } }
+@keyframes tl-sig { 0%, 28% { fill: #fb7185; } 32%, 70% { fill: #4ec9b0; } 76%, 100% { fill: #fb7185; } }
+
+@media (max-width: 1024px) { .career .timeline { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .career .timeline { grid-template-columns: 1fr; } .career .job::after { display: none; } }
+@media (prefers-reduced-motion: reduce) { .career .job .art * { animation: none !important; } }
