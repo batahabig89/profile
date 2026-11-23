@@ -272,9 +272,10 @@ layout, phones the tall one.
   thought to be possibly such a merger product): huge, pulsing, losing dusty gas and dimming under a
   dust veil. Its core then collapses into a supernova with a butterfly-shaped nebula, and a new sun
   forms. **⚡ Ойрын тойрог** sets two suns into a tight, fast binary to watch it happen.
-- **James Webb and Voyager 1** — the James Webb Space Telescope hovers in the upper left (18 gold
-  hexagonal mirror segments with sunlight sweeping across them, the secondary mirror on three struts,
-  the five-layer sunshield and the spacecraft bus), while Voyager 1 drifts slowly across the sky (big
+- **James Webb and Voyager 1** — the James Webb Space Telescope hovers in the upper left as a real
+  3D model (18 slightly concave gold hexagonal mirror segments with specular glints, the secondary
+  mirror on three struts, the five-layer sunshield, the bus and solar array). Drag it to turn it round
+  and see it from any side; it coasts with inertia and settles back into a slow turn, while Voyager 1 drifts slowly across the sky (big
   high-gain dish, ten-sided bus with the golden record, magnetometer boom, RTG boom, science platform,
   plasma-wave antennas). Click Webb and it flashes an infrared shot; click Voyager and the golden record
   glints as it sends «Сайн уу, сансар!». Both are drawn locally on Canvas.
@@ -302,10 +303,24 @@ layout, phones the tall one.
   purple X peak grows with every collision until `X · 5σ НЭЭЛТ!`. The boson makes the test chamber
   weightless (**Жингүйдэл**: objects and both scientists float) or pulls everything in
   (**Хэт таталцал**). It never mixes with the three-body sky.
-- **Profile** — mission-style introduction with small line icons (rocket, satellite, planet,
-  telescope, comet), an orbiting emblem, stats, a flight-log timeline and cards. Behind it an animated
-  starfield with nebulae, a spiral galaxy, a ringed gas giant and an original capital ship with a bank
-  of blue ion engines that cruises, charges its drive and jumps to lightspeed (star streaks), then
-  drops back out of hyperspace.
+- **Profile as a planetary system** — under the header (name, title, location, stats) the
+  introduction is a small solar system drawn on Canvas. The star in the middle is rendered like the
+  three suns above (granulation, sunspots, corona, prominences) with the nickname and title on it.
+  The five sections are real-looking planets on tilted Keplerian orbits (inner ~40 s, outer ~3.5 min),
+  lit on the side facing the star and passing in front of and behind it:
+  All eight planets are there, in their real order: **Буд** (Mercury, grey and cratered) and
+  **Сугар** (Venus, creamy clouds) inside Earth's orbit, and **Тэнгэрийн ван** (Uranus, pale cyan with a
+  faint ring standing almost upright) between Saturn and Neptune — these three are decorative and have
+  no section. All planets orbit the same way (clockwise on screen); Venus, Uranus and Saturn turn on
+  their axes the other way (Venus and Uranus really do; for Saturn it is this page's design).
+  **Дэлхий** = Туршлага (oceans, continents, drifting clouds, atmosphere), **Ангараг** = Боловсрол,
+  **Бархасбадь** = Ур чадвар (bands, Great Red Spot, faint ring), **Санчир** = Төслүүд (banded
+  globe with a full ring system and the Cassini gap) and **Далайн ван** = Холбоо.
+  Each planet carries its section's items as moons. Click a planet (or use the keyboard; they are
+  tabs): it grows, slows down, its moon orbits expand and the moons grow and show their names, and
+  the section opens in the side panel. Earth shows one real Moon (the current job) and artificial
+  satellites (earlier jobs); Saturn's moons are the projects, Jupiter's the skill groups.
+  Behind it all: an animated starfield with nebulae, a spiral galaxy and an original capital ship with
+  blue ion engines that cruises, charges its drive and jumps to lightspeed.
 
 Validation: `node --test tests/space.test.cjs`.

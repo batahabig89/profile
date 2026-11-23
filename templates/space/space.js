@@ -99,16 +99,23 @@
         const secret = (text, href, ic) => `<a class="sp-chip sp-secret" href="${esc(href)}">${icon(ic)} <span>${esc(text)}</span></a>`;
         const head = (ic, title, sub) => `<header class="sp-card-head">${icon(ic, 'sp-ic-lg')}<div><h3>${esc(title)}</h3>${sub ? `<small>${esc(sub)}</small>` : ''}</div></header>`;
         const stat = (value, label, ic) => `<div class="sp-stat">${icon(ic)}<b>${esc(value)}</b><span>${esc(label)}</span></div>`;
+        // The introduction as a planetary system: the person is the star, each section a planet.
+        const planets = [['exp', 'earth', 'Туршлага', 'Дэлхий', 205], ['edu', 'mars', 'Боловсрол', 'Ангараг', 15], ['skills', 'jupiter', 'Ур чадвар', 'Бархасбадь', 30], ['proj', 'saturn', 'Төслүүд', 'Санчир', 45], ['comm', 'neptune', 'Холбоо', 'Далайн ван', 225]];
+        const system = `<div class="sp-system" role="tablist" aria-label="Профайлын гаригийн систем"><canvas class="sp-system-canvas" aria-hidden="true"></canvas>`
+            + `<div class="sp-star" aria-hidden="true"><b>${esc(name)}</b><small>${esc(String(info.title || '').split('|')[0].trim())}</small></div>`
+            + planets.map(([id, kind, lbl, pname, h], i) => `<button type="button" class="sp-planet${i ? '' : ' is-active'}" role="tab" id="sp-t-${id}" aria-selected="${!i}" aria-controls="sp-p-${id}" data-panel="${id}" data-kind="${kind}" style="--h:${h}"><span class="sp-planet-body"></span><span class="sp-planet-label">${lbl}<small>${pname}</small></span></button>`).join('')
+            + `</div>`;
+        const panel = (id, extra) => `<article class="sp-card sp-panel${id === 'exp' ? ' is-active' : ''}${extra || ''}" role="tabpanel" id="sp-p-${id}" aria-labelledby="sp-t-${id}" data-panel="${id}">`;
         return `<section class="sp-about" aria-label="Профайл"><canvas class="sp-about-bg" aria-hidden="true"></canvas><div class="sp-about-inner">`
             + `<header class="sp-about-head"><div class="sp-emblem" aria-hidden="true"><span class="sp-orbit"><i></i></span><span class="sp-orbit sp-orbit2"><i></i></span>${icon('planet', 'sp-emblem-ic')}</div>`
             + `<div class="sp-about-text"><span class="sp-eyebrow">${icon('star')} ОПЕРАТОР · PROFILE</span><h2>${esc(name)}</h2><p class="sp-role">${esc(info.title)}</p>`
             + `<p class="sp-summary">${esc(((data.summary || {}).lines || []).join(' · '))}</p><div class="sp-chips">${loc ? `<span class="sp-chip">${icon('pin')} ${esc(loc)}</span>` : ''}${info.email ? secret(info.email, 'mailto:' + info.email, 'mail') : ''}${info.phone ? secret(info.phone, 'tel:' + String(info.phone).replace(/\s+/g, ''), 'phone') : ''}</div></div>`
             + `<div class="sp-stats">${years ? stat(years + '+', 'жил тойрог замд', 'rocket') : ''}${stat((data.projects || []).length, 'төсөл', 'planet')}${stat(skillCount, 'ур чадвар', 'satellite')}</div></header>`
-            + `<div class="sp-grid"><article class="sp-card sp-wide">${head('rocket', 'Нислэгийн бүртгэл', 'Ажлын туршлага')}<ol class="sp-timeline">${exp.map((e, i) => { const d = e.duration || {}; return `<li style="--i:${i}"><span class="sp-when">${esc(d.start)} — ${esc(d.end)}</span><b>${esc(e.role)}</b><em>${esc(e.company)}</em>${(e.description || []).map(x => `<p>${esc(x)}</p>`).join('')}</li>`; }).join('')}</ol></article>`
-            + `<article class="sp-card">${head('satellite', 'Бортын системүүд', 'Ур чадвар')}${Object.entries(data.workSkills || {}).map(([k, v]) => `<div class="sp-row"><b>${esc(k)}</b><div class="sp-tags">${tags(v)}</div></div>`).join('')}<div class="sp-row"><b>languages</b><div class="sp-tags">${tags(data.programmingLanguages)}</div></div></article>`
-            + `<article class="sp-card">${head('planet', 'Нээсэн гарагууд', 'Төслүүд')}<div class="sp-projects">${(data.projects || []).map((p, i) => `<a class="sp-project" href="${esc(p.url)}" target="_blank" rel="noopener"><span class="sp-project-ic" style="--h:${PROJECT_BADGES[i % PROJECT_BADGES.length][1]}">${icon(PROJECT_BADGES[i % PROJECT_BADGES.length][0])}</span><div><b>${esc(p.name)}</b><p>${esc(p.description)}</p><div class="sp-tags">${tags(p.technologies)}</div></div></a>`).join('')}</div></article>`
-            + `<article class="sp-card">${head('telescope', 'Сургалтын ажиглалтын төв', 'Боловсрол · Сертификат')}<ul class="sp-list">${(data.education || []).map(e => `<li><b>${esc(e.field)}</b><em>${esc(e.level)} · ${esc(e.date)}</em><p>${esc(e.institution)}</p></li>`).join('')}${(data.certifications || []).map(c => `<li><b>${esc(c.name)}</b><em>${esc(c.issuer)} · ${esc(c.date)}</em></li>`).join('')}</ul></article>`
-            + `<article class="sp-card">${head('comet', 'Холбооны суваг', 'Хэл · Зан чанар · Хэрэгсэл')}<div class="sp-tags">${Object.entries(data.spokenLanguages || {}).map(([k, v]) => `<span>✦ ${esc(k)} · ${esc(v)}</span>`).join('')}</div><div class="sp-tags sp-traits">${tags(data.profileTraits)}</div><div class="sp-tags">${tags(data.tools)}</div></article></div></div></section>`;
+            + `<div class="sp-system-wrap">${system}<div class="sp-panels">${panel('exp')}${head('rocket', 'Нислэгийн бүртгэл', 'Ажлын туршлага')}<ol class="sp-timeline">${exp.map((e, i) => { const d = e.duration || {}; return `<li style="--i:${i}"><span class="sp-when">${esc(d.start)} — ${esc(d.end)}</span><b>${esc(e.role)}</b><em>${esc(e.company)}</em>${(e.description || []).map(x => `<p>${esc(x)}</p>`).join('')}</li>`; }).join('')}</ol></article>`
+            + `${panel('skills')}${head('satellite', 'Бортын системүүд', 'Ур чадвар')}${Object.entries(data.workSkills || {}).map(([k, v]) => `<div class="sp-row"><b>${esc(k)}</b><div class="sp-tags">${tags(v)}</div></div>`).join('')}<div class="sp-row"><b>languages</b><div class="sp-tags">${tags(data.programmingLanguages)}</div></div></article>`
+            + `${panel('proj')}${head('planet', 'Нээсэн гарагууд', 'Төслүүд')}<div class="sp-projects">${(data.projects || []).map((p, i) => `<a class="sp-project" href="${esc(p.url)}" target="_blank" rel="noopener"><span class="sp-project-ic" style="--h:${PROJECT_BADGES[i % PROJECT_BADGES.length][1]}">${icon(PROJECT_BADGES[i % PROJECT_BADGES.length][0])}</span><div><b>${esc(p.name)}</b><p>${esc(p.description)}</p><div class="sp-tags">${tags(p.technologies)}</div></div></a>`).join('')}</div></article>`
+            + `${panel('edu')}${head('telescope', 'Сургалтын ажиглалтын төв', 'Боловсрол · Сертификат')}<ul class="sp-list">${(data.education || []).map(e => `<li><b>${esc(e.field)}</b><em>${esc(e.level)} · ${esc(e.date)}</em><p>${esc(e.institution)}</p></li>`).join('')}${(data.certifications || []).map(c => `<li><b>${esc(c.name)}</b><em>${esc(c.issuer)} · ${esc(c.date)}</em></li>`).join('')}</ul></article>`
+            + `${panel('comm')}${head('comet', 'Холбооны суваг', 'Хэл · Зан чанар · Хэрэгсэл')}<div class="sp-tags">${Object.entries(data.spokenLanguages || {}).map(([k, v]) => `<span>✦ ${esc(k)} · ${esc(v)}</span>`).join('')}</div><div class="sp-tags sp-traits">${tags(data.profileTraits)}</div><div class="sp-tags">${tags(data.tools)}</div></article></div></div></div></section>`;
     }
 
     /* ---------- Drawing helpers ---------- */
@@ -164,38 +171,63 @@
         c.restore();
     }
 
-    // James Webb Space Telescope: 18 gold hexagonal mirror segments, a secondary mirror on three struts
-    // and the five-layer kite-shaped sunshield with the spacecraft bus underneath. `glint` 0–1 flashes it.
-    function drawWebb(c, t, glint) {
+    // 3D James Webb model (units ≈ metres / 2): five-layer sunshield, bus, solar array, tower,
+    // 18 slightly concave gold hexagons, and a secondary mirror held by three struts. y is up.
+    const WEBB_MODEL = (() => {
+        const polys = [], lines = [];
+        const add = (pts, kind, layer) => polys.push({ pts, kind, layer: layer || 0 });
+        const box = (x0, y0, z0, x1, y1, z1, kind) => {
+            const v = [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0], [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]];
+            for (const f of [[0, 1, 2, 3], [5, 4, 7, 6], [4, 0, 3, 7], [1, 5, 6, 2], [3, 2, 6, 7], [4, 5, 1, 0]]) add(f.map(i => v[i]), kind);
+        };
+        const kite = [[-7.6, 0, 0], [-2.6, 0, 3.9], [4.2, 0, 3.3], [7.8, 0, 0], [4.2, 0, -3.3], [-2.6, 0, -3.9]];
+        for (let L = 0; L < 5; L++) add(kite.map(([x, , z]) => [x * (1 - L * .025), -.9 - L * .3, z * (1 - L * .025)]), 'shield', L);
+        box(-.9, -2.7, -.9, .9, -2.15, .9, 'bus');
+        add([[-.9, -2.45, -.55], [-3.6, -2.45, -.55], [-3.6, -2.45, .55], [-.9, -2.45, .55]], 'solar');
+        box(-.28, -.9, -.6, .28, 1.4, -.1, 'tower');
+        const R = .62;
+        for (let q = -2; q <= 2; q++) for (let r = -2; r <= 2; r++) {
+            const d = Math.max(Math.abs(q), Math.abs(r), Math.abs(-q - r)); if (d < 1 || d > 2) continue;
+            const cx = R * 1.5 * q * 1.04, cy = R * Math.sqrt(3) * (r + q / 2) * 1.04;
+            add(Array.from({ length: 6 }, (_, k) => { const a = k * Math.PI / 3, px = cx + Math.cos(a) * R * .95, py = cy + Math.sin(a) * R * .95; return [px, py + 3.2, .2 - .035 * (px * px + py * py)]; }), 'mirror');
+        }
+        add(Array.from({ length: 6 }, (_, k) => { const a = k * Math.PI / 3; return [Math.cos(a) * .4, 3.2 + Math.sin(a) * .4, 4.4]; }).reverse(), 'mirror2');
+        for (const p of [[-2, 1.9, .1], [2, 1.9, .1], [0, 5.4, .1]]) lines.push([p, [0, 3.2, 4.4]]);
+        return { polys, lines };
+    })();
+    function drawWebb3D(c, yaw, pitch, scale, t, glint) {
+        const cy0 = Math.cos(yaw), sy0 = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch), D = 40;
+        const tr = ([x, y, z]) => { const x1 = x * cy0 + z * sy0, z1 = -x * sy0 + z * cy0, y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp, f = D / (D - z2); return [x1 * scale * f, -y2 * scale * f, z2, x1, y2]; };
+        const L = [-.35, .62, .7], Ln = Math.hypot(...L), light = L.map(v => v / Ln), half = [light[0], light[1], light[2] + 1].map((v, _, a) => v / Math.hypot(...a));
+        const items = [];
+        for (const poly of WEBB_MODEL.polys) {
+            const P = poly.pts.map(tr), depth = P.reduce((s2, p) => s2 + p[2], 0) / P.length;
+            // Normal from the rotated (unprojected) vertices.
+            const R3 = poly.pts.map(([x, y, z]) => { const x1 = x * cy0 + z * sy0, z1 = -x * sy0 + z * cy0; return [x1, y * cp - z1 * sp, y * sp + z1 * cp]; });
+            const u = R3[1].map((v, i) => v - R3[0][i]), w = R3[2].map((v, i) => v - R3[0][i]);
+            let n = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]]; const nl = Math.hypot(...n) || 1; n = n.map(v => v / nl);
+            items.push({ P, depth, kind: poly.kind, layer: poly.layer, n });
+        }
+        for (const [a, b] of WEBB_MODEL.lines) { const A = tr(a), B = tr(b); items.push({ line: true, A, B, depth: (A[2] + B[2]) / 2 }); }
+        items.sort((a, b) => a.depth - b.depth);
         c.lineJoin = 'round';
-        // Sunshield: five stacked silvery-violet layers.
-        for (let i = 4; i >= 0; i--) {
-            const y = 22 + i * 2.6, g = c.createLinearGradient(-70, y, 70, y);
-            g.addColorStop(0, '#8e86a8'); g.addColorStop(.45, i === 0 ? '#efe9ff' : '#cfc6e6'); g.addColorStop(1, '#6d6688');
-            c.fillStyle = g; c.strokeStyle = 'rgba(40,30,60,.45)'; c.lineWidth = .7;
-            c.beginPath(); c.moveTo(-72, y); c.lineTo(-8, y - 15); c.lineTo(66, y - 3); c.lineTo(10, y + 14); c.closePath(); c.fill(); c.stroke();
+        for (const it of items) {
+            if (it.line) { c.strokeStyle = '#3c3f4a'; c.lineWidth = Math.max(1, scale * .12); c.beginPath(); c.moveTo(it.A[0], it.A[1]); c.lineTo(it.B[0], it.B[1]); c.stroke(); continue; }
+            const facing = it.n[2] >= 0, n = facing ? it.n : it.n.map(v => -v), lam = Math.max(0, n[0] * light[0] + n[1] * light[1] + n[2] * light[2]);
+            const spec = Math.max(0, n[0] * half[0] + n[1] * half[1] + n[2] * half[2]) ** 24;
+            let col;
+            if (it.kind === 'mirror' || it.kind === 'mirror2') {
+                if (!it.n[2] || it.n[2] < 0) col = 'rgb(38,38,46)';
+                else { const sweep = Math.max(0, Math.sin(t * 1.2 + it.P[0][0] * .04)) ** 8 * .35, k2 = .45 + .55 * lam + spec * .9 + sweep + glint * .6; col = `rgb(${Math.min(255, 231 * k2 + 40 * spec) | 0},${Math.min(255, 180 * k2 + 60 * spec) | 0},${Math.min(255, 60 * k2 + 120 * spec) | 0})`; }
+            } else if (it.kind === 'shield') { const k2 = .35 + .6 * lam + spec * .5 - it.layer * .05; col = `rgb(${Math.min(255, 205 * k2) | 0},${Math.min(255, 192 * k2) | 0},${Math.min(255, 235 * k2) | 0})`; }
+            else if (it.kind === 'solar') col = `rgb(${30 + 40 * lam | 0},${60 + 60 * lam | 0},${130 + 90 * lam | 0})`;
+            else { const k2 = .4 + .6 * lam; col = `rgb(${70 * k2 + 20 | 0},${72 * k2 + 20 | 0},${84 * k2 + 24 | 0})`; }
+            c.fillStyle = col; c.strokeStyle = it.kind === 'shield' ? 'rgba(60,50,90,.5)' : 'rgba(20,16,10,.55)'; c.lineWidth = .7;
+            c.beginPath(); it.P.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.closePath(); c.fill(); c.stroke();
         }
-        c.fillStyle = '#3a3448'; c.fillRect(-12, 38, 24, 9); c.fillStyle = '#1d2a4a'; c.fillRect(-30, 41, 16, 5);
-        c.strokeStyle = '#6b6f80'; c.lineWidth = 1; for (let x = -29; x < -14; x += 3) { c.beginPath(); c.moveTo(x, 41); c.lineTo(x, 46); c.stroke(); }
-        // Tower and backplane.
-        c.fillStyle = '#2b2b33'; c.fillRect(-3, 6, 6, 16);
-        // Primary mirror: two rings of hexagons round an empty centre (18 segments).
-        const hexes = [], R = 7.2;
-        for (let q = -2; q <= 2; q++) for (let r = -2; r <= 2; r++) { const sN = -q - r, d = Math.max(Math.abs(q), Math.abs(r), Math.abs(sN)); if (d >= 1 && d <= 2) hexes.push([R * 1.5 * q, R * Math.sqrt(3) * (r + q / 2)]); }
-        for (const [hx, hy0] of hexes) {
-            const hy = hy0 * .92 - 6, sweep = Math.sin(t * 1.2 - hx * .08 - hy * .05);
-            const g = c.createLinearGradient(hx - R, hy - R, hx + R, hy + R); g.addColorStop(0, '#fff2b8'); g.addColorStop(.5, '#e7b43c'); g.addColorStop(1, '#9a6a14');
-            c.fillStyle = g; c.strokeStyle = '#5a3d0a'; c.lineWidth = .8;
-            c.beginPath(); for (let k = 0; k < 6; k++) { const a = k / 6 * TAU; c.lineTo(hx + Math.cos(a) * R * .93, hy + Math.sin(a) * R * .93 * .92); } c.closePath(); c.fill(); c.stroke();
-            const shine = Math.max(0, sweep) ** 6 * .7 + glint * .8;
-            if (shine > .02) { c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = shine; c.fillStyle = '#fffbe6'; c.fill(); c.restore(); }
-        }
-        // Secondary mirror on three struts.
-        c.strokeStyle = '#3c3c46'; c.lineWidth = 1.2;
-        for (const [sx, sy] of [[-20, 8], [20, 8], [0, -30]]) { c.beginPath(); c.moveTo(sx, sy); c.lineTo(0, -10 - 22); c.stroke(); }
-        c.fillStyle = '#e7b43c'; c.beginPath(); c.arc(0, -33, 3.2, 0, TAU); c.fill();
-        if (glint > 0) { c.save(); c.globalCompositeOperation = 'lighter'; const g = c.createRadialGradient(0, -6, 0, 0, -6, 70); g.addColorStop(0, `rgba(255,230,160,${(.6 * glint).toFixed(3)})`); g.addColorStop(1, 'rgba(255,230,160,0)'); c.fillStyle = g; c.fillRect(-70, -76, 140, 140); c.restore(); }
+        if (glint > 0) { const m = tr([0, 3.2, .2]); c.save(); c.globalCompositeOperation = 'lighter'; const g = c.createRadialGradient(m[0], m[1], 0, m[0], m[1], scale * 9); g.addColorStop(0, `rgba(255,230,160,${(.6 * glint).toFixed(3)})`); g.addColorStop(1, 'rgba(255,230,160,0)'); c.fillStyle = g; c.fillRect(m[0] - scale * 9, m[1] - scale * 9, scale * 18, scale * 18); c.restore(); }
     }
+
     // Voyager: big high-gain dish, ten-sided bus with the golden record, magnetometer boom,
     // RTG boom with three power units, science platform and two long plasma-wave antennas.
     function drawVoyager(c, t, glint) {
@@ -265,6 +297,79 @@
             c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(150,220,255,${.5 + .5 * engine})`; c.beginPath(); c.ellipse(179, ey, 2.6, er * .6, 0, 0, TAU); c.fill(); c.restore();
         }
         if (warp > 0) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(190,230,255,${(warp * .6).toFixed(3)})`; c.beginPath(); c.ellipse(0, 0, 200, 40, 0, 0, TAU); c.fill(); c.restore(); }
+        c.restore();
+    }
+
+    // Planet surface strips (equirectangular-ish, scrolled to spin) for the profile solar system.
+    function planetTexture(kind) {
+        const W = 256, H = 128, c = mkCanvas(W, H), x = c.getContext('2d'), r = rng(kind.length * 977 + 13);
+        const band = (stops) => { const g = x.createLinearGradient(0, 0, 0, H); stops.forEach(([o, col]) => g.addColorStop(o, col)); x.fillStyle = g; x.fillRect(0, 0, W, H); };
+        const blob = (cx, cy, rad, col) => { x.fillStyle = col; x.beginPath(); for (let k = 0; k < 14; k++) { const a = k / 14 * TAU, rr = rad * (.6 + r() * .5); x.lineTo(cx + Math.cos(a) * rr * 1.5, cy + Math.sin(a) * rr); } x.closePath(); x.fill(); };
+        if (kind === 'earth') {
+            band([[0, '#1a4f9c'], [.5, '#2f7fd0'], [1, '#1a4f9c']]);
+            for (let i = 0; i < 9; i++) { const cx = r() * W, cy = 24 + r() * 80, rad = 8 + r() * 16; for (const dx of [0, -W, W]) { blob(cx + dx, cy, rad, '#3f8f45'); blob(cx + dx + 4, cy + 3, rad * .55, '#a88a52'); } }
+            x.fillStyle = '#f4f8fb'; x.fillRect(0, 0, W, 9); x.fillRect(0, H - 9, W, 9);
+        } else if (kind === 'mars') {
+            band([[0, '#b5532c'], [.5, '#d9763f'], [1, '#a0461f']]);
+            for (let i = 0; i < 14; i++) { const cx = r() * W, cy = r() * H; for (const dx of [0, -W, W]) blob(cx + dx, cy, 4 + r() * 12, 'rgba(90,30,15,.45)'); }
+            x.fillStyle = '#f3ece6'; x.fillRect(0, 0, W, 6);
+        } else if (kind === 'mercury') {
+            band([[0, '#8a8580'], [.5, '#a9a39c'], [1, '#7c7772']]);
+            for (let i = 0; i < 60; i++) { const cx = r() * W, cy = r() * H, rad = 1 + r() * 6; x.fillStyle = 'rgba(60,56,52,.45)'; x.beginPath(); x.arc(cx, cy, rad, 0, TAU); x.fill(); x.strokeStyle = 'rgba(220,214,206,.35)'; x.beginPath(); x.arc(cx - .6, cy - .6, rad, Math.PI, Math.PI * 1.6); x.stroke(); }
+        } else if (kind === 'jupiter' || kind === 'saturn' || kind === 'neptune' || kind === 'venus' || kind === 'uranus') {
+            const pal = kind === 'venus' ? ['#f2deb0', '#e8cc90', '#f6e8c6', '#dcbf86', '#efd9a6'] : kind === 'uranus' ? ['#bfeaf0', '#a8dde6', '#c9f0f4', '#9fd4de'] : kind === 'jupiter' ? ['#e9d4b0', '#c58a5a', '#f2e4c8', '#a8643c', '#ead2a6', '#8f5434'] : kind === 'saturn' ? ['#efe0b8', '#d6bd88', '#f5e9c8', '#c4a670', '#e9d6a8'] : ['#3d6fe0', '#2b4fb8', '#5a8af0', '#24439e'];
+            let y = 0; while (y < H) { const h = 5 + r() * (kind === 'neptune' ? 18 : 12); x.fillStyle = pal[Math.floor(r() * pal.length)]; x.fillRect(0, y, W, h + 1); y += h; }
+            x.globalAlpha = .35;
+            for (let i = 0; i < 40; i++) { const yy = r() * H; x.strokeStyle = pal[i % pal.length]; x.lineWidth = 1 + r() * 2; x.beginPath(); for (let xx = 0; xx <= W; xx += 8) x.lineTo(xx, yy + Math.sin(xx * .06 + i) * 2.5); x.stroke(); }
+            x.globalAlpha = 1;
+            if (kind === 'jupiter') for (const dx of [0, -W]) { x.fillStyle = '#c0492c'; x.beginPath(); x.ellipse(170 + dx, 82, 15, 8, 0, 0, TAU); x.fill(); x.fillStyle = '#e27a52'; x.beginPath(); x.ellipse(170 + dx, 82, 9, 4.5, 0, 0, TAU); x.fill(); }
+            if (kind === 'neptune') { x.fillStyle = '#1a2f78'; x.beginPath(); x.ellipse(90, 50, 12, 7, 0, 0, TAU); x.fill(); x.fillStyle = 'rgba(255,255,255,.7)'; x.fillRect(60, 40, 40, 2); x.fillRect(150, 86, 30, 2); }
+        }
+        return c;
+    }
+    // Negative spin = turning on its axis the other way (Venus and Uranus really do; Saturn by the page's
+    // design). All planets orbit the same way.
+    const PLANET_LOOK = { mercury: { size: .55, spin: 4 }, uranus: { size: 1.2, spin: -11, atmo: 'rgba(170,235,240,.45)', tiltedRing: true }, venus: { size: .92, spin: -6, atmo: 'rgba(255,230,170,.45)' }, earth: { size: 1, spin: 10, atmo: 'rgba(120,190,255,.55)' }, mars: { size: .78, spin: 9, atmo: 'rgba(255,150,110,.25)' }, jupiter: { size: 1.75, spin: 18 }, saturn: { size: 1.45, spin: -15, rings: true }, neptune: { size: 1.1, spin: 12, atmo: 'rgba(110,160,255,.45)' } };
+    function drawSaturnRing(c, x, y, r, front) {
+        const a0 = front ? 0 : Math.PI, a1 = front ? Math.PI : TAU;
+        c.save(); c.translate(x, y); c.rotate(-.32);
+        for (const [rr, w, col] of [[2.28, .16, 'rgba(176,150,110,.55)'], [2.05, .22, 'rgba(232,214,170,.9)'], [1.86, .05, 'rgba(10,10,20,.0)'], [1.72, .2, 'rgba(214,190,140,.85)'], [1.5, .14, 'rgba(160,140,110,.45)']]) {
+            if (col.endsWith('.0)')) continue;
+            c.strokeStyle = col; c.lineWidth = r * w; c.beginPath(); c.ellipse(0, 0, r * rr, r * rr * .3, 0, a0, a1); c.stroke();
+        }
+        c.restore();
+    }
+    // A planet with a spinning surface, lit from the side facing the star (lightAngle).
+    function drawPlanet(c, x, y, r, kind, tex, t, lightAngle, clouds) {
+        const look = PLANET_LOOK[kind];
+        if (look.rings) drawSaturnRing(c, x, y, r, false);
+        if (look.tiltedRing) { c.strokeStyle = 'rgba(190,230,240,.35)'; c.lineWidth = 1; c.beginPath(); c.ellipse(x, y, r * .45, r * 1.8, .12, Math.PI / 2, Math.PI * 1.5); c.stroke(); }
+        if (kind === 'jupiter') { c.strokeStyle = 'rgba(200,180,150,.25)'; c.lineWidth = 1; c.beginPath(); c.ellipse(x, y, r * 1.7, r * .35, -.1, Math.PI, TAU); c.stroke(); }
+        c.save(); c.beginPath(); c.arc(x, y, r, 0, TAU); c.clip();
+        const off = ((t * look.spin) % tex.width + tex.width) % tex.width, s = (2 * r) / tex.height;
+        c.drawImage(tex, -off * s + x - r, y - r, tex.width * s, 2 * r); c.drawImage(tex, (tex.width - off) * s + x - r, y - r, tex.width * s, 2 * r);
+        if (clouds) { const co = ((t * look.spin * 1.6) % clouds.width + clouds.width) % clouds.width; c.globalAlpha = .55; c.drawImage(clouds, -co * s + x - r, y - r, clouds.width * s, 2 * r); c.drawImage(clouds, (clouds.width - co) * s + x - r, y - r, clouds.width * s, 2 * r); c.globalAlpha = 1; }
+        // Day/night: dark on the side away from the star, plus a soft limb.
+        const lx = Math.cos(lightAngle), ly = Math.sin(lightAngle), sh = c.createLinearGradient(x + lx * r, y + ly * r, x - lx * r, y - ly * r);
+        sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(.45, 'rgba(0,0,10,.08)'); sh.addColorStop(.75, 'rgba(0,0,12,.6)'); sh.addColorStop(1, 'rgba(0,0,15,.88)');
+        c.fillStyle = sh; c.fillRect(x - r, y - r, 2 * r, 2 * r);
+        const limb = c.createRadialGradient(x, y, r * .55, x, y, r); limb.addColorStop(0, 'rgba(0,0,0,0)'); limb.addColorStop(1, 'rgba(0,0,0,.35)'); c.fillStyle = limb; c.fillRect(x - r, y - r, 2 * r, 2 * r);
+        c.restore();
+        if (look.atmo) { c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = look.atmo; c.lineWidth = Math.max(1.2, r * .12); c.beginPath(); c.arc(x, y, r * 1.02, lightAngle - 1.3, lightAngle + 1.3); c.stroke(); c.restore(); }
+        if (look.rings) drawSaturnRing(c, x, y, r, true);
+        if (look.tiltedRing) { c.strokeStyle = 'rgba(190,230,240,.45)'; c.lineWidth = 1; c.beginPath(); c.ellipse(x, y, r * .45, r * 1.8, .12, -Math.PI / 2, Math.PI / 2); c.stroke(); }
+    }
+    function cloudTexture() {
+        const c = mkCanvas(256, 128), x = c.getContext('2d'), r = rng(4242);
+        for (let i = 0; i < 60; i++) { const cx = r() * 256, cy = 10 + r() * 108; x.fillStyle = 'rgba(255,255,255,.7)'; x.beginPath(); x.ellipse(cx, cy, 6 + r() * 16, 1.5 + r() * 3, 0, 0, TAU); x.fill(); }
+        return c;
+    }
+    function drawArtificialSatellite(c, x, y, s, t) {
+        c.save(); c.translate(x, y); c.rotate(t * .8);
+        c.fillStyle = '#d9dde3'; c.fillRect(-s * .5, -s * .5, s, s);
+        c.fillStyle = '#2f5fb8'; c.fillRect(-s * 2.4, -s * .35, s * 1.6, s * .7); c.fillRect(s * .8, -s * .35, s * 1.6, s * .7);
+        c.strokeStyle = 'rgba(200,220,255,.6)'; c.lineWidth = .5; c.strokeRect(-s * 2.4, -s * .35, s * 1.6, s * .7); c.strokeRect(s * .8, -s * .35, s * 1.6, s * .7);
+        c.fillStyle = '#ffcf4d'; c.beginPath(); c.arc(0, -s * .7, s * .25, 0, TAU); c.fill();
         c.restore();
     }
 
@@ -691,7 +796,7 @@
         }
 
         /* --- Voyager 1 drifting across the far sky, James Webb hovering at its post --- */
-        const webb = { x: 0, y: 0, s: 1, glint: 0, msg: 0 }, voyager = { x: 0, y: 0, s: 1, glint: 0, msg: 0 };
+        const webb = { x: 0, y: 0, s: 1, glint: 0, msg: 0, yaw: -.6, pitch: .32, vyaw: .25, vpitch: 0, drag: null }, voyager = { x: 0, y: 0, s: 1, glint: 0, msg: 0 };
         function placeProbes() {
             const m = width < 640;
             Object.assign(webb, { x: width * (m ? .2 : .13), y: height * (m ? .34 : .17), s: k * (m ? .62 : .95) });
@@ -700,11 +805,13 @@
         function updateProbes(dt) {
             voyager.x -= 9 * k * dt; if (voyager.x < -140 * voyager.s) voyager.x = width + 140 * voyager.s;
             for (const p of [webb, voyager]) { p.glint = Math.max(0, p.glint - dt * .8); p.msg = Math.max(0, p.msg - dt); }
+            // After a drag the telescope coasts and settles back into a slow turn.
+            if (!webb.drag) { webb.yaw += webb.vyaw * dt; webb.pitch = clamp(webb.pitch + webb.vpitch * dt, -1.25, 1.25); webb.vyaw += (.25 - webb.vyaw) * Math.min(1, dt * .8); webb.vpitch *= Math.exp(-dt * 2); }
         }
         function drawProbes() {
             const wy = webb.y + Math.sin(time * .6) * 3 * k;
-            ctx.save(); ctx.translate(webb.x, wy); ctx.rotate(Math.sin(time * .2) * .04); ctx.scale(webb.s, webb.s); drawWebb(ctx, time, webb.glint); ctx.restore();
-            label(ctx, 'JAMES WEBB', webb.x, wy + 64 * webb.s, 'rgba(255,224,150,.75)', 'center', 8);
+            ctx.save(); ctx.translate(webb.x, wy); drawWebb3D(ctx, webb.yaw, webb.pitch, 8.2 * webb.s, time, webb.glint); ctx.restore();
+            label(ctx, webb.drag ? 'JAMES WEBB · 3D' : 'JAMES WEBB · чирж эргүүл', webb.x, wy + 70 * webb.s, 'rgba(255,224,150,.75)', 'center', 8);
             const vy = voyager.y + Math.sin(time * .35) * 4 * k;
             ctx.save(); ctx.translate(voyager.x, vy); ctx.rotate(-.12); ctx.scale(voyager.s, voyager.s); drawVoyager(ctx, time, voyager.glint); ctx.restore();
             label(ctx, 'VOYAGER 1', voyager.x, vy + 52 * voyager.s, 'rgba(200,215,235,.7)', 'center', 8);
@@ -716,7 +823,7 @@
                 ctx.fillStyle = '#ffe2a0'; ctx.textAlign = 'left'; ctx.fillText(text, x + 8, y - 1); ctx.globalAlpha = 1;
             }
         }
-        const onProbe = p => Math.hypot(p.x - webb.x, p.y - webb.y) < 60 * webb.s ? webb : Math.hypot(p.x - voyager.x, p.y - voyager.y) < 50 * voyager.s ? voyager : null;
+        const onProbe = p => Math.hypot(p.x - webb.x, p.y - webb.y) < 75 * webb.s ? webb : Math.hypot(p.x - voyager.x, p.y - voyager.y) < 50 * voyager.s ? voyager : null;
 
         /* --- Pointer: drag a sun (toward the hole if you dare), poke the robot --- */
         const grab = { x: 0, y: 0, vx: 0, vy: 0, lx: 0, ly: 0, lt: 0, id: null };
@@ -732,7 +839,9 @@
                 try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
                 canvas.style.cursor = 'grabbing'; return;
             }
-            const probe = onProbe(p); if (probe) { probe.glint = 1; probe.msg = 2.6; return; }
+            const probe = onProbe(p);
+            if (probe === webb) { webb.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, lt: performance.now(), moved: false }; webb.vyaw = 0; webb.vpitch = 0; try { canvas.setPointerCapture(e.pointerId); } catch (_) {} canvas.style.cursor = 'grabbing'; return; }
+            if (probe) { probe.glint = 1; probe.msg = 2.6; return; }
             const bot = onRobot(p); if (bot) { bot.wave = 1.6; bot.beep = 1.2; bot.excite = 1; }
         });
         canvas.addEventListener('pointermove', e => {
@@ -743,16 +852,27 @@
                 const lim = Math.max(width, height) / sys.scale; grab.x = clamp(s.x, -lim, lim); grab.y = clamp(s.y, -lim, lim); grab.lx = s.x; grab.ly = s.y; grab.lt = now;
                 return;
             }
-            if (e.pointerType === 'mouse') canvas.style.cursor = sunAt(p) !== null ? 'grab' : onRobot(p) || onProbe(p) ? 'pointer' : '';
+            if (webb.drag && e.pointerId === webb.drag.id) {
+                const d = webb.drag, now = performance.now(), dt = Math.max(8, now - d.lt) / 1000, dx = e.clientX - d.lx, dy = e.clientY - d.ly;
+                webb.yaw += dx * .012; webb.pitch = clamp(webb.pitch + dy * .01, -1.25, 1.25);
+                webb.vyaw = webb.vyaw * .5 + dx * .012 / dt * .5; webb.vpitch = webb.vpitch * .5 + dy * .01 / dt * .5;
+                if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 4) d.moved = true;
+                d.lx = e.clientX; d.ly = e.clientY; d.lt = now; return;
+            }
+            if (e.pointerType === 'mouse') canvas.style.cursor = sunAt(p) !== null ? 'grab' : onProbe(p) === webb ? 'grab' : onRobot(p) || onProbe(p) ? 'pointer' : '';
         });
         const release = e => {
+            if (webb.drag && e.pointerId === webb.drag.id) {
+                if (!webb.drag.moved) { webb.glint = 1; webb.msg = 2.6; webb.vyaw = .25; }
+                webb.vyaw = clamp(webb.vyaw, -6, 6); webb.vpitch = clamp(webb.vpitch, -4, 4); webb.drag = null; canvas.style.cursor = ''; return;
+            }
             if (grabbed === null || e.pointerId !== grab.id) return;
             const b = bodies[grabbed], v = Math.hypot(grab.vx, grab.vy);
             b.vx = v > 3.5 ? grab.vx * 3.5 / v : grab.vx; b.vy = v > 3.5 ? grab.vy * 3.5 / v : grab.vy; b.vz = (random() - .5) * Math.min(1.6, v * .5);
             grabbed = null; canvas.style.cursor = '';
         };
         canvas.addEventListener('pointerup', release); canvas.addEventListener('pointercancel', release);
-        canvas.addEventListener('touchstart', e => { const t = e.touches[0]; if (t && sunAt(point(t)) !== null) e.preventDefault(); }, { passive: false });
+        canvas.addEventListener('touchstart', e => { const t = e.touches[0]; if (t && (sunAt(point(t)) !== null || onProbe(point(t)) === webb)) e.preventDefault(); }, { passive: false });
 
         /* --- Layout, cached sky and the scrap planet --- */
         function layout() {
@@ -1262,17 +1382,115 @@
             for (let i = 0; i < 700; i++) { const arm = i % 2, tt = rr() * 4, a = tt * 1.9 + arm * Math.PI, rad = tt * 26 + rr() * 8; x.fillStyle = `rgba(${200 + rr() * 55},${190 + rr() * 50},255,${(.6 - tt * .12).toFixed(3)})`; x.fillRect(Math.cos(a) * rad, Math.sin(a) * rad, 1.2, 1.2); }
             const core = x.createRadialGradient(0, 0, 0, 0, 0, 30); core.addColorStop(0, 'rgba(255,240,220,.8)'); core.addColorStop(1, 'rgba(255,240,220,0)'); x.fillStyle = core; x.beginPath(); x.arc(0, 0, 30, 0, TAU); x.fill(); x.restore();
             x.globalCompositeOperation = 'source-over';
-            // A ringed gas giant peeking in at the bottom right and a small moon.
-            const px = AW * .9, py = AH - 40, pr = Math.min(AW * .22, 260);
-            x.save(); x.translate(px, py); x.rotate(-.35);
-            x.strokeStyle = 'rgba(220,190,150,.35)'; x.lineWidth = pr * .1; x.beginPath(); x.ellipse(0, 0, pr * 1.8, pr * .42, 0, Math.PI, TAU); x.stroke();
-            const pg = x.createLinearGradient(-pr, -pr, pr, pr); pg.addColorStop(0, '#e2b98a'); pg.addColorStop(.5, '#9a6440'); pg.addColorStop(1, '#2a160d'); x.fillStyle = pg; x.beginPath(); x.arc(0, 0, pr, 0, TAU); x.fill();
-            x.save(); x.clip(); for (let i = -6; i < 7; i++) { x.fillStyle = `rgba(${i % 2 ? '255,230,200' : '90,50,30'},.12)`; x.fillRect(-pr, i * pr * .16, pr * 2, pr * .08); } x.restore();
-            x.strokeStyle = 'rgba(230,200,160,.45)'; x.lineWidth = pr * .1; x.beginPath(); x.ellipse(0, 0, pr * 1.8, pr * .42, 0, 0, Math.PI); x.stroke(); x.restore();
-            const mg = x.createRadialGradient(AW * .78 - 10, AH * .62 - 10, 2, AW * .78, AH * .62, 22); mg.addColorStop(0, '#d9dce4'); mg.addColorStop(1, '#3a3f4c'); x.fillStyle = mg; x.beginPath(); x.arc(AW * .78, AH * .62, 22, 0, TAU); x.fill();
+            // A small grey moon in the background.
+            if (AW >= 700) { const mg = x.createRadialGradient(AW * .78 - 10, AH * .62 - 10, 2, AW * .78, AH * .62, 22); mg.addColorStop(0, '#d9dce4'); mg.addColorStop(1, '#3a3f4c'); x.fillStyle = mg; x.beginPath(); x.arc(AW * .78, AH * .62, 22, 0, TAU); x.fill(); }
             aboutStars = Array.from({ length: Math.round(AW * AH / 2600) }, () => ({ x: rr() * AW, y: rr() * AH, s: rr() < .08 ? 1.6 : .5 + rr() * .8, p: rr() * TAU, d: .2 + rr() * .8 }));
             ship.y = Math.min(150, AH * .12); if (!ship.x) ship.x = AW * .7;
+            systemLayout();
         }
+        /* ---------- Profile as a planetary system: real-looking planets on slow, stable Keplerian orbits ---------- */
+        // Each planet carries the items of its section as moons; selecting a planet zooms its moon system.
+        const sysEl = aboutEl.querySelector('.sp-system'), sysCanvas = sysEl.querySelector('.sp-system-canvas'), sc2 = sysCanvas.getContext('2d');
+        const planetEls = [...sysEl.querySelectorAll('.sp-planet')];
+        const short = v => { const t = String(v == null ? '' : v).replace(/,\s*$/, '').trim(); return t.length > 22 ? t.slice(0, 21) + '…' : t; };
+        const MOON_SETS = {
+            exp: (data.experience || []).map(e => short(`${e.company} · ${e.role}`)),
+            edu: (data.education || []).map(e => short(e.field)).concat((data.certifications || []).map(c => short(c.name))),
+            skills: Object.entries(data.workSkills || {}).map(([k, v]) => short(`${k}: ${(v || []).slice(0, 2).join(', ')}`)),
+            proj: (data.projects || []).map(p => short(p.name)),
+            comm: Object.entries(data.spokenLanguages || {}).map(([k, v]) => short(`${k} · ${v}`)).concat((data.profileTraits || []).map(short))
+        };
+        const MOON_COLORS = { exp: ['#cfd2d8'], edu: ['#9a7a64', '#b08c74'], skills: ['#f2d34f', '#e8dcc8', '#a7a29a', '#6e6558', '#c7b49a', '#8c8f96'], proj: ['#e0a85a', '#d8d4cc', '#b9b4aa', '#9fb4c8', '#e6dccb', '#c9c2b4'], comm: ['#c9d6e8', '#9fb4d8', '#e0e6ef'] };
+        const planetTex = {}, clouds = cloudTexture();
+        for (const el of planetEls) planetTex[el.dataset.kind] = planetTexture(el.dataset.kind);
+        // Planets without a section: Mercury and Venus inside Earth's orbit, Uranus between Saturn and Neptune.
+        const DECOR = [{ kind: 'mercury', name: 'Буд', f: [.27, .15], a: 1 }, { kind: 'venus', name: 'Сугар ↺', f: [.38, .25], a: 4 }, { kind: 'uranus', name: 'Тэнгэрийн ван ↺', f: [.9, .875], a: 2.6 }];
+        for (const d of DECOR) planetTex[d.kind] = planetTexture(d.kind);
+        let SW = 1, SH = 1, ORBITS = [.32, .48, .64, .81, .97], TILT = .42, sysRatio = 1, lastSys = 0;
+        const angles = planetEls.map((_, i) => i * TAU / planetEls.length + .4), zoom = planetEls.map((el, i) => i === 0 ? 1 : 0);
+        const selectedIndex = () => Math.max(0, planetEls.findIndex(p => p.classList.contains('is-active')));
+        const orbitRadius = i => Math.max(40, Math.min(SW / 2 - (SW < 520 ? 30 : 50), (SH / 2 - 50) / TILT)) * ORBITS[i];
+        function systemLayout() {
+            const r = sysEl.getBoundingClientRect(); SW = Math.max(1, r.width); SH = Math.max(1, r.height);
+            const narrow = SW < 520; TILT = narrow ? .78 : .52; ORBITS = narrow ? [.49, .59, .69, .8, .99] : [.36, .48, .62, .76, .99];
+            sysRatio = Math.min(devicePixelRatio || 1, 2); sysCanvas.width = Math.round(SW * sysRatio); sysCanvas.height = Math.round(SH * sysRatio);
+            systemTick();
+        }
+        function systemTick() {
+            const dt = clamp(time - lastSys, 0, .1); lastSys = time;
+            const c = sc2, cx = SW / 2, cy = SH / 2, sel = selectedIndex(), base = clamp(SW / 54, 8, 16), sunR = clamp(Math.min(SW, SH) * .075, 24, 44), labels = [];
+            c.setTransform(sysRatio, 0, 0, sysRatio, 0, 0); c.clearRect(0, 0, SW, SH);
+            // Orbits (the selected one glows).
+            planetEls.forEach((_, i) => { const R = orbitRadius(i); c.strokeStyle = i === sel ? 'rgba(199,155,255,.45)' : 'rgba(170,180,255,.16)'; c.lineWidth = i === sel ? 1.4 : 1; c.setLineDash([3, 5]); c.beginPath(); c.ellipse(cx, cy, R, R * TILT, 0, 0, TAU); c.stroke(); });
+            c.setLineDash([]);
+            const scaleR = Math.max(40, Math.min(SW / 2 - (SW < 520 ? 30 : 50), (SH / 2 - 50) / TILT));
+            const extras = DECOR.map(d => {
+                const f = d.f[SW < 520 ? 0 : 1], R = scaleR * f;
+                d.a += dt * .16 * (ORBITS[0] / f) ** 1.5;
+                c.strokeStyle = 'rgba(255,220,160,.12)'; c.setLineDash([2, 6]); c.beginPath(); c.ellipse(cx, cy, R, R * TILT, 0, 0, TAU); c.stroke(); c.setLineDash([]);
+                const depth = Math.sin(d.a), b = { el: null, i: -1, name: d.name, x: cx + R * Math.cos(d.a), y: cy + R * depth * TILT, depth, kind: d.kind };
+                b.pr = base * PLANET_LOOK[d.kind].size * (.82 + .3 * (depth + 1) / 2); b.light = Math.atan2(cy - b.y, cx - b.x);
+                return b;
+            });
+            const bodiesList = planetEls.map((el, i) => {
+                // Kepler: angular speed ∝ r^-1.5; the selected planet slows down so its moons are easy to read.
+                zoom[i] += ((i === sel ? 1 : 0) - zoom[i]) * Math.min(1, dt * 3);
+                // Every planet orbits the same way (clockwise on screen).
+                angles[i] += dt * .16 * (ORBITS[0] / ORBITS[i]) ** 1.5 * (1 - .75 * zoom[i]);
+                const R = orbitRadius(i), a = angles[i], depth = Math.sin(a), kind = el.dataset.kind;
+                const x = cx + R * Math.cos(a), y = cy + R * depth * TILT, pr = base * PLANET_LOOK[kind].size * (.82 + .3 * (depth + 1) / 2) * (1 + .75 * zoom[i]);
+                return { el, i, x, y, depth, pr, kind, light: Math.atan2(cy - y, cx - x) };
+            });
+            const drawOne = b => {
+                if (!b.el) {
+                    drawPlanet(c, b.x, b.y, b.pr, b.kind, planetTex[b.kind], time, b.light, null);
+                    c.font = '600 8px ui-monospace, Menlo, monospace'; c.textAlign = 'center'; c.fillStyle = 'rgba(255,230,180,.8)'; c.fillText(b.name, b.x, b.y + b.pr + (b.kind === 'uranus' ? 16 : 11));
+                    return;
+                }
+                const set = MOON_SETS[b.el.dataset.panel] || [], z = zoom[b.i], cols = MOON_COLORS[b.el.dataset.panel] || ['#cfd2d8'];
+                const shown = z > .05 ? Math.min(set.length, 8) : b.kind === 'earth' ? 1 : b.kind === 'jupiter' ? 2 : b.kind === 'saturn' ? 1 : 0;
+                const moons = [];
+                for (let j = 0; j < shown; j++) {
+                    const mr = b.pr * (1.7 + z * .5) + (b.kind === 'saturn' ? b.pr * 1.1 : 0) + j * (5 + z * 22), ma = time * (.45 / (1 + j * .3)) + j * 2.1 + b.i;
+                    moons.push({ j, x: b.x + Math.cos(ma) * mr, y: b.y + Math.sin(ma) * mr * (.42 + z * .16), d: Math.sin(ma), size: 1.8 + z * 3.6 + (b.kind === 'earth' && j === 0 ? 1 : 0), mr });
+                }
+                // Expanded moon orbits for the selected planet.
+                if (z > .05) for (const m of moons) { c.strokeStyle = `rgba(200,210,255,${(.18 * z).toFixed(3)})`; c.lineWidth = .8; c.beginPath(); c.ellipse(b.x, b.y, m.mr, m.mr * (.42 + z * .16), 0, 0, TAU); c.stroke(); }
+                const drawMoon = m => {
+                    if (b.kind === 'earth' && m.j > 0) drawArtificialSatellite(c, m.x, m.y, m.size * .9, time + m.j);
+                    else { const g = c.createRadialGradient(m.x - m.size * .35, m.y - m.size * .35, 0, m.x, m.y, m.size); const col = b.kind === 'earth' ? '#cfd2d8' : cols[m.j % cols.length]; g.addColorStop(0, '#ffffff'); g.addColorStop(.35, col); g.addColorStop(1, '#1a1c22'); c.fillStyle = g; c.beginPath(); c.arc(m.x, m.y, m.size, 0, TAU); c.fill(); }
+                    if (z > .5 && set[m.j]) labels.push(() => {
+                        const text = (b.kind === 'earth' ? (m.j === 0 ? '☾ Сар · ' : '⛯ ') : '') + set[m.j];
+                        c.font = `600 ${Math.round(9 + z)}px ui-monospace, Menlo, monospace`; const w = c.measureText(text).width + 12;
+                        const lx = clamp(m.x + m.size + 4, 4, SW - w - 4), ly = m.y - 7;
+                        c.globalAlpha = (z - .5) * 2 * (.65 + .35 * (m.d + 1) / 2); c.fillStyle = 'rgba(8,12,34,.82)'; c.beginPath(); c.roundRect ? c.roundRect(lx, ly, w, 15, 7) : c.rect(lx, ly, w, 15); c.fill();
+                        c.fillStyle = '#e6e9ff'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText(text, lx + 6, ly + 7.5); c.globalAlpha = 1; c.textBaseline = 'alphabetic';
+                    });
+                };
+                moons.filter(m => m.d < 0).forEach(drawMoon);
+                if (z > .05) { c.save(); c.globalCompositeOperation = 'lighter'; const g = c.createRadialGradient(b.x, b.y, b.pr, b.x, b.y, b.pr * 2.4); g.addColorStop(0, `rgba(199,155,255,${(.25 * z).toFixed(3)})`); g.addColorStop(1, 'rgba(199,155,255,0)'); c.fillStyle = g; c.beginPath(); c.arc(b.x, b.y, b.pr * 2.4, 0, TAU); c.fill(); c.restore(); }
+                drawPlanet(c, b.x, b.y, b.pr, b.kind, planetTex[b.kind], time + b.i * 3, b.light, b.kind === 'earth' ? clouds : null);
+                moons.filter(m => m.d >= 0).forEach(drawMoon);
+            };
+            const sorted = bodiesList.concat(extras).sort((p, q) => p.depth - q.depth);
+            sorted.filter(b => b.depth < 0).forEach(drawOne);
+            drawSun(c, cx, cy, sunR, SUN_PALS[0], textures[0], time, time * .03);
+            sorted.filter(b => b.depth >= 0).forEach(drawOne);
+            labels.forEach(f => f()); // moon names always sit on top
+            // Keep the accessible buttons (hit areas + labels) on top of the drawn planets.
+            for (const b of bodiesList) {
+                b.el.style.setProperty('--sz', `${Math.round(b.pr * 2 + 6)}px`);
+                b.el.style.transform = `translate(${b.x.toFixed(1)}px,${b.y.toFixed(1)}px) translate(-50%,-${Math.round(b.pr + 3)}px)`;
+                b.el.style.zIndex = b.depth > 0 ? 4 : 1; b.el.style.opacity = (.75 + .25 * (b.depth + 1) / 2).toFixed(3);
+            }
+            const star = sysEl.querySelector('.sp-star'); star.style.setProperty('--sun', `${Math.round(sunR * 2)}px`);
+        }
+        sysEl.addEventListener('click', e => {
+            const btn = e.target.closest('.sp-planet'); if (!btn) return;
+            planetEls.forEach(p => { const on = p === btn; p.classList.toggle('is-active', on); p.setAttribute('aria-selected', String(on)); });
+            aboutEl.querySelectorAll('.sp-panel').forEach(p => { const on = p.dataset.panel === btn.dataset.panel; p.classList.toggle('is-active', on); p.classList.toggle('sp-anim', on); });
+            if (paused) { zoom.fill(0); zoom[planetEls.indexOf(btn)] = 1; systemTick(); }
+        });
         function shipScale() { return clamp(AW / 1500, .38, .85); }
         function updateShip(dt) {
             const sh = ship, sc = shipScale(); sh.t += dt;
@@ -1319,7 +1537,7 @@
         function tick(now) {
             if (disposed) return;
             const dt = Math.min((now - last) / 1000 || 0, .05); last = now;
-            if (!paused && !document.hidden) { advance(dt); if (spaceVisible) spaceScene(); if (labVisible) labScene(); if (aboutVisible) aboutScene(); }
+            if (!paused && !document.hidden) { advance(dt); if (spaceVisible) spaceScene(); if (labVisible) labScene(); if (aboutVisible) { aboutScene(); systemTick(); } }
             frame = requestAnimationFrame(tick);
         }
         frame = requestAnimationFrame(tick);
@@ -1342,8 +1560,9 @@
         lab.addEventListener('click', e => { const r = lab.getBoundingClientRect(), x = (e.clientX - r.left) * LW / r.width, y = (e.clientY - r.top) * LH / r.height; if (Math.hypot((x - acc.x) / acc.rx, (y - acc.y) / acc.ry) > .7 || Math.hypot(x - desk.x - desk.w * .28, y - desk.y) < 20) fire(); });
         root._spaceCleanup = () => { disposed = true; cancelAnimationFrame(frame); observer.disconnect(); seen.disconnect(); };
         // Test hooks: advance deterministically, fling a sun, push one into the black hole, fire the lab.
-        root._spaceAdvance = (seconds, fireNow) => { if (fireNow) fire(); for (let n = 0; n < seconds * 30; n++) advance(1 / 30); spaceScene(); labScene(); aboutScene(); };
+        root._spaceAdvance = (seconds, fireNow) => { if (fireNow) fire(); for (let n = 0; n < seconds * 30; n++) { advance(1 / 30); systemTick(); } spaceScene(); labScene(); aboutScene(); };
         root._spaceTight = () => tightBinary();
+        root._spaceWebb = (yaw, pitch) => { webb.yaw = yaw; webb.pitch = pitch; webb.vyaw = 0; };
         root._spaceFling = (i, vx, vy) => { bodies[i].vx = vx; bodies[i].vy = vy; chaotic = true; };
         root._spaceFeed = i => { const q = bodyPx(bodies[i]); capture(i, { x: bh.x + (q.x - bh.x) * .5, y: bh.y + (q.y - bh.y) * .5 }); };
     }
